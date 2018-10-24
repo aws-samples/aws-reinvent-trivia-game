@@ -7,8 +7,20 @@ const app = express();
 
 const trivia = require('./routes/trivia');
 
+// Configuration
+app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms'));
+
+app.use(bodyParser.json());
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  next();
+});
+
+// APIs
 app.use('/api/trivia', trivia);
 
+// Error handling
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
@@ -22,10 +34,6 @@ app.use(function(err, req, res, next) {
     error: req.app.get('env') === 'development' ? err : {}
   });
 });
-
-app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms'));
-
-app.use(bodyParser.json());
 
 const port = process.env.PORT || 8080
 const host = '0.0.0.0';
