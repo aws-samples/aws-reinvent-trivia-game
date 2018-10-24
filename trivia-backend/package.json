@@ -7,8 +7,12 @@
     "test": "./node_modules/nyc/bin/nyc.js --reporter=lcov ./node_modules/mocha/bin/mocha"
   },
   "dependencies": {
+    "@godaddy/terminus": "^4.1.0",
     "body-parser": "^1.18.3",
+    "compression": "^1.7.3",
+    "cors": "^2.8.4",
     "express": "^4.16.4",
+    "helmet": "^3.14.0",
     "morgan": "^1.9.1"
   },
   "devDependencies": {
