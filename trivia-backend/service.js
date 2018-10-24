@@ -1,21 +1,29 @@
+const http = require('http');
 const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
+const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
 const bodyParser = require('body-parser');
+const { createTerminus } = require('@godaddy/terminus');
+const trivia = require('./routes/trivia');
 
 const app = express();
 
-const trivia = require('./routes/trivia');
-
 // Configuration
-app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms'));
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
+const env = process.env.NODE_ENV || "production";
 
 app.use(bodyParser.json());
 
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  next();
-});
+app.use(cors());
+
+app.use(helmet());
+
+app.use(compression());
+
+app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms'));
 
 // APIs
 app.use('/api/trivia', trivia);
@@ -31,15 +39,39 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.json({
     message: err.message,
-    error: req.app.get('env') === 'development' ? err : {}
+    error: env === 'development' ? err : {}
   });
 });
 
-const port = process.env.PORT || 8080
-const host = '0.0.0.0';
+// Health checks and graceful shutdown
+const server = http.createServer(app);
 
-app.listen(port, host, function () {
+function onSignal() {
+  console.log('server is starting cleanup');
+  return Promise.all([
+    // add any clean-up logic
+  ]);
+}
+
+function onShutdown () {
+  console.log('cleanup finished, server is shutting down');
+}
+
+function onHealthCheck() {
+  return Promise.resolve();
+}
+
+createTerminus(server, {
+  signals: ['SIGHUP','SIGINT','SIGTERM'],
+  healthChecks: {
+    '/health': onHealthCheck,
+  },
+  onSignal,
+  onShutdown
+});
+
+server.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
 
-module.exports = app;
+module.exports = server;
