@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "webpack": "webpack"
+    "build": "webpack --config ./webpack.config.js --progress --colors",
+    "build:dev": "NODE_ENV=development npm run build",
+    "build:test": "NODE_ENV=test npm run build",
+    "build:prod": "NODE_ENV=production npm run build"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",

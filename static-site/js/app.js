@@ -38,12 +38,9 @@ class App extends React.Component {
         this.setState({data: data, rows: rows, cols: data.length});
     }
 
-    /*
-    // Traditional XHR implementation. Getting questions from data.json using XHR. Will run into cross origin issues in some browsers
-    // if loading index.html from the local file system (using the file:// protocol) -->
     componentDidMount() {
         window.addEventListener('resize', this.handleResize.bind(this));
-        request({url: "data.json"}).then(result => {
+        request({url: __TRIVIA_API__ + '/api/trivia/all'}).then(result => {
             let data = JSON.parse(result),
                 rows = 0;
             data.forEach(category => {
@@ -54,7 +51,6 @@ class App extends React.Component {
             this.setState({data: data, rows: rows, cols: data.length});
         });
     }
-    */
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.handleResize);
