@@ -1,101 +1,101 @@
 [
   {
-    "category": "TBD",
+    "category": "Know Your History",
     "questions": [
       {
         "points": 100,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "When was the first AWS re:Invent?",
+        "answer": "2012"
       },
       {
         "points": 200,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "What Amazon-favorite sport was introduced in re:Invent attendees in 2016?",
+        "answer": "Broomball"
       },
       {
         "points": 300,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "What world record was set at the 2017 re:Invent Tatonka Challenge?",
+        "answer": "Largest chicken wing eating contest: 214 people"
       },
       {
         "points": 400,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "Which year were both the ECS (Elastic Container Service) and Lambda announced at re:Invent?",
+        "answer": "2014"
       }
     ]
   },
   {
-    "category": "TBD",
+    "category": "The Main Event",
     "questions": [
       {
         "points": 100,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "What webinar helps people learn about re:Invent leading up to the big event?",
+        "answer": "How to re:Invent"
       },
       {
         "points": 200,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "How many casinos does the re:Invent campus span this year (2018)?",
+        "answer": "7"
       },
       {
         "points": 300,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "What year did twitch.tv/aws start streaming at re:Invent?",
+        "answer": "2016"
       },
       {
         "points": 400,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "How many chalk talks are scheduled for re:Invent 2018?",
+        "answer": "592"
       }
     ]
   },
   {
-    "category": "TBD",
+    "category": "Let's Get Musical",
     "questions": [
       {
         "points": 100,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "What genre of music is historically chosen for the re:play party?",
+        "answer": "EDM"
       },
       {
         "points": 200,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "Who usually announces the DJ for re:play?",
+        "answer": "Werner Vogels"
       },
       {
         "points": 300,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "What venue hosts the re:play party?",
+        "answer": "The Linq"
       },
       {
         "points": 400,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "Who was the re:play DJ at the 2013 re:Invent?",
+        "answer": "DeadMau5"
       }
     ]
   },
   {
-    "category": "TBD",
+    "category": "People, Places, and Things",
     "questions": [
       {
         "points": 100,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "What sports star made a surprise experience at Midnight Madness in 2017?",
+        "answer": "Shaq"
       },
       {
         "points": 200,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "Which AWS Engineer both appeared in the 2018 keynote, and also wrote this demo?",
+        "answer": "Clare Liguori (hi!)"
       },
       {
         "points": 300,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "What restaurant is located in both the Venetian and the Palazzo?",
+        "answer": "Grand Lux Cafe"
       },
       {
         "points": 400,
-        "question": "TBD",
-        "answer": "TBD"
+        "question": "What AWS speaker keynoted \"Tuesday Night Live\" in 2016?",
+        "answer": "James Hamilton"
       }
     ]
   }
