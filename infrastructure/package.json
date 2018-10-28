@@ -1,18 +1,18 @@
 {
-  "name": "shared-infrastructure",
+  "name": "trivia-game-infrastructure",
   "version": "0.1.0",
   "main": "bin/index.js",
   "types": "bin/index.d.ts",
   "bin": {
-    "shared-infrastructure": "bin/shared-infrastructure.js",
-    "shared-infra-pipeline": "bin/shared-infra-pipeline.js"
+    "infrastructure": "bin/infrastructure.js",
+    "infra-pipeline": "bin/infra-pipeline.js"
   },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "synth": "cdk synth -o build --app 'node bin/shared-infrastructure.js'",
-    "synth-pipeline": "cdk synth -o build --app 'node bin/shared-infra-pipeline.js'",
-    "deploy-pipeline": "cdk deploy --app 'node bin/shared-infra-pipeline.js'",
+    "synth-infra": "cdk synth -o build --app 'node bin/infrastructure.js'",
+    "synth-infra-pipeline": "cdk synth -o build --app 'node bin/infra-pipeline.js'",
+    "deploy-infra-pipeline": "cdk deploy --app 'node bin/infra-pipeline.js'",
     "postinstall": "~/code/aws-cdk/link-all.sh"
   },
   "devDependencies": {

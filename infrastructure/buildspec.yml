@@ -8,8 +8,7 @@ phases:
   build:
     commands:
       - npm run build
-      - mkdir build
-      - cdk synth -o build/ --app "node bin/shared-infrastructure.js"
+      - npm run synth-infra
 
 artifacts:
   files:

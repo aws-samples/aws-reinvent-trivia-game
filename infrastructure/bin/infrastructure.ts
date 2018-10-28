@@ -4,7 +4,7 @@ import ecs = require('@aws-cdk/aws-ecs');
 import cdk = require('@aws-cdk/cdk');
 import { StaticSite } from './static-site';
 
-class SharedInfrastructureStack extends cdk.Stack {
+class TriviaGameInfrastructureStack extends cdk.Stack {
     constructor(parent: cdk.App, name: string, domainName: string, siteSubDomain: string, props?: cdk.StackProps) {
         super(parent, name, props);
 
@@ -21,6 +21,6 @@ class SharedInfrastructureStack extends cdk.Stack {
 }
 
 const app = new cdk.App();
-new SharedInfrastructureStack(app, 'TriviaGameSharedInfraTest', 'reinvent-trivia.com', 'test');
-new SharedInfrastructureStack(app, 'TriviaGameSharedInfraProd', 'reinvent-trivia.com', 'www');
+new TriviaGameInfrastructureStack(app, 'TriviaGameInfraTest', 'reinvent-trivia.com', 'test');
+new TriviaGameInfrastructureStack(app, 'TriviaGameInfraProd', 'reinvent-trivia.com', 'www');
 app.run();

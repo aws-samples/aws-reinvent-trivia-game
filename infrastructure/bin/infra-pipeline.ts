@@ -5,17 +5,17 @@ import codepipeline = require('@aws-cdk/aws-codepipeline');
 import cfn = require('@aws-cdk/aws-cloudformation');
 import cdk = require('@aws-cdk/cdk');
 
-class SharedInfrastructurePipelineStack extends cdk.Stack {
+class TriviaGameInfrastructurePipelineStack extends cdk.Stack {
     constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
         super(parent, name, props);
 
         const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
-            pipelineName: 'reinvent-trivia-game-shared-infrastructure',
+            pipelineName: 'reinvent-trivia-game-infrastructure',
         });
 
         // Source
         const repo = new codecommit.Repository(this, 'Repository' ,{
-            repositoryName: 'reinvent-trivia-game-shared-infrastructure'
+            repositoryName: 'reinvent-trivia-game-infrastructure'
         });
         const sourceStage = pipeline.addStage('Source');
         repo.addToPipeline(sourceStage, 'CodeCommit');
@@ -33,7 +33,7 @@ class SharedInfrastructurePipelineStack extends cdk.Stack {
 
         // Test
         const testStage = new codepipeline.Stage(pipeline, 'Test', { pipeline });
-        const testStackName = 'reinvent-trivia-shared-infrastructure-test';
+        const testStackName = 'reinvent-trivia-infrastructure-test';
         const changeSetName = 'StagedChangeSet';
 
         new cfn.PipelineCreateReplaceChangeSetAction(testStage, 'PrepareChangesTest', {
@@ -41,7 +41,7 @@ class SharedInfrastructurePipelineStack extends cdk.Stack {
             stackName: testStackName,
             changeSetName,
             fullPermissions: true,
-            templatePath: buildAction.outputArtifact.atPath('TriviaGameSharedInfraTest.template.yaml'),
+            templatePath: buildAction.outputArtifact.atPath('TriviaGameInfraTest.template.yaml'),
         });
 
         new cfn.PipelineExecuteChangeSetAction(this, 'ExecuteChangesTest', {
@@ -52,14 +52,14 @@ class SharedInfrastructurePipelineStack extends cdk.Stack {
 
         // Prod
         const prodStage = new codepipeline.Stage(pipeline, 'Deploy', { pipeline });
-        const prodStackName = 'reinvent-trivia-shared-infrastructure-prod';
+        const prodStackName = 'reinvent-trivia-infrastructure-prod';
 
         new cfn.PipelineCreateReplaceChangeSetAction(prodStage, 'PrepareChanges', {
             stage: prodStage,
             stackName: prodStackName,
             changeSetName,
             fullPermissions: true,
-            templatePath: buildAction.outputArtifact.atPath('TriviaGameSharedInfraProd.template.yaml'),
+            templatePath: buildAction.outputArtifact.atPath('TriviaGameInfraProd.template.yaml'),
         });
 
         new codepipeline.ManualApprovalAction(this, 'ApproveChangesProd', {
@@ -75,5 +75,5 @@ class SharedInfrastructurePipelineStack extends cdk.Stack {
 }
 
 const app = new cdk.App();
-new SharedInfrastructurePipelineStack(app, 'TriviaGameSharedInfraPipeline');
+new TriviaGameInfrastructurePipelineStack(app, 'TriviaGameInfraPipeline');
 app.run();
