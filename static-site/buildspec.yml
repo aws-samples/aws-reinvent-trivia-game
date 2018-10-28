@@ -1,0 +1,15 @@
+version: 0.2
+
+env:
+  variables:
+    STAGE: "dev"
+    WEBSITE_BUCKET: ""
+
+phases:
+  build:
+    commands:
+      - npm ci
+      - npm run build:$STAGE
+      - cp index.html build/
+      - cd build/
+      - if [ -z "$WEBSITE_BUCKET" ]l then aws s3 sync . s3://$WEBSITE_BUCKET; fi
