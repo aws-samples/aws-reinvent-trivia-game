@@ -4,9 +4,7 @@ phases:
   install:
     commands:
       - npm install -g aws-cdk
-  pre_build:
-    commands:
-      - npm install
+      - npm ci
   build:
     commands:
       - npm run build
