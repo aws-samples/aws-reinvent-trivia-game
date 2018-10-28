@@ -15,7 +15,6 @@ class SharedInfrastructureStack extends cdk.Stack {
 }
 
 const app = new cdk.App();
-
-new SharedInfrastructureStack(app, 'TriviaGameSharedInfra');
-
+new SharedInfrastructureStack(app, 'TriviaGameSharedInfraTest');
+new SharedInfrastructureStack(app, 'TriviaGameSharedInfraProd');
 app.run();

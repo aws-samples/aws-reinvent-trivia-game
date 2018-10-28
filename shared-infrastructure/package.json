@@ -4,12 +4,15 @@
   "main": "bin/index.js",
   "types": "bin/index.d.ts",
   "bin": {
-    "shared-infrastructure": "bin/shared-infrastructure.js"
+    "shared-infrastructure": "bin/shared-infrastructure.js",
+    "shared-infra-pipeline": "bin/shared-infra-pipeline.js"
   },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "cdk": "cdk",
+    "synth": "cdk synth -o build --app 'node bin/shared-infrastructure.js'",
+    "synth-pipeline": "cdk synth -o build --app 'node bin/shared-infra-pipeline.js'",
+    "deploy-pipeline": "cdk deploy --app 'node bin/shared-infra-pipeline.js'",
     "postinstall": "~/code/aws-cdk/link-all.sh"
   },
   "devDependencies": {
@@ -18,6 +21,10 @@
     "aws-cdk": "^0.14.1"
   },
   "dependencies": {
+    "@aws-cdk/aws-codebuild": "^0.14.1",
+    "@aws-cdk/aws-codecommit": "^0.14.1",
+    "@aws-cdk/aws-codepipeline": "^0.14.1",
+    "@aws-cdk/aws-cloudformation": "^0.14.1",
     "@aws-cdk/aws-ec2": "^0.14.1",
     "@aws-cdk/aws-ecs": "^0.14.1",
     "@aws-cdk/cdk": "^0.14.1"
