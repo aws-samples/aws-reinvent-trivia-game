@@ -18,19 +18,19 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
         });
 
         // Source
-        const oauth = new cdk.SecretParameter(this, 'GitHubOAuthToken', { ssmParameter: 'GithubOAuthToken' });
+        const githubAccessToken = new cdk.SecretParameter(this, 'GitHubToken', { ssmParameter: 'GitHubToken' });
         new codepipeline.GitHubSourceAction(this, 'GitHubSource', {
             stage: pipeline.addStage('Source'),
             owner: 'clareliguori',
             repo: 'aws-reinvent-trivia-game',
-            oauthToken: oauth.value
+            oauthToken: githubAccessToken.value
         });
 
         // Build
         const buildProject = new codebuild.Project(this, 'BuildProject', {
             source: new codebuild.GitHubSource({
                 cloneUrl: 'https://github.com/clareliguori/aws-reinvent-trivia-game',
-                oauthToken: oauth.value
+                oauthToken: githubAccessToken.value
             }),
             buildSpec: props.directory + '/buildspec.yml',
             environment: {
@@ -54,6 +54,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
             stage: testStage,
             stackName: testStackName,
             changeSetName,
+            runOrder: 1,
             fullPermissions: true,
             templatePath: buildAction.outputArtifact.atPath(templatePrefix + 'Test.template.yaml'),
         });
@@ -62,6 +63,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
             stage: testStage,
             stackName: testStackName,
             changeSetName,
+            runOrder: 2
         });
 
         // Prod
@@ -72,6 +74,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
             stage: prodStage,
             stackName: prodStackName,
             changeSetName,
+            runOrder: 1,
             fullPermissions: true,
             templatePath: buildAction.outputArtifact.atPath(templatePrefix + 'Prod.template.yaml'),
         });
@@ -80,6 +83,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
             stage: prodStage,
             stackName: prodStackName,
             changeSetName,
+            runOrder: 2
         });
     }
 }
