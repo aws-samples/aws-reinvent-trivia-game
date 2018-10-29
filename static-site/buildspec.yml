@@ -9,6 +9,7 @@ phases:
   build:
     commands:
       - cd static-site/
+      - chmod +x deploy-to-bucket.sh
       - npm install -g npm@6.4.1
       - npm ci
       - npm run build:$STAGE
