@@ -12,7 +12,9 @@
     "watch": "tsc -w",
     "synth-infra": "cdk synth -o build --app 'node bin/infrastructure.js'",
     "synth-infra-pipeline": "cdk synth -o build --app 'node bin/infra-pipeline.js'",
-    "deploy-infra-pipeline": "cdk deploy --app 'node bin/infra-pipeline.js'"
+    "deploy-infra-pipeline": "cdk deploy --app 'node bin/infra-pipeline.js'",
+    "synth-static-site-pipeline": "cdk synth -o build --app 'node bin/static-site-pipeline.js'",
+    "deploy-static-site-pipeline": "cdk deploy --app 'node bin/static-site-pipeline.js'"
   },
   "devDependencies": {
     "@types/node": "^10.9.4",

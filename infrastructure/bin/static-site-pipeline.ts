@@ -49,10 +49,12 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
                 }
             }
         });
-        project.addToRolePolicy(new iam.PolicyStatement()
-            .addActions('s3:GetObject', 's3:ListBucket')
-            .addResource('arn:aws:s3:::' + websiteBucket + '/*'));
-        new codebuild.PipelineBuildAction(this, 'CodeBuild', {
+        if (websiteBucket.length > 0) {
+            project.addToRolePolicy(new iam.PolicyStatement()
+                .addActions('s3:GetObject', 's3:ListBucket')
+                .addResource('arn:aws:s3:::' + websiteBucket + '/*'));
+        }
+        new codebuild.PipelineBuildAction(this, 'CodeBuild' + stageName, {
             stage,
             project,
         });
