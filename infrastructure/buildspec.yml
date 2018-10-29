@@ -3,6 +3,7 @@ version: 0.2
 phases:
   install:
     commands:
+      - cd infrastructure/
       - npm install -g aws-cdk
       - npm ci
   build:

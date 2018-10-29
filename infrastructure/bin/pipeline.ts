@@ -32,6 +32,10 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
                 cloneUrl: 'https://github.com/clareliguori/aws-reinvent-trivia-game',
                 oauthToken: oauth.value
             }),
+            buildSpec: props.directory + '/buildspec.yml',
+            environment: {
+              buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0
+            },
             artifacts: new codebuild.S3BucketBuildArtifacts({
                 bucket: pipeline.artifactBucket,
                 name: 'output.zip'
