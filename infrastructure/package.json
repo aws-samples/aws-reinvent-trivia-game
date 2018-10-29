@@ -22,7 +22,6 @@
     "aws-cdk": "^0.14.1"
   },
   "dependencies": {
-    "@aws-cdk/aws-certificatemanager": "^0.14.1",
     "@aws-cdk/aws-cloudformation": "^0.14.1",
     "@aws-cdk/aws-cloudfront": "^0.14.1",
     "@aws-cdk/aws-codebuild": "^0.14.1",

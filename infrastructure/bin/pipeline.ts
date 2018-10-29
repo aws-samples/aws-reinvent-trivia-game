@@ -42,7 +42,16 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
                 name: 'output.zip'
             })
         });
+
         buildProject.addToRolePolicy(new iam.PolicyStatement().addAllResources().addAction('ec2:DescribeAvailabilityZones'));
+        buildProject.addToRolePolicy(new iam.PolicyStatement()
+            .addAction('ssm:GetParameter')
+            .addResource(cdk.ArnUtils.fromComponents({
+                service: 'ssm',
+                resource: 'parameter',
+                resourceName: 'CertificateArn-*'
+            })));
+
         const buildStage = pipeline.addStage('Build');
         const buildAction = buildProject.addBuildToPipeline(buildStage, 'CodeBuild');
 
