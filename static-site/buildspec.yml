@@ -6,12 +6,16 @@ env:
     WEBSITE_BUCKET: ""
 
 phases:
-  build:
+  install:
     commands:
+      - apt-get update
+      - apt-get install -y jq
+      - npm install -g npm@6.4.1
       - cd static-site/
       - chmod +x deploy-to-bucket.sh
-      - npm install -g npm@6.4.1
       - npm ci
+  build:
+    commands:
       - npm run build:$STAGE
       - cp index.html build/
       - cp -rf assets build/
