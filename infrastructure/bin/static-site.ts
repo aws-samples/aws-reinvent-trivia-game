@@ -10,15 +10,10 @@ export interface StaticSiteProps {
 }
 
 export class StaticSite extends cdk.Construct {
-    public readonly domainName: string;
-    public readonly siteSubDomain: string;
-
     constructor(parent: cdk.Construct, name: string, props: StaticSiteProps) {
         super(parent, name);
 
-        this.domainName = props.domainName;
-        this.siteSubDomain = props.siteSubDomain;
-        const siteDomain = this.siteSubDomain + '.' + this.domainName;
+        const siteDomain = props.siteSubDomain + '.' + props.domainName;
 
         // Content bucket
         const siteBucket = new s3.Bucket(this, 'SiteBucket', {
@@ -51,8 +46,8 @@ export class StaticSite extends cdk.Construct {
         });
 
         new route53.cloudformation.RecordSetResource(this, 'SiteAliasRecord', {
-            hostedZoneName: this.domainName + '.',
-            name: this.siteSubDomain,
+            hostedZoneName: props.domainName + '.',
+            name: siteDomain,
             type: 'A',
             aliasTarget: {
                 dnsName: distribution.domainName,
