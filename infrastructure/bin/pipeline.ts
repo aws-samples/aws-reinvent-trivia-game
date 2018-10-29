@@ -2,6 +2,7 @@
 import codebuild = require('@aws-cdk/aws-codebuild');
 import codepipeline = require('@aws-cdk/aws-codepipeline');
 import cfn = require('@aws-cdk/aws-cloudformation');
+import iam = require('@aws-cdk/aws-iam');
 import cdk = require('@aws-cdk/cdk');
 
 export interface TriviaGameCfnPipelineProps {
@@ -41,6 +42,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
                 name: 'output.zip'
             })
         });
+        buildProject.addToRolePolicy(new iam.PolicyStatement().addAllResources().addAction('ec2:DescribeAvailabilityZones'));
         const buildStage = pipeline.addStage('Build');
         const buildAction = buildProject.addBuildToPipeline(buildStage, 'CodeBuild');
 
