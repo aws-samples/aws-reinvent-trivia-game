@@ -47,12 +47,12 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
         const buildAction = buildProject.addBuildToPipeline(buildStage, 'CodeBuild');
 
         // Test
-        const testStage = new codepipeline.Stage(pipeline, 'Test', { pipeline });
+        const testStage = pipeline.addStage('Test');
         const templatePrefix =  'TriviaGame' + props.stackName.charAt(0).toUpperCase() + props.stackName.slice(1);
         const testStackName = 'reinvent-trivia-' + props.stackName + '-test';
         const changeSetName = 'StagedChangeSet';
 
-        new cfn.PipelineCreateReplaceChangeSetAction(testStage, 'PrepareChangesTest', {
+        new cfn.PipelineCreateReplaceChangeSetAction(this, 'PrepareChangesTest', {
             stage: testStage,
             stackName: testStackName,
             changeSetName,
@@ -69,10 +69,10 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
         });
 
         // Prod
-        const prodStage = new codepipeline.Stage(pipeline, 'Deploy', { pipeline });
+        const prodStage = pipeline.addStage('Prod');
         const prodStackName = 'reinvent-trivia-' + props.stackName + '-prod';
 
-        new cfn.PipelineCreateReplaceChangeSetAction(prodStage, 'PrepareChanges', {
+        new cfn.PipelineCreateReplaceChangeSetAction(this, 'PrepareChanges', {
             stage: prodStage,
             stackName: prodStackName,
             changeSetName,
