@@ -14,4 +14,4 @@ phases:
       - npm run build:$STAGE
       - cp index.html build/
       - cd build/
-      - if [ -z "$WEBSITE_BUCKET" ]l then aws s3 sync . s3://$WEBSITE_BUCKET; fi
+      - if [ -z "$WEBSITE_BUCKET" ]; then aws s3 sync . s3://$WEBSITE_BUCKET; fi

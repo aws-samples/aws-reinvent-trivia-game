@@ -54,7 +54,7 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
                 .addActions('s3:GetObject', 's3:ListBucket')
                 .addResource('arn:aws:s3:::' + websiteBucket + '/*'));
         }
-        new codebuild.PipelineBuildAction(this, 'CodeBuild' + stageName, {
+        new codebuild.PipelineBuildAction(this, 'Webpack' + stageName, {
             stage,
             project,
         });
