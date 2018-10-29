@@ -15,4 +15,4 @@ phases:
       - cp index.html build/
       - cp -rf assets build/
       - cd build/
-      - ./deploy-to-bucket.sh
+      - ../deploy-to-bucket.sh
