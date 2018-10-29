@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import codebuild = require('@aws-cdk/aws-codebuild');
 import codepipeline = require('@aws-cdk/aws-codepipeline');
+import codepipelineApi = require('@aws-cdk/aws-codepipeline-api');
 import iam = require('@aws-cdk/aws-iam');
 import cdk = require('@aws-cdk/cdk');
 
@@ -14,7 +15,7 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
 
         // Source
         const githubAccessToken = new cdk.SecretParameter(this, 'GitHubToken', { ssmParameter: 'GitHubToken' });
-        new codepipeline.GitHubSourceAction(this, 'GitHubSource', {
+        const source = new codepipeline.GitHubSourceAction(this, 'GitHubSource', {
             stage: pipeline.addStage('Source'),
             owner: 'clareliguori',
             repo: 'aws-reinvent-trivia-game',
@@ -23,18 +24,18 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
 
         // Build
         const buildStage = pipeline.addStage('Build');
-        this.addBuildAction(buildStage, 'Build', 'dev', '');
+        this.addBuildAction(buildStage, 'Build', 'dev', '', source.outputArtifact);
 
         // Test
         const testStage = pipeline.addStage('Test');
-        this.addBuildAction(testStage, 'Test', 'test', 'test.reinvent-trivia.com');
+        this.addBuildAction(testStage, 'Test', 'test', 'test.reinvent-trivia.com', source.outputArtifact);
 
         // Prod
         const prodStage = pipeline.addStage('Prod');
-        this.addBuildAction(prodStage, 'Prod', 'prod', 'www.reinvent-trivia.com');
+        this.addBuildAction(prodStage, 'Prod', 'prod', 'www.reinvent-trivia.com', source.outputArtifact);
     }
 
-    private addBuildAction(stage: codepipeline.Stage, stageName: string, buildTarget: string, websiteBucket: string) {
+    private addBuildAction(stage: codepipeline.Stage, stageName: string, buildTarget: string, websiteBucket: string, input: codepipelineApi.Artifact) {
         const project = new codebuild.PipelineProject(this, stageName + 'Project', {
             buildSpec: 'static-site/buildspec.yml',
             environment: {
@@ -57,6 +58,7 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
         new codebuild.PipelineBuildAction(this, 'Webpack' + stageName, {
             stage,
             project,
+            inputArtifact: input
         });
     }
 }
