@@ -8,6 +8,8 @@ env:
 phases:
   build:
     commands:
+      - cd static-site/
+      - npm install -g npm@6.4.1
       - npm ci
       - npm run build:$STAGE
       - cp index.html build/
