@@ -51,7 +51,7 @@ export class StaticSite extends cdk.Construct {
         });
 
         new route53.cloudformation.RecordSetResource(this, 'SiteAliasRecord', {
-            hostedZoneName: this.domainName,
+            hostedZoneName: this.domainName + '.',
             name: this.siteSubDomain,
             type: 'A',
             aliasTarget: {
