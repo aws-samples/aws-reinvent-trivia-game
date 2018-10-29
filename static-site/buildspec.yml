@@ -15,4 +15,4 @@ phases:
       - cp index.html build/
       - cp -rf assets build/
       - cd build/
-      - if [ ! -z "$WEBSITE_BUCKET" ]; then aws s3 sync . s3://$WEBSITE_BUCKET; fi
+      - ./deploy-to-bucket.sh

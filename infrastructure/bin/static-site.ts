@@ -33,7 +33,7 @@ export class StaticSite extends cdk.Construct {
                 acmCertRef: certificateArn,
                 names: [ siteDomain ],
                 sslMethod: cloudfront.SSLMethod.SNI,
-                securityPolicy: cloudfront.SecurityPolicyProtocol.TLSv1
+                securityPolicy: cloudfront.SecurityPolicyProtocol.TLSv1_1_2016
             },
             originConfigs: [
                 {
