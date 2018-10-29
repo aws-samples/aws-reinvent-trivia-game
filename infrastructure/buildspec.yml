@@ -4,6 +4,7 @@ phases:
   install:
     commands:
       - cd infrastructure/
+      - npm install -g npm@6.4.1
       - npm install -g aws-cdk
       - npm ci
   build:
