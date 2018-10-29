@@ -10,8 +10,9 @@ class TriviaGameInfrastructureStack extends cdk.Stack {
 
         const vpc = new ec2.VpcNetwork(this, 'TriviaGameVPC', { maxAZs: 2 });
 
-        const cluster = new ecs.FargateCluster(this, 'TriviaGameCluster', { vpc });
-        cluster.export();
+        // Commenting out until this construct is merged into cdk release
+        //const cluster = new ecs.FargateCluster(this, 'TriviaGameCluster', { vpc });
+        //cluster.export();
 
         new StaticSite(this, 'StaticSite', {
             domainName,

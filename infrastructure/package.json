@@ -12,8 +12,7 @@
     "watch": "tsc -w",
     "synth-infra": "cdk synth -o build --app 'node bin/infrastructure.js'",
     "synth-infra-pipeline": "cdk synth -o build --app 'node bin/infra-pipeline.js'",
-    "deploy-infra-pipeline": "cdk deploy --app 'node bin/infra-pipeline.js'",
-    "postinstall": "~/code/aws-cdk/link-all.sh"
+    "deploy-infra-pipeline": "cdk deploy --app 'node bin/infra-pipeline.js'"
   },
   "devDependencies": {
     "@types/node": "^10.9.4",
@@ -25,6 +24,9 @@
     "@aws-cdk/aws-codecommit": "^0.14.1",
     "@aws-cdk/aws-codepipeline": "^0.14.1",
     "@aws-cdk/aws-cloudformation": "^0.14.1",
+    "@aws-cdk/aws-certificatemanager": "^0.14.1",
+    "@aws-cdk/aws-cloudfront": "^0.14.1",
+    "@aws-cdk/aws-route53": "^0.14.1",
     "@aws-cdk/aws-ec2": "^0.14.1",
     "@aws-cdk/aws-ecs": "^0.14.1",
     "@aws-cdk/cdk": "^0.14.1"
