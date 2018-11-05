@@ -8,8 +8,9 @@ phases:
   pre_build:
     commands:
       - cd trivia-backend/
-      - export IMAGE_TAG=$CODEBUILD_BUILD_ID
-      - export ECR_REPO=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+      - IMAGE_TAG=`echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}'`
+      - AWS_ACCOUNT_ID=`echo $CODEBUILD_BUILD_ARN | awk -F":" '{print $5}'`
+      - ECR_REPO=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
       - $(aws ecr get-login --no-include-email)
   build:
     commands:
