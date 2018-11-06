@@ -3,24 +3,39 @@
     "category": "Know Your History",
     "questions": [
       {
+        "id": 1,
         "points": 100,
         "question": "When was the first AWS re:Invent?",
-        "answer": "2012"
+        "answer": "2012",
+        "answerType": "NUMBER"
       },
       {
+        "id": 2,
         "points": 200,
         "question": "What Amazon-favorite sport was introduced in re:Invent attendees in 2016?",
-        "answer": "Broomball"
+        "answer": "Broomball",
+        "answerType": "STRING"
       },
       {
+        "id": 3,
         "points": 300,
         "question": "What world record was set at the 2017 re:Invent Tatonka Challenge?",
-        "answer": "Largest chicken wing eating contest: 214 people"
+        "answer": "Largest chicken wing eating contest: 214 people",
+        "answerType": "STRING",
+        "alternativeAnswers": [
+          "wing eating contest",
+          "largest wing eating contest",
+          "biggest wing eating contest",
+          "largest chicken wing eating contest",
+          "biggest chicken wing eating contest"
+        ]
       },
       {
+        "id": 4,
         "points": 400,
         "question": "Which year were both the ECS (Elastic Container Service) and Lambda announced at re:Invent?",
-        "answer": "2014"
+        "answer": "2014",
+        "answerType": "NUMBER"
       }
     ]
   },
@@ -28,24 +43,35 @@
     "category": "The Main Event",
     "questions": [
       {
+        "id": 5,
         "points": 100,
         "question": "What webinar helps people learn about re:Invent leading up to the big event?",
-        "answer": "How to re:Invent"
+        "answer": "How to re:Invent",
+        "answerType": "STRING",
+        "alternativeAnswers": [
+          "how to reinvent"
+        ]
       },
       {
+        "id": 6,
         "points": 200,
         "question": "How many casinos does the re:Invent campus span this year (2018)?",
-        "answer": "7"
+        "answer": "7",
+        "answerType": "NUMBER"
       },
       {
+        "id": 7,
         "points": 300,
         "question": "What year did twitch.tv/aws start streaming at re:Invent?",
-        "answer": "2016"
+        "answer": "2016",
+        "answerType": "NUMBER"
       },
       {
+        "id": 8,
         "points": 400,
         "question": "How many chalk talks are scheduled for re:Invent 2018?",
-        "answer": "592"
+        "answer": "592",
+        "answerType": "NUMBER"
       }
     ]
   },
@@ -53,24 +79,52 @@
     "category": "Let's Get Musical",
     "questions": [
       {
+        "id": 9,
         "points": 100,
         "question": "What genre of music is historically chosen for the re:play party?",
-        "answer": "EDM"
+        "answer": "EDM",
+        "answerType": "STRING",
+        "alternativeAnswers": [
+          "electronica",
+          "DJ",
+          "electronic dance music",
+          "electronic music",
+          "house music",
+          "house"
+        ]
       },
       {
+        "id": 10,
         "points": 200,
         "question": "Who usually announces the DJ for re:play?",
-        "answer": "Werner Vogels"
+        "answer": "Werner Vogels",
+        "answerType": "STRING",
+        "alternativeAnswers": []
       },
       {
+        "id": 11,
         "points": 300,
         "question": "What venue hosts the re:play party?",
-        "answer": "The Linq"
+        "answer": "The Linq",
+        "answerType": "STRING",
+        "alternativeAnswers": [
+          "the link",
+          "linq",
+          "link"
+        ]
       },
       {
+        "id": 12,
         "points": 400,
         "question": "Who was the re:play DJ at the 2013 re:Invent?",
-        "answer": "DeadMau5"
+        "answer": "DeadMau5",
+        "answerType": "STRING",
+        "alternativeAnswers": [
+          "deadmau5",
+          "Joel Thomas Zimmerman",
+          "Joel Zimmerman",
+          "dead mouse"
+        ]
       }
     ]
   },
@@ -78,24 +132,49 @@
     "category": "People, Places, and Things",
     "questions": [
       {
+        "id": 13,
         "points": 100,
         "question": "What sports star made a surprise experience at Midnight Madness in 2017?",
-        "answer": "Shaq"
+        "answer": "Shaq",
+        "answerType": "STRING",
+        "alternativeAnswers": [
+          "Shaquille O'Neal",
+          "DJ Shaquille O'Neal",
+          "DJ Diesel",
+          "Diesel",
+          "DJ Shaq"
+        ]
       },
       {
+        "id": 14,
         "points": 200,
         "question": "Which AWS Engineer both appeared in the 2018 keynote, and also wrote this demo?",
-        "answer": "Clare Liguori (hi!)"
+        "answer": "Clare Liguori (hi!)",
+        "answerType": "STRING",
+        "alternativeAnswers": [
+          "Clare Liguori",
+          "Clare",
+          "clareliguori",
+          "@clare_liguori"
+        ]
       },
       {
+        "id": 15,
         "points": 300,
         "question": "What restaurant is located in both the Venetian and the Palazzo?",
-        "answer": "Grand Lux Cafe"
+        "answer": "Grand Lux Cafe",
+        "answerType": "STRING",
+        "alternativeAnswers": [
+        ]
       },
       {
+        "id": 16,
         "points": 400,
         "question": "What AWS speaker keynoted \"Tuesday Night Live\" in 2016?",
-        "answer": "James Hamilton"
+        "answer": "James Hamilton",
+        "answerType": "STRING",
+        "alternativeAnswers": [
+        ]
       }
     ]
   }
