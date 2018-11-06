@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Chat bot for reInvent trivia game
+
+Resources:
+  BotFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: bot.lambdaHandler
+      Runtime: nodejs8.10
+      Timeout: 60
+      Environment:
+        Variables:
+          API_ENDPOINT: 'http://localhost:8080'
