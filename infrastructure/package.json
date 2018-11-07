@@ -19,18 +19,18 @@
   "devDependencies": {
     "@types/node": "^10.9.4",
     "typescript": "^3.1.2",
-    "aws-cdk": "^0.14.1"
+    "aws-cdk": "^0.15.1"
   },
   "dependencies": {
-    "@aws-cdk/aws-cloudformation": "^0.14.1",
-    "@aws-cdk/aws-cloudfront": "^0.14.1",
-    "@aws-cdk/aws-codebuild": "^0.14.1",
-    "@aws-cdk/aws-codecommit": "^0.14.1",
-    "@aws-cdk/aws-codepipeline": "^0.14.1",
-    "@aws-cdk/aws-ec2": "^0.14.1",
-    "@aws-cdk/aws-ecs": "^0.14.1",
-    "@aws-cdk/aws-iam": "^0.14.1",
-    "@aws-cdk/aws-route53": "^0.14.1",
-    "@aws-cdk/cdk": "^0.14.1"
+    "@aws-cdk/aws-cloudformation": "^0.15.1",
+    "@aws-cdk/aws-cloudfront": "^0.15.1",
+    "@aws-cdk/aws-codebuild": "^0.15.1",
+    "@aws-cdk/aws-codecommit": "^0.15.1",
+    "@aws-cdk/aws-codepipeline": "^0.15.1",
+    "@aws-cdk/aws-ec2": "^0.15.1",
+    "@aws-cdk/aws-ecs": "^0.15.1",
+    "@aws-cdk/aws-iam": "^0.15.1",
+    "@aws-cdk/aws-route53": "^0.15.1",
+    "@aws-cdk/cdk": "^0.15.1"
   }
 }
