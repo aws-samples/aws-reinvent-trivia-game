@@ -14,7 +14,9 @@
         "points": 200,
         "question": "What Amazon-favorite sport was introduced in re:Invent attendees in 2016?",
         "answer": "Broomball",
-        "answerType": "STRING"
+        "answerType": "STRING",
+        "alternativeAnswers": [
+        ]
       },
       {
         "id": 3,
@@ -99,7 +101,9 @@
         "question": "Who usually announces the DJ for re:play?",
         "answer": "Werner Vogels",
         "answerType": "STRING",
-        "alternativeAnswers": []
+        "alternativeAnswers": [
+          "Werner"
+        ]
       },
       {
         "id": 11,
