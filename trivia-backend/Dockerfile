@@ -9,9 +9,10 @@ ENV NODE_ENV $NODE_ENV
 ENV PORT=$PORT
 
 WORKDIR /opt/app
-COPY package.json package-lock.json ./
+COPY app/package.json app/package-lock.json ./
 RUN npm ci && npm prune --production && npm cache clean --force
-COPY . /opt/app
+COPY ./app /opt/app
+COPY ./data /opt/data
 
 HEALTHCHECK --interval=30s CMD node healthcheck.js
 
