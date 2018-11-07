@@ -3,7 +3,7 @@ FROM node:10.12.0-alpine
 RUN npm install -g npm@6.4.1
 
 ARG NODE_ENV=production
-ARG PORT=8080
+ARG PORT=80
 
 ENV NODE_ENV $NODE_ENV
 ENV PORT=$PORT
