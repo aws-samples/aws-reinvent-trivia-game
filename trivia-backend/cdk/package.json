@@ -1,0 +1,21 @@
+{
+    "name": "ecs-service-model",
+    "version": "0.1.0",
+    "main": "ecs-service.js",
+    "types": "ecs-service.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "watch": "tsc -w",
+        "cdk": "cdk"
+    },
+    "devDependencies": {
+        "@types/node": "^8.9.4",
+        "typescript": "^3.1.2",
+        "aws-cdk": "^0.15.1"
+    },
+    "dependencies": {
+        "@aws-cdk/aws-ec2": "^0.15.1",
+        "@aws-cdk/aws-ecs": "^0.15.1",
+        "@aws-cdk/cdk": "^0.15.1"
+    }
+}
