@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "schemaVersion": "1.0",
+    "importType": "LEX",
+    "importFormat": "JSON"
+  },
+  "resource": {
+    "name": "TriviaGame",
+    "version": "1",
+    "intents": [
+      {
+        "name": "LetsPlay",
+        "version": "1",
+        "fulfillmentActivity": {
+          "type": "CodeHook",
+          "codeHook": {
+            "uri": "arn:aws:lambda:us-west-2:131296546870:function:aws-serverless-repository-hello-HelloWorldFunction-FA2UEWIHH8MJ",
+            "messageVersion": "1.0"
+          }
+        },
+        "sampleUtterances": [
+          "Let's play",
+          "Start the game",
+          "Ask me another question",
+          "I want to play the trivia game"
+        ],
+        "slots": [
+        ]
+      }
+    ],
+    "slotTypes": [
+    ],
+    "voiceId": "0",
+    "childDirected": false,
+    "locale": "en-US",
+    "idleSessionTTLInSeconds": 300,
+    "clarificationPrompt": {
+      "messages": [
+        {
+          "contentType": "PlainText",
+          "content": "Sorry, can you please repeat that?"
+        }
+      ],
+      "maxAttempts": 5
+    },
+    "abortStatement": {
+      "messages": [
+        {
+          "contentType": "PlainText",
+          "content": "Sorry, I could not understand. Goodbye."
+        }
+      ]
+    }
+  }
+}

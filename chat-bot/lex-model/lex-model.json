@@ -1,0 +1,480 @@
+{
+  "metadata": {
+    "schemaVersion": "1.0",
+    "importType": "LEX",
+    "importFormat": "JSON"
+  },
+  "resource": {
+    "name": "TriviaGame",
+    "version": "1",
+    "intents": [
+      {
+        "name": "LetsPlay",
+        "version": "1",
+        "fulfillmentActivity": {
+          "type": "CodeHook",
+          "codeHook": {
+            "uri": "arn:aws:lambda:us-west-2:131296546870:function:aws-serverless-repository-hello-HelloWorldFunction-FA2UEWIHH8MJ",
+            "messageVersion": "1.0"
+          }
+        },
+        "sampleUtterances": [
+          "Let's play",
+          "Start the game",
+          "Ask me another question",
+          "I want to play the trivia game"
+        ],
+        "slots": [
+          {
+            "name": "one",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "When was the first AWS re:Invent?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 1,
+            "sampleUtterances": [],
+            "slotType": "AMAZON.NUMBER"
+          },
+          {
+            "name": "two",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What Amazon-favorite sport was introduced in re:Invent attendees in 2016?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 2,
+            "sampleUtterances": [],
+            "slotType": "Typetwo",
+            "slotTypeVersion": "1"
+          },
+          {
+            "name": "three",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What world record was set at the 2017 re:Invent Tatonka Challenge?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 3,
+            "sampleUtterances": [],
+            "slotType": "Typethree",
+            "slotTypeVersion": "1"
+          },
+          {
+            "name": "four",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "Which year were both the ECS (Elastic Container Service) and Lambda announced at re:Invent?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 4,
+            "sampleUtterances": [],
+            "slotType": "AMAZON.NUMBER"
+          },
+          {
+            "name": "five",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What webinar helps people learn about re:Invent leading up to the big event?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 5,
+            "sampleUtterances": [],
+            "slotType": "Typefive",
+            "slotTypeVersion": "1"
+          },
+          {
+            "name": "six",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "How many casinos does the re:Invent campus span this year (2018)?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 6,
+            "sampleUtterances": [],
+            "slotType": "AMAZON.NUMBER"
+          },
+          {
+            "name": "seven",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What year did twitch.tv/aws start streaming at re:Invent?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 7,
+            "sampleUtterances": [],
+            "slotType": "AMAZON.NUMBER"
+          },
+          {
+            "name": "eight",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "How many chalk talks are scheduled for re:Invent 2018?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 8,
+            "sampleUtterances": [],
+            "slotType": "AMAZON.NUMBER"
+          },
+          {
+            "name": "nine",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What genre of music is historically chosen for the re:play party?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 9,
+            "sampleUtterances": [],
+            "slotType": "Typenine",
+            "slotTypeVersion": "1"
+          },
+          {
+            "name": "ten",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "Who usually announces the DJ for re:play?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 10,
+            "sampleUtterances": [],
+            "slotType": "Typeten",
+            "slotTypeVersion": "1"
+          },
+          {
+            "name": "eleven",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What venue hosts the re:play party?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 11,
+            "sampleUtterances": [],
+            "slotType": "Typeeleven",
+            "slotTypeVersion": "1"
+          },
+          {
+            "name": "twelve",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "Who was the re:play DJ at the 2013 re:Invent?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 12,
+            "sampleUtterances": [],
+            "slotType": "Typetwelve",
+            "slotTypeVersion": "1"
+          },
+          {
+            "name": "thirteen",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What sports star made a surprise experience at Midnight Madness in 2017?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 13,
+            "sampleUtterances": [],
+            "slotType": "Typethirteen",
+            "slotTypeVersion": "1"
+          },
+          {
+            "name": "fourteen",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "Which AWS Engineer both appeared in the 2018 keynote, and also wrote this demo?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 14,
+            "sampleUtterances": [],
+            "slotType": "Typefourteen",
+            "slotTypeVersion": "1"
+          },
+          {
+            "name": "fifteen",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What restaurant is located in both the Venetian and the Palazzo?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 15,
+            "sampleUtterances": [],
+            "slotType": "Typefifteen",
+            "slotTypeVersion": "1"
+          },
+          {
+            "name": "sixteen",
+            "slotConstraint": "Optional",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What AWS speaker keynoted \"Tuesday Night Live\" in 2016?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 16,
+            "sampleUtterances": [],
+            "slotType": "Typesixteen",
+            "slotTypeVersion": "1"
+          }
+        ]
+      }
+    ],
+    "slotTypes": [
+      {
+        "name": "Typetwo",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "Broomball",
+            "synonyms": []
+          }
+        ],
+        "valueSelectionStrategy": "TOP_RESOLUTION"
+      },
+      {
+        "name": "Typethree",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "Largest chicken wing eating contest: 214 people",
+            "synonyms": [
+              "wing eating contest",
+              "largest wing eating contest",
+              "biggest wing eating contest",
+              "largest chicken wing eating contest",
+              "biggest chicken wing eating contest"
+            ]
+          }
+        ],
+        "valueSelectionStrategy": "TOP_RESOLUTION"
+      },
+      {
+        "name": "Typefive",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "How to re:Invent",
+            "synonyms": [
+              "how to reinvent"
+            ]
+          }
+        ],
+        "valueSelectionStrategy": "TOP_RESOLUTION"
+      },
+      {
+        "name": "Typenine",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "EDM",
+            "synonyms": [
+              "electronica",
+              "DJ",
+              "electronic dance music",
+              "electronic music",
+              "house music",
+              "house"
+            ]
+          }
+        ],
+        "valueSelectionStrategy": "TOP_RESOLUTION"
+      },
+      {
+        "name": "Typeten",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "Werner Vogels",
+            "synonyms": [
+              "Werner"
+            ]
+          }
+        ],
+        "valueSelectionStrategy": "TOP_RESOLUTION"
+      },
+      {
+        "name": "Typeeleven",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "The Linq",
+            "synonyms": [
+              "the link",
+              "linq",
+              "link"
+            ]
+          }
+        ],
+        "valueSelectionStrategy": "TOP_RESOLUTION"
+      },
+      {
+        "name": "Typetwelve",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "DeadMau5",
+            "synonyms": [
+              "deadmau5",
+              "Joel Thomas Zimmerman",
+              "Joel Zimmerman",
+              "dead mouse"
+            ]
+          }
+        ],
+        "valueSelectionStrategy": "TOP_RESOLUTION"
+      },
+      {
+        "name": "Typethirteen",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "Shaq",
+            "synonyms": [
+              "Shaquille O'Neal",
+              "DJ Shaquille O'Neal",
+              "DJ Diesel",
+              "Diesel",
+              "DJ Shaq"
+            ]
+          }
+        ],
+        "valueSelectionStrategy": "TOP_RESOLUTION"
+      },
+      {
+        "name": "Typefourteen",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "Clare Liguori (hi!)",
+            "synonyms": [
+              "Clare Liguori",
+              "Clare",
+              "clareliguori",
+              "@clare_liguori"
+            ]
+          }
+        ],
+        "valueSelectionStrategy": "TOP_RESOLUTION"
+      },
+      {
+        "name": "Typefifteen",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "Grand Lux Cafe",
+            "synonyms": []
+          }
+        ],
+        "valueSelectionStrategy": "TOP_RESOLUTION"
+      },
+      {
+        "name": "Typesixteen",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "James Hamilton",
+            "synonyms": []
+          }
+        ],
+        "valueSelectionStrategy": "TOP_RESOLUTION"
+      }
+    ],
+    "voiceId": "0",
+    "childDirected": false,
+    "locale": "en-US",
+    "idleSessionTTLInSeconds": 300,
+    "clarificationPrompt": {
+      "messages": [
+        {
+          "contentType": "PlainText",
+          "content": "Sorry, can you please repeat that?"
+        }
+      ],
+      "maxAttempts": 5
+    },
+    "abortStatement": {
+      "messages": [
+        {
+          "contentType": "PlainText",
+          "content": "Sorry, I could not understand. Goodbye."
+        }
+      ]
+    }
+  }
+}
