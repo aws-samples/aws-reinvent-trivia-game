@@ -1,0 +1,23 @@
+{
+  "name": "trivia-game-static-site-infrastructure",
+  "version": "0.1.0",
+  "main": "bin/index.js",
+  "types": "bin/index.d.ts",
+  "scripts": {
+    "postinstall": "/home/local/ANT/liguori/code/aws-cdk/link-all.sh",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "synth-infra": "cdk synth -o build --app 'node bin/infrastructure.js'"
+  },
+  "devDependencies": {
+    "@types/node": "^10.9.4",
+    "typescript": "^3.1.2",
+    "aws-cdk": "^0.15.2"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-cloudfront": "^0.15.2",
+    "@aws-cdk/aws-route53": "^0.15.2",
+    "@aws-cdk/aws-s3": "^0.15.2",
+    "@aws-cdk/cdk": "^0.15.2"
+  }
+}

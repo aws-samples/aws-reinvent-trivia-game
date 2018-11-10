@@ -11,7 +11,7 @@ phases:
       - apt-get update
       - apt-get install -y jq
       - npm install -g npm@6.4.1
-      - cd static-site/
+      - cd static-site/app
       - chmod +x deploy-to-bucket.sh
       - npm ci
   build:

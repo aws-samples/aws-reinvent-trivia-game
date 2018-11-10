@@ -22,7 +22,6 @@ export class StaticSite extends cdk.Construct {
             websiteErrorDocument: 'error.html',
             publicReadAccess: true
         });
-        siteBucket.export();
 
         const certificateArn = new cdk.SSMParameterProvider(this, {
             parameterName: 'CertificateArn-' + siteDomain
@@ -45,14 +44,10 @@ export class StaticSite extends cdk.Construct {
             ]
         });
 
-        new route53.cloudformation.RecordSetResource(this, 'SiteAliasRecord', {
-            hostedZoneName: props.domainName + '.',
-            name: siteDomain,
-            type: 'A',
-            aliasTarget: {
-                dnsName: distribution.domainName,
-                hostedZoneId: distribution.aliasHostedZoneId
-            }
+        const zone = route53.HostedZoneNameRef.fromName(this, 'Zone', props.domainName);
+        new route53.AliasRecord(zone, 'SiteAliasRecord', {
+            recordName: siteDomain,
+            target: distribution
         });
     }
 }
