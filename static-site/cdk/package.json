@@ -7,7 +7,8 @@
     "postinstall": "/home/local/ANT/liguori/code/aws-cdk/link-all.sh",
     "build": "tsc",
     "watch": "tsc -w",
-    "synth-infra": "cdk synth -o build --app 'node infrastructure.js'"
+    "synth-infra": "cdk synth -o build --app 'node infrastructure.js'",
+    "deploy-infra": "cdk deploy --app 'node infrastructure.js'"
   },
   "devDependencies": {
     "@types/node": "^10.9.4",
