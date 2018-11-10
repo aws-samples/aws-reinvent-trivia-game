@@ -5,7 +5,7 @@
       {
         "id": 1,
         "points": 100,
-        "question": "When was the first AWS re:Invent?",
+        "question": "What year was the first AWS re:Invent held?",
         "answer": "2012",
         "answerType": "NUMBER"
       },
@@ -29,7 +29,12 @@
           "largest wing eating contest",
           "biggest wing eating contest",
           "largest chicken wing eating contest",
-          "biggest chicken wing eating contest"
+          "biggest chicken wing eating contest",
+          "wing eating competition",
+          "largest wing eating competition",
+          "biggest wing eating competition",
+          "largest chicken wing eating competition",
+          "biggest chicken wing eating competition"
         ]
       },
       {
@@ -127,7 +132,9 @@
           "deadmau5",
           "Joel Thomas Zimmerman",
           "Joel Zimmerman",
-          "dead mouse"
+          "dead mouse",
+          "deadmouse",
+          "deadmous"
         ]
       }
     ]
@@ -159,7 +166,11 @@
           "Clare Liguori",
           "Clare",
           "clareliguori",
-          "@clare_liguori"
+          "clare_liguori",
+          "Claire Liguori",
+          "Claire",
+          "claireliguori",
+          "claire_liguori"
         ]
       },
       {
