@@ -37,7 +37,7 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
 
     private addBuildAction(stage: codepipeline.Stage, stageName: string, buildTarget: string, websiteBucket: string, input: codepipelineApi.Artifact) {
         const project = new codebuild.PipelineProject(this, stageName + 'Project', {
-            buildSpec: 'static-site/buildspec.yml',
+            buildSpec: 'static-site/app/buildspec.yml',
             environment: {
                 buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0,
                 environmentVariables: {
