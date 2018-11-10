@@ -6,16 +6,21 @@
     "scripts": {
         "build": "tsc",
         "watch": "tsc -w",
-        "cdk": "cdk"
+        "cdk": "cdk",
+        "postinstall": "/home/local/ANT/liguori/code/aws-cdk/link-all.sh",
+        "synth-service": "cdk synth -o build --app 'node ecs-service.js'",
+        "deploy-service": "cdk deploy --app 'node ecs-service.js'"
     },
     "devDependencies": {
         "@types/node": "^8.9.4",
         "typescript": "^3.1.2",
-        "aws-cdk": "^0.15.1"
+        "aws-cdk": "^0.15.2"
     },
     "dependencies": {
-        "@aws-cdk/aws-ec2": "^0.15.1",
-        "@aws-cdk/aws-ecs": "^0.15.1",
-        "@aws-cdk/cdk": "^0.15.1"
+        "@aws-cdk/aws-certificatemanager": "^0.15.2",
+        "@aws-cdk/aws-ec2": "^0.15.2",
+        "@aws-cdk/aws-ecs": "^0.15.2",
+        "@aws-cdk/aws-route53": "^0.15.2",
+        "@aws-cdk/cdk": "^0.15.2"
     }
 }
