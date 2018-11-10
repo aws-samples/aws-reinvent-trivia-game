@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { CertificateRef } from '@aws-cdk/aws-certificatemanager';
 import { VpcNetwork } from '@aws-cdk/aws-ec2';
+import { RepositoryRef } from '@aws-cdk/aws-ecr';
 import { Cluster, ContainerImage, LoadBalancedFargateService} from '@aws-cdk/aws-ecs';
 import { HostedZoneNameRef } from '@aws-cdk/aws-route53';
 import cdk = require('@aws-cdk/cdk');
@@ -18,10 +19,18 @@ class TriviaBackendStack extends cdk.Stack {
     const cluster = new Cluster(this, 'Cluster', { vpc });
 
     const cert = new cdk.SSMParameterProvider(this, { parameterName: 'CertificateArn-' + props.domainName });
+    const imageRepo = RepositoryRef.import(this, 'Repo', {
+      repositoryArn: cdk.ArnUtils.fromComponents({
+        service: 'ecr',
+        resource: 'repository',
+        resourceName: 'reinvent-trivia-backend'
+      })
+    });
+    const tag = (process.env.IMAGE_TAG) ? process.env.IMAGE_TAG : 'latest';
 
     new LoadBalancedFargateService(this, 'Service', {
       cluster: cluster,
-      image: ContainerImage.fromAsset(this, 'Image', { directory: '../' }),
+      image: ContainerImage.fromEcrRepository(imageRepo, tag),
       desiredCount: 3,
       domainName: props.domainName,
       domainZone: HostedZoneNameRef.fromName(this, 'Domain', props.domainZone),

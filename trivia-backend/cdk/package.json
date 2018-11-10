@@ -19,6 +19,7 @@
     "dependencies": {
         "@aws-cdk/aws-certificatemanager": "^0.15.2",
         "@aws-cdk/aws-ec2": "^0.15.2",
+        "@aws-cdk/aws-ecr": "^0.15.2",
         "@aws-cdk/aws-ecs": "^0.15.2",
         "@aws-cdk/aws-route53": "^0.15.2",
         "@aws-cdk/cdk": "^0.15.2"

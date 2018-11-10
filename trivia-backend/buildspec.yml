@@ -2,18 +2,36 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_REPO_NAME: hello-world
+    IMAGE_REPO_NAME: reinvent-trivia-backend
 
 phases:
+  install:
+    commands:
+      # Install CDK
+      - cd ~/trivia-backend/cdk
+      - npm install -g npm@6.4.1
+      - npm install -g aws-cdk
+      - npm ci
   pre_build:
     commands:
-      - cd trivia-backend/
-      - IMAGE_TAG=`echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}'`
+      # Set up environment variables
+      - cd ~/trivia-backend
+      - export IMAGE_TAG=build-`echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}'`
       - AWS_ACCOUNT_ID=`echo $CODEBUILD_BUILD_ARN | awk -F":" '{print $5}'`
       - ECR_REPO=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
       - $(aws ecr get-login --no-include-email)
-  build:
-    commands:
+      # Build Docker image
       - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $ECR_REPO:$IMAGE_TAG
       - docker push $ECR_REPO:$IMAGE_TAG
+  build:
+    commands:
+      # Synthesize CloudFormation templates
+      - cd ~/trivia-backend/cdk
+      - npm run build
+      - cdk synth -o build --app 'node ecs-service.js'
+
+artifacts:
+  files:
+    - trivia-backend/cdk/build/*
+  discard-paths: yes
