@@ -52,17 +52,14 @@ exports.handler = async function (event, context, callback) {
     }
 
     // Pass AWS CodeDeploy the prepared validation test results.
-    codedeploy.putLifecycleEventHookExecutionStatus(params, function (err, data) {
-        if (err) {
-            // Validation failed.
-            console.log('Validation test failed');
-            console.log(err);
-            console.log(data);
-            callback('Validation test failed');
-        } else {
-            // Validation succeeded.
-            console.log('Validation test succeeded');
-            callback(null, 'Validation test succeeded');
-        }
-    });
+    try {
+        console.log(params);
+        await codedeploy.putLifecycleEventHookExecutionStatus(params).promise();
+        console.log('Successfully reported hook results');
+        callback(null, 'Successfully reported hook results');
+    } catch (err) {
+        console.log('Failed to report hook results');
+        console.log(err);
+        callback('Failed to report hook results');
+    }
 }
