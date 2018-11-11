@@ -14,7 +14,7 @@
         "fulfillmentActivity": {
           "type": "CodeHook",
           "codeHook": {
-            "uri": "arn:aws:lambda:us-west-2:131296546870:function:aws-serverless-repository-hello-HelloWorldFunction-FA2UEWIHH8MJ",
+            "uri": "arn:aws:lambda:us-west-2:123456789012:function:helloworld",
             "messageVersion": "1.0"
           }
         },

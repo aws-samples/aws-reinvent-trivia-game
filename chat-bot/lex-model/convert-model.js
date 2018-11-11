@@ -2,9 +2,11 @@
 
 const argv = require('yargs')
     .usage('Convert trivia API file to Amazon Lex model\nUsage: $0')
-    .demandOption(['m'])
+    .demandOption(['m', 'f'])
     .alias('m', 'api-model')
+    .alias('f', 'hook-function')
     .describe('m', 'trivia API file')
+    .describe('f', 'Lambda function ARN for fulfillment activity')
     .argv;
 
 const converter = require('number-to-words');
@@ -17,6 +19,8 @@ const NUMBER_MODEL_TYPE = 'AMAZON.NUMBER';
 // Assume it's a JSON file
 const apiModel = require(argv.apiModel);
 const lexModel = require('./lex-model-template');
+
+const hookFunction = argv.hookFunction;
 
 // Convert API model to Lex model
 // API model question ==> Lex Slot
@@ -69,6 +73,8 @@ apiModel.forEach(function(category) {
         lexModel.resource.intents[0].slots.push(slot);
     });
 });
+
+lexModel.resource.intents[0].fulfillmentActivity.codeHook.uri = hookFunction;
 
 // TODO fill in code hook ARNs
 

@@ -3,6 +3,7 @@ version: 0.2
 phases:
   install:
     commands:
+      - export AWS_ACCOUNT_ID=`echo $CODEBUILD_BUILD_ARN | awk -F":" '{print $5}'`
       - cd chat-bot/lex-model
       - chmod +x gen-lex-model.sh
       - npm install -g npm@6.4.1
