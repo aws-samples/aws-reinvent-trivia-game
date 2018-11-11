@@ -1,3 +1,7 @@
+sam local invoke BotFunction --skip-pull-image -e hook/test-events/four.json
+
+echo '{"DeploymentId":"123","LifecycleEventHookExecutionId":"456"}' | sam local invoke PreTrafficHook --skip-pull-image
+
 # sam-app
 
 This is a sample template for sam-app - Below is a brief explanation of what we have generated for you:
@@ -99,7 +103,7 @@ After deployment is complete you can run the following command to retrieve the A
 aws cloudformation describe-stacks \
     --stack-name sam-app \
     --query 'Stacks[].Outputs'
-``` 
+```
 
 ## Testing
 

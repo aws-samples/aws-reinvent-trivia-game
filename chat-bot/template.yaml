@@ -11,13 +11,94 @@ Resources:
   BotFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./
+      CodeUri: ./bot
       Handler: bot.handler
       Runtime: nodejs8.10
       Timeout: 60
       Environment:
         Variables:
           API_ENDPOINT: !Ref TriviaBackendEndpoint
+      Events:
+        Canary:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 minute)
+            Input: >-
+              {
+                "body": "team_id=T0001&team_domain=example&channel_id=C2147483705&channel_name=test&user_id=U2147483697&user_name=Steve&command=/gimmefoodtrucks",
+                "trigger": "canary"
+              }
+      AutoPublishAlias: live
+      DeploymentPreference:
+        Enabled: true
+        Type: Linear10PercentEvery1Minute
+        Alarms:
+          - !Ref BotLiveAliasErrorsAlarm
+          - !Ref BotAliasErrorMetricGreaterThanZeroAlarm
+        Hooks:
+          PreTraffic: !Ref PreTrafficHook
+
+  BotAliasErrorMetricGreaterThanZeroAlarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      AlarmDescription: Lambda Function Error > 0
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: Resource
+          Value: !Sub "${BotFunction}:live"
+        - Name: FunctionName
+          Value: !Ref BotFunction
+      EvaluationPeriods: 2
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 0
+
+  BotLatestVersionErrorMetricGreaterThanZeroAlarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      AlarmDescription: Lambda Function Error > 0
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: Resource
+          Value: !Ref BotFunction.Version
+        - Name: FunctionName
+          Value: !Ref BotFunction
+      EvaluationPeriods: 2
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 0
+
+  PreTrafficHook:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./hook
+      Timeout: 300
+      Handler: pre-traffic-hook.handler
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+          - Effect: "Allow"
+            Action:
+              - "codedeploy:PutLifecycleEventHookExecutionStatus"
+            Resource:
+              !Sub 'arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${ServerlessDeploymentApplication}/*'
+        - Version: "2012-10-17"
+          Statement:
+          - Effect: "Allow"
+            Action:
+              - "lambda:InvokeFunction"
+            Resource: !Ref BotFunction
+      Runtime: nodejs8.10
+      DeploymentPreference:
+        Enabled: false
+        Role: ""
+      Environment:
+        Variables:
+          CurrentVersion: !Ref BotFunction.Version
 
   LexPermission:
     Type: AWS::Lambda::Permission

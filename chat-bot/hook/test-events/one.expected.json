@@ -1,0 +1,35 @@
+{
+  "sessionAttributes": {
+    "started": "true",
+    "currentQuestion": 2,
+    "currentScore": 100,
+    "currentSlot": "two"
+  },
+  "dialogAction": {
+    "type": "ElicitSlot",
+    "intentName": "LetsPlay",
+    "slots": {
+      "fifteen": null,
+      "nine": null,
+      "six": null,
+      "one": 2012,
+      "seven": null,
+      "three": null,
+      "two": null,
+      "thirteen": null,
+      "eight": null,
+      "fourteen": null,
+      "four": null,
+      "sixteen": null,
+      "twelve": null,
+      "eleven": null,
+      "ten": null,
+      "five": null
+    },
+    "slotToElicit": "two",
+    "message": {
+      "contentType": "PlainText",
+      "content": "That is correct! New score is 100 points! For 200 points: What Amazon-favorite sport was introduced in re:Invent attendees in 2016?"
+    }
+  }
+}

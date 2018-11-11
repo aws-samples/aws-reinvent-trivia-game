@@ -5,6 +5,7 @@ const API_ENDPOINT = process.env.API_ENDPOINT;
 
 const MAX_QUESTIONS = 16;
 
+// Helper functions for returning results back to Lex
 function elicitSlot(sessionAttributes, intentName, slots, slotToElicit, message) {
     return {
         sessionAttributes,
@@ -59,7 +60,7 @@ async function startGame(intentRequest) {
         contentType: 'PlainText',
         content: "Let's play re:Invent Trivia! " +
             "The game covers four categories with four questions each. " +
-            `Starting with the "${firstQuestion.data.category}" category, ` + 
+            `Starting with the "${firstQuestion.data.category}" category, ` +
             `for ${firstQuestion.data.points} points: ${firstQuestion.data.question}`
     };
 

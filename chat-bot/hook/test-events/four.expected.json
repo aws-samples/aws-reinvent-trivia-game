@@ -1,0 +1,35 @@
+{
+  "sessionAttributes": {
+    "started": "true",
+    "currentQuestion": 5,
+    "currentScore": 100,
+    "currentSlot": "five"
+  },
+  "dialogAction": {
+    "type": "ElicitSlot",
+    "intentName": "LetsPlay",
+    "slots": {
+      "fifteen": null,
+      "nine": null,
+      "six": null,
+      "one": 2012,
+      "seven": null,
+      "three": "blah",
+      "two": "blah",
+      "thirteen": null,
+      "eight": null,
+      "fourteen": null,
+      "four": "blah",
+      "sixteen": null,
+      "twelve": null,
+      "eleven": null,
+      "ten": null,
+      "five": null
+    },
+    "slotToElicit": "five",
+    "message": {
+      "contentType": "PlainText",
+      "content": "Incorrect! The correct answer is \"2014\". Moving on the \"The Main Event\" category. For 100 points: What webinar helps people learn about re:Invent leading up to the big event?"
+    }
+  }
+}
