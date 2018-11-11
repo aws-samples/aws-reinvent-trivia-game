@@ -5,6 +5,13 @@ const API_ENDPOINT = process.env.API_ENDPOINT;
 
 const MAX_QUESTIONS = 16;
 
+/**
+ * This function is used as a fulfillment hook for an Amazon Lex bot.
+ * It is responsible for driving the conversation including which
+ * questions to ask, validating the user's answers, and keeping track
+ * of the user's score.  All state is tracked in the session attributes.
+ */
+
 // Helper functions for returning results back to Lex
 function elicitSlot(sessionAttributes, intentName, slots, slotToElicit, message) {
     return {
