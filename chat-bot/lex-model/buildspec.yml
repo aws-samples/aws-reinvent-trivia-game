@@ -1,8 +1,11 @@
 version: 0.2
 
 phases:
-  build:
+  install:
     commands:
       - cd chat-bot/lex-model
+      - npm install -g npm@6.4.1
       - npm ci
+  build:
+    commands:
       - ./gen-lex-model.sh
