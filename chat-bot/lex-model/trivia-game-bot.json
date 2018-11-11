@@ -1,0 +1,30 @@
+{
+    "intents": [
+        {
+            "intentVersion": "1",
+            "intentName": "LetsPlay"
+        }
+    ],
+    "name": "TriviaGame",
+    "locale": "en-US",
+    "checksum": "###checksum###",
+    "abortStatement": {
+        "messages": [
+            {
+                "content": "Sorry, I could not understand.",
+                "contentType": "PlainText"
+            }
+        ]
+    },
+    "clarificationPrompt": {
+        "maxAttempts": 5,
+        "messages": [
+            {
+                "content": "Sorry, can you please repeat that?",
+                "contentType": "PlainText"
+            }
+        ]
+    },
+    "childDirected": false,
+    "idleSessionTTLInSeconds": 300
+}
