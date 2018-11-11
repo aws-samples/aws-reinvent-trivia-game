@@ -65,6 +65,7 @@ createTerminus(server, {
   signals: ['SIGHUP','SIGINT','SIGTERM'],
   healthChecks: {
     '/health': onHealthCheck,
+    '/': onHealthCheck
   },
   onSignal,
   onShutdown
