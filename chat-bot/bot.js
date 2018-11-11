@@ -92,9 +92,9 @@ async function nextQuestion(intentRequest) {
 
     if (isCorrect) {
         score += currentQuestionData.data.points;
-        messageContent += "That is correct! New score is " + score + "! ";
+        messageContent += "That is correct! New score is " + score + " points! ";
     } else {
-        messageContent += "Incorrect! ";
+        messageContent += `Incorrect! The correct answer is "${currentQuestionData.data.answer}". `;
     }
 
     const newQuestionData = await getQuestion(nextQuestionId);
