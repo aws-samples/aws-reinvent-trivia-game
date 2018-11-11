@@ -21,7 +21,7 @@ router.get('/question/:question_id', function(req, res, next) {
   });
 
   if (foundQuestion) {
-    res.json({ "question" : foundQuestion.question });
+    res.json(foundQuestion);
   } else {
     var err = new Error('Not Found');
     err.status = 404;

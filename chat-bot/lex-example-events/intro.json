@@ -1,0 +1,38 @@
+{
+  "messageVersion": "1.0",
+  "invocationSource": "DialogCodeHook",
+  "userId": "ozw40htm8dvj0n1lk9ugt6gja961h4dl",
+  "sessionAttributes": {
+
+  },
+  "requestAttributes": null,
+  "bot": {
+    "name": "TriviaGame",
+    "alias": "$LATEST",
+    "version": "$LATEST"
+  },
+  "outputDialogMode": "Text",
+  "currentIntent": {
+    "name": "LetsPlay",
+    "slots": {
+      "fifteen": null,
+      "nine": null,
+      "six": null,
+      "one": null,
+      "seven": null,
+      "three": null,
+      "two": null,
+      "thirteen": null,
+      "eight": null,
+      "fourteen": null,
+      "four": null,
+      "sixteen": null,
+      "twelve": null,
+      "eleven": null,
+      "ten": null,
+      "five": null
+    },
+    "confirmationStatus": "None"
+  },
+  "inputTranscript": "Let's play"
+}

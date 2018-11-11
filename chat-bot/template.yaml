@@ -7,9 +7,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./
-      Handler: bot.lambdaHandler
+      Handler: bot.handler
       Runtime: nodejs8.10
       Timeout: 60
       Environment:
         Variables:
-          API_ENDPOINT: 'http://localhost:8080'
+          API_ENDPOINT: 'https://api.reinvent-trivia.com'
