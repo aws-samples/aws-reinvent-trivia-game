@@ -25,15 +25,23 @@ Resources:
             Schedule: rate(1 minute)
             Input: >-
               {
-                "body": "team_id=T0001&team_domain=example&channel_id=C2147483705&channel_name=test&user_id=U2147483697&user_name=Steve&command=/gimmefoodtrucks",
-                "trigger": "canary"
+                "bot": {
+                  "name": "TriviaGame",
+                  "alias": "$LATEST",
+                  "version": "$LATEST"
+                },
+                "currentIntent": {
+                  "name": "LetsPlay",
+                  "slots": {
+                  }
+                }
               }
       AutoPublishAlias: live
       DeploymentPreference:
         Enabled: true
         Type: Linear10PercentEvery1Minute
         Alarms:
-          - !Ref BotLiveAliasErrorsAlarm
+          - !Ref BotLatestVersionErrorMetricGreaterThanZeroAlarm
           - !Ref BotAliasErrorMetricGreaterThanZeroAlarm
         Hooks:
           PreTraffic: !Ref PreTrafficHook

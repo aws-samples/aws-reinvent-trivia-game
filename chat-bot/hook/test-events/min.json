@@ -1,0 +1,12 @@
+{
+  "bot": {
+    "name": "TriviaGame",
+    "alias": "$LATEST",
+    "version": "$LATEST"
+  },
+  "currentIntent": {
+    "name": "LetsPlay",
+    "slots": {
+    }
+  }
+}
