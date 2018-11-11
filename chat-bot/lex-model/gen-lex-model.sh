@@ -7,7 +7,6 @@ node convert-model -m ../../trivia-backend/data/questions.json
 zip lex-model.zip lex-model.json
 
 import_id=$(aws lex-models start-import \
-    --region us-west-2 \
     --payload fileb://lex-model.zip \
     --resource-type BOT \
     --merge-strategy OVERWRITE_LATEST \

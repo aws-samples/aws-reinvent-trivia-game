@@ -26,6 +26,7 @@ class TriviaGameChatBotPipelineStack extends cdk.Stack {
         });
 
         lexProject.addToRolePolicy(new iam.PolicyStatement()
+            .addActions('lex:StartImport', 'lex:GetImport')
             .addActions('lex:GetIntent', 'lex:PutIntent')
             .addActions('lex:GetSlotType', 'lex:PutSlotType')
             .addActions('lex:GetBot', 'lex:PutBot')
