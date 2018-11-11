@@ -19,5 +19,6 @@ phases:
 
 artifacts:
   files:
-    - TriviaGameChatBotTest.template.yml
-    - TriviaGameChatBotProd.template.yml
+    - chat-bot/TriviaGameChatBotTest.template.yml
+    - chat-bot/TriviaGameChatBotProd.template.yml
+  discard-paths: yes
