@@ -4,9 +4,9 @@
   "userId": "ozw40htm8dvj0n1lk9ugt6gja961h4dl",
   "sessionAttributes": {
     "started": "true",
-    "currentQuestion": "1",
-    "currentScore": "0",
-    "currentSlot": "one"
+    "currentQuestion": "4",
+    "currentScore": "100",
+    "currentSlot": "four"
   },
   "requestAttributes": null,
   "bot": {
@@ -23,12 +23,12 @@
       "six": null,
       "one": 2012,
       "seven": null,
-      "three": null,
-      "two": null,
+      "three": "blah",
+      "two": "blah",
       "thirteen": null,
       "eight": null,
       "fourteen": null,
-      "four": null,
+      "four": "blah",
       "sixteen": null,
       "twelve": null,
       "eleven": null,

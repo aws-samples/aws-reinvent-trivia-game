@@ -32,8 +32,15 @@ function close(sessionAttributes, fulfillmentState, message) {
 // Get new question from backend
 async function getQuestion(id) {
     const url = API_ENDPOINT + '/api/trivia/question/' + id;
-    console.log('Requesting ' + url);
+    console.log('Requesting (GET) ' + url);
     return await axios.get(url);
+}
+
+// Post answer to backend
+async function answerQuestion(id, answer) {
+    const url = API_ENDPOINT + '/api/trivia/question/' + id;
+    console.log('Requesting (POST) ' + url);
+    return await axios.post(url, { answer });
 }
 
 // Ask the first question
@@ -42,14 +49,18 @@ async function startGame(intentRequest) {
     const sessionAttributes = {
         started: true,
         currentQuestion: 1,
-        currentScore: 0
+        currentSlot: "one",
+        currentScore: 0,
     };
 
     const firstQuestion = await getQuestion(1);
 
     var message = {
         contentType: 'PlainText',
-        content: "Let's play re:Invent Trivia! " + firstQuestion.data.question
+        content: "Let's play re:Invent Trivia! " +
+            "The game covers four categories with four questions each. " +
+            `Starting with the "${firstQuestion.data.category}" category, ` + 
+            `for ${firstQuestion.data.points} points: ${firstQuestion.data.question}`
     };
 
     return elicitSlot(sessionAttributes, intentRequest.currentIntent.name,
@@ -59,8 +70,8 @@ async function startGame(intentRequest) {
 // Check the answer to the previous question and ask the next question
 async function nextQuestion(intentRequest) {
     var sessionAttributes = intentRequest.sessionAttributes;
-    var score = sessionAttributes.currentScore;
-    var currentQuestionId = sessionAttributes.currentQuestion;
+    var score = parseInt(sessionAttributes.currentScore, 10);
+    var currentQuestionId = parseInt(sessionAttributes.currentQuestion, 10);
     var currentSlot = numToWords.toWords(currentQuestionId);
 
     const currentQuestionData = await getQuestion(currentQuestionId);
@@ -69,18 +80,37 @@ async function nextQuestion(intentRequest) {
     var nextSlot = numToWords.toWords(nextQuestionId);
 
     // Check the answer, add to score if correct
-    // TODO
-    // sessionAttributes.score += 100;
+    var isCorrect = false;
+    var userAnswer = intentRequest.currentIntent.slots[currentSlot];
+    // null user answer means a string response did not match any of the sample utterances
+    if (userAnswer) {
+        const answerData = await answerQuestion(currentQuestionId, userAnswer);
+        isCorrect = answerData.data.result;
+    }
+
+    var messageContent = "";
+
+    if (isCorrect) {
+        score += currentQuestionData.data.points;
+        messageContent += "That is correct! New score is " + score + "! ";
+    } else {
+        messageContent += "Incorrect! ";
+    }
 
     const newQuestionData = await getQuestion(nextQuestionId);
+    if (currentQuestionData.data.category != newQuestionData.data.category) {
+        messageContent += `Moving on the "${newQuestionData.data.category}" category. `
+    }
+    messageContent += `For ${newQuestionData.data.points} points: ${newQuestionData.data.question}`;
 
     var message = {
         contentType: 'PlainText',
-        content: "Next question! " + newQuestionData.data.question
+        content: messageContent
     };
 
     sessionAttributes.currentQuestion = nextQuestionId;
     sessionAttributes.currentSlot = nextSlot;
+    sessionAttributes.currentScore = score;
 
     return elicitSlot(sessionAttributes, intentRequest.currentIntent.name,
         intentRequest.currentIntent.slots, nextSlot, message);
@@ -89,19 +119,34 @@ async function nextQuestion(intentRequest) {
 // Check answer to final question and finish the game
 async function finishGame(intentRequest) {
     var sessionAttributes = intentRequest.sessionAttributes;
-    var score = sessionAttributes.currentScore;
-    var currentQuestionId = sessionAttributes.currentQuestion;
+    var score = parseInt(sessionAttributes.currentScore, 10);
+    var currentQuestionId = parseInt(sessionAttributes.currentQuestion, 10);
     var currentSlot = numToWords.toWords(currentQuestionId);
 
     const currentQuestionData = await getQuestion(currentQuestionId);
 
     // Check the answer, add to score if correct
-    // TODO
-    // sessionAttributes.score += 100;
+    var isCorrect = false;
+    var userAnswer = intentRequest.currentIntent.slots[currentSlot];
+    // null user answer means a string response did not match any of the sample utterances
+    if (userAnswer) {
+        const answerData = await answerQuestion(currentQuestionId, userAnswer);
+        isCorrect = answerData.data.result;
+    }
+
+    var messageContent = "";
+
+    if (isCorrect) {
+        score += currentQuestionData.data.points;
+        messageContent += "That is correct! ";
+    } else {
+        messageContent += "Incorrect! ";
+    }
+    messageContent += `Thanks for playing! Your final score is ${score} points`;
 
     var message = {
         contentType: 'PlainText',
-        content: "Thanks for playing! Your final score is " + sessionAttributes.currentScore
+        content: messageContent
     };
 
     return close(sessionAttributes, 'Fulfilled', message);
@@ -114,7 +159,7 @@ async function playGame(intentRequest) {
 
     if (Object.keys(sessionAttributes).length == 0) {
         return await startGame(intentRequest);
-    } else if (sessionAttributes.currentQuestion < MAX_QUESTIONS) {
+    } else if (parseInt(sessionAttributes.currentQuestion, 10) < MAX_QUESTIONS) {
         return await nextQuestion(intentRequest);
     } else {
         return await finishGame(intentRequest);
