@@ -4,6 +4,7 @@ phases:
   install:
     commands:
       - cd chat-bot/lex-model
+      - chmod +x gen-lex-model.sh
       - npm install -g npm@6.4.1
       - npm ci
   build:
