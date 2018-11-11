@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - cd chat-bot
+      - npm ci
+  pre_build:
+    commands:
+      # Clear out files that shouldn't be packaged
+      - rm -rf lex-example-events
+      - rm -rf lex-model
+      - rm *.json *.md
+  build:
+    commands:
+      - aws cloudformation package --template-file template.yml --s3-bucket $ARTIFACTS_BUCKET --output-template-file TriviaGameChatBotProd.template.yml
+      - sed 's/api.reinvent-trivia.com/api-test.reinvent-trivia.com/g' TriviaChatBotProd.template.yml > TriviaGameChatBotTest.template.yml
+
+artifacts:
+  files:
+    - TriviaGameChatBotTest.template.yml
+    - TriviaGameChatBotProd.template.yml

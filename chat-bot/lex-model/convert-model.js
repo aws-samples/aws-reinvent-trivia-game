@@ -72,5 +72,4 @@ apiModel.forEach(function(category) {
 
 // TODO fill in code hook ARNs
 
-
 fs.writeFileSync('./lex-model.json', JSON.stringify(lexModel, null, 2) , 'utf-8');

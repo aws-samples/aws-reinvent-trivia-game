@@ -2,6 +2,11 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Chat bot for reInvent trivia game
 
+Parameters:
+  TriviaBackendEndpoint:
+    Type: String
+    Default: 'https://api.reinvent-trivia.com'
+
 Resources:
   BotFunction:
     Type: AWS::Serverless::Function
@@ -12,4 +17,4 @@ Resources:
       Timeout: 60
       Environment:
         Variables:
-          API_ENDPOINT: 'https://api.reinvent-trivia.com'
+          API_ENDPOINT: !Ref TriviaBackendEndpoint
