@@ -14,7 +14,7 @@ phases:
       - rm *.json *.md
   build:
     commands:
-      - aws cloudformation package --template-file template.yml --s3-bucket $ARTIFACTS_BUCKET --output-template-file TriviaGameChatBotProd.template.yml
+      - aws cloudformation package --template-file template.yaml --s3-bucket $ARTIFACTS_BUCKET --output-template-file TriviaGameChatBotProd.template.yml
       - sed 's/api.reinvent-trivia.com/api-test.reinvent-trivia.com/g' TriviaChatBotProd.template.yml > TriviaGameChatBotTest.template.yml
 
 artifacts:

@@ -36,7 +36,12 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
             }),
             buildSpec: props.directory + '/buildspec.yml',
             environment: {
-              buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0
+              buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0,
+              environmentVariables: {
+                'ARTIFACTS_BUCKET': {
+                    value: pipeline.artifactBucket.bucketName
+                }
+              }
             },
             artifacts: new codebuild.S3BucketBuildArtifacts({
                 bucket: pipeline.artifactBucket,
