@@ -8,14 +8,14 @@ phases:
   install:
     commands:
       # Install CDK
-      - cd ~/trivia-backend/cdk
+      - cd $CODEBUILD_SRC_DIR/trivia-backend/cdk
       - npm install -g npm@6.4.1
       - npm install -g aws-cdk
       - npm ci
   pre_build:
     commands:
       # Set up environment variables
-      - cd ~/trivia-backend
+      - cd $CODEBUILD_SRC_DIR/trivia-backend
       - export IMAGE_TAG=build-`echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}'`
       - AWS_ACCOUNT_ID=`echo $CODEBUILD_BUILD_ARN | awk -F":" '{print $5}'`
       - ECR_REPO=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
@@ -27,7 +27,7 @@ phases:
   build:
     commands:
       # Synthesize CloudFormation templates
-      - cd ~/trivia-backend/cdk
+      - cd $CODEBUILD_SRC_DIR/trivia-backend/cdk
       - npm run build
       - cdk synth -o build --app 'node ecs-service.js'
 
