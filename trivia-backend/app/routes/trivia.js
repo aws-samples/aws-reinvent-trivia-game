@@ -16,6 +16,7 @@ router.get('/question/:question_id', function(req, res, next) {
     category.questions.forEach(function(question) {
         if (question.id == id) {
           foundQuestion = question;
+          foundQuestion.category = category.category;
         }
     });
   });
