@@ -18,3 +18,20 @@ Resources:
       Environment:
         Variables:
           API_ENDPOINT: !Ref TriviaBackendEndpoint
+
+  LexPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt
+        - BotFunction
+        - Arn
+      Action: "lambda:invokeFunction"
+      Principal: lex.amazonaws.com
+      SourceArn: !Join
+        - ':'
+        - - 'arn'
+          - !Ref "AWS::Partition"
+          - 'lex'
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - 'intent:LetsPlay:*'
