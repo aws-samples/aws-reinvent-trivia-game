@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import codebuild = require('@aws-cdk/aws-codebuild');
 import codepipeline = require('@aws-cdk/aws-codepipeline');
+import actions = require('@aws-cdk/aws-codepipeline-api');
 import cfn = require('@aws-cdk/aws-cloudformation');
 import iam = require('@aws-cdk/aws-iam');
 import cdk = require('@aws-cdk/cdk');
@@ -12,21 +13,27 @@ export interface TriviaGameCfnPipelineProps {
 }
 
 export class TriviaGameCfnPipeline extends cdk.Construct {
+    public readonly pipeline: codepipeline.Pipeline;
+
+    public readonly sourceAction: actions.SourceAction
+
     constructor(parent: cdk.Construct, name: string, props: TriviaGameCfnPipelineProps) {
         super(parent, name);
 
         const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
             pipelineName: 'reinvent-trivia-game-' + props.stackName,
         });
+        this.pipeline = pipeline;
 
         // Source
         const githubAccessToken = new cdk.SecretParameter(this, 'GitHubToken', { ssmParameter: 'GitHubToken' });
-        new codepipeline.GitHubSourceAction(this, 'GitHubSource', {
+        const sourceAction = new codepipeline.GitHubSourceAction(this, 'GitHubSource', {
             stage: pipeline.addStage('Source'),
             owner: 'clareliguori',
             repo: 'aws-reinvent-trivia-game',
             oauthToken: githubAccessToken.value
         });
+        this.sourceAction = sourceAction;
 
         // Build
         const buildProject = new codebuild.Project(this, 'BuildProject', {
