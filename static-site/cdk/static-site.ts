@@ -44,7 +44,7 @@ export class StaticSite extends cdk.Construct {
             ]
         });
 
-        const zone = route53.HostedZoneNameRef.fromName(this, 'Zone', props.domainName);
+        const zone = new route53.HostedZoneProvider(this, { domainName: props.domainName }).findAndImport(this, 'Zone');
         new route53.AliasRecord(zone, 'SiteAliasRecord', {
             recordName: siteDomain,
             target: distribution

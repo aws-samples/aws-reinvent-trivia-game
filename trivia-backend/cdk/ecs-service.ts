@@ -3,7 +3,7 @@ import { CertificateRef } from '@aws-cdk/aws-certificatemanager';
 import { VpcNetwork } from '@aws-cdk/aws-ec2';
 import { RepositoryRef } from '@aws-cdk/aws-ecr';
 import { Cluster, ContainerImage, LoadBalancedFargateService} from '@aws-cdk/aws-ecs';
-import { HostedZoneNameRef } from '@aws-cdk/aws-route53';
+import { HostedZoneProvider } from '@aws-cdk/aws-route53';
 import cdk = require('@aws-cdk/cdk');
 
 interface TriviaBackendStackProps extends cdk.StackProps {
@@ -33,7 +33,7 @@ class TriviaBackendStack extends cdk.Stack {
       image: ContainerImage.fromEcrRepository(imageRepo, tag),
       desiredCount: 3,
       domainName: props.domainName,
-      domainZone: HostedZoneNameRef.fromName(this, 'Domain', props.domainZone),
+      domainZone: new HostedZoneProvider(this, { domainName: props.domainZone }).findAndImport(this, 'Zone'),
       certificate: CertificateRef.import(this, 'Cert', { certificateArn: cert.parameterValue() })
     });
   }
