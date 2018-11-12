@@ -70,9 +70,11 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: Resource
-          Value: !Ref BotFunction.Version
+          Value: !Sub "${BotFunction}:live"
         - Name: FunctionName
           Value: !Ref BotFunction
+        - Name: ExecutedVersion
+          Value: !GetAtt BotFunction.Version.Version
       EvaluationPeriods: 2
       MetricName: Errors
       Namespace: AWS/Lambda
