@@ -43,8 +43,8 @@ exports.handler = async function (event, context, callback) {
                 FunctionName: TARGET_FUNCTION,
                 Payload: JSON.stringify(testInput)
             }).promise();
-
-            assert.deepEqual(data.Payload, testExpectedOutput, `Unexpected results for ${test}`);
+            let testOutput = JSON.parse(data.Payload);
+            assert.deepEqual(testOutput, testExpectedOutput, `Unexpected results for ${test}`);
         } catch (err) {
             console.log(err);
             params.status = 'Failed';
