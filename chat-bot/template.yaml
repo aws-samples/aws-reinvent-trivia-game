@@ -116,9 +116,7 @@ Resources:
   LexPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !GetAtt
-        - BotFunction
-        - Arn
+      FunctionName: !Ref BotFunction.Alias
       Action: "lambda:invokeFunction"
       Principal: lex.amazonaws.com
       SourceArn: !Join
