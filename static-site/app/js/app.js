@@ -6,6 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Card from './Card';
 import Headers from './Headers';
+import Footer from './Footer';
 import request from './request';
 
 class App extends React.Component {
@@ -57,9 +58,11 @@ class App extends React.Component {
     }
 
     render() {
-        let headerHeight = this.state.windowWidth > 640 ? 60 : 32,
+        let footerHeight = this.state.windowWidth > 640 ? 60 : 32,
+            footerTop = this.state.windowHeight - footerHeight,
+            headerHeight = this.state.windowWidth > 640 ? 60 : 32,
             cardWidth = this.state.windowWidth / this.state.cols,
-            cardHeight = (this.state.windowHeight - headerHeight) / this.state.rows,
+            cardHeight = (this.state.windowHeight - headerHeight - footerHeight) / this.state.rows,
             cards = [];
 
         this.state.data.forEach((category, categoryIndex) => {
@@ -72,6 +75,7 @@ class App extends React.Component {
             <div>
                 <Headers data={this.state.data} headerWidth={cardWidth}/>
                 {cards}
+                <Footer top={footerTop} width={this.state.windowWidth} height={footerHeight} />
             </div>
         );
     }

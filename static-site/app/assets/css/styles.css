@@ -6,8 +6,8 @@
 body {
     padding: 0;
     margin: 0;
-    background: #263238;
-    font-family: 'Roboto', sans-serif;
+    background: #232F3E;
+    font-family: 'Amazon Ember', 'Helvetica', 'Arial', sans-serif;
     overflow: hidden;
 }
 
@@ -15,10 +15,13 @@ p {
     margin: 0;
 }
 
+a {
+    color: #FFFFFF;
+}
+
 .headers {
     position: absolute;
     color: #FFFFFF;
-    text-transform: uppercase;
     font-size: 28px;
     /*padding-top: 16px;*/
     display: -webkit-flex;
@@ -26,6 +29,20 @@ p {
     -webkit-align-items: center;
     align-items: center;
     height: 60px;
+}
+
+.footer {
+    position: absolute;
+    color: #FFFFFF;
+    font-size: 16px;
+    /*padding-top: 16px;*/
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    text-align: center;
+    align-items: center;
+    height: 60px;
+    white-space: pre;
 }
 
 .headers>.header {
@@ -102,7 +119,7 @@ p {
 .card > .front {
     -webkit-transform: rotateY(0deg) !important;
     transform: rotateY(0deg) !important;
-    background-color: #61DAFB;
+    background-color: #00A1C9;
     color: #FFFFFF;
     font-size: 54px;
     z-index: 2;
@@ -111,7 +128,7 @@ p {
 .card > .back {
     -webkit-transform: rotateY(180deg) !important;
     transform: rotateY(180deg) !important;
-    background-color: #009CDF;
+    background-color: #007DBC;
     color: #FFFFFF;
     font-size: 36px;
     font-weight: 300;
@@ -173,6 +190,10 @@ code {
         font-size: 20px;
     }
 
+    .footer {
+        font-size: 15px;
+    }
+
     .card > .front {
         font-size: 36px;
     }
@@ -212,7 +233,7 @@ code {
 
 @media screen and (min-width : 0) and (max-width : 640px) {
 
-    .headers {
+    .headers, .footer {
         font-size: 14px;
         height: 32px;
     }

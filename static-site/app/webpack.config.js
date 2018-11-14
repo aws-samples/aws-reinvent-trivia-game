@@ -18,7 +18,7 @@ var setupEndpoint = function() {
   case 'development':
   case 'local':
   default:
-    triviaEndpoint = 'http://localhost:8080';
+    triviaEndpoint = 'http://localhost';
     break;
   }
 };
