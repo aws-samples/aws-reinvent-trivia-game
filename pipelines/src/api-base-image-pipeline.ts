@@ -1,51 +1,53 @@
 #!/usr/bin/env node
-import cdk = require('@aws-cdk/cdk');
 import codebuild = require('@aws-cdk/aws-codebuild');
+import codepipeline = require('@aws-cdk/aws-codepipeline');
 import iam = require('@aws-cdk/aws-iam');
-import { TriviaGameCfnPipeline } from './pipeline';
+import cdk = require('@aws-cdk/cdk');
 
-class TriviaGameChatBotPipelineStack extends cdk.Stack {
+class TriviaGameBackendBaseImagePipeline extends cdk.Stack {
     constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
         super(parent, name, props);
 
-        const pipelineConstruct = new TriviaGameCfnPipeline(this, 'Pipeline', {
-            pipelineName: 'chat-bot',
-            stackName: 'ChatBot',
-            templateName: 'ChatBot',
-            directory: 'chat-bot'
+        const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
+            pipelineName: 'reinvent-trivia-game-base-image',
         });
-        const pipeline = pipelineConstruct.pipeline;
 
-        // Use CodeBuild to run script that deploys the Lex model
-        const lexProject = new codebuild.Project(this, 'LexProject', {
-            source: new codebuild.CodePipelineSource(),
-            buildSpec: 'chat-bot/lex-model/buildspec.yml',
+        // Source
+        const githubAccessToken = new cdk.SecretParameter(this, 'GitHubToken', { ssmParameter: 'GitHubToken' });
+        new codepipeline.GitHubSourceAction(this, 'GitHubSource', {
+            stage: pipeline.addStage('Source'),
+            owner: 'aws-samples',
+            repo: 'aws-reinvent-2018-trivia-game',
+            oauthToken: githubAccessToken.value
+        });
+
+        // Build
+        const buildStage = pipeline.addStage('Build');
+        const project = new codebuild.PipelineProject(this, 'BuildBaseImage', {
+            buildSpec: 'trivia-backend/base/buildspec.yml',
             environment: {
-                buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0
-            },
-            artifacts: new codebuild.CodePipelineBuildArtifacts()
+                buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_DOCKER_17_09_0,
+                privileged: true
+            }
         });
-
-        lexProject.addToRolePolicy(new iam.PolicyStatement()
-            .addActions('lex:StartImport', 'lex:GetImport')
-            .addActions('lex:GetIntent', 'lex:PutIntent')
-            .addActions('lex:GetSlotType', 'lex:PutSlotType')
-            .addActions('lex:GetBot', 'lex:PutBot', 'lex:PutBotAlias')
-            .addAllResources());
-        lexProject.addToRolePolicy(new iam.PolicyStatement()
-            .addAction('cloudformation:DescribeStackResource')
-            .addResource(cdk.ArnUtils.fromComponents({
-                service: 'cloudformation',
-                resource: 'stack',
-                resourceName: 'TriviaGameChatBot*'
-            })));
-
-        const deployLexStage = pipeline.addStage('DeployLexBot');
-        lexProject.addBuildToPipeline(deployLexStage, 'Deploy',
-            { inputArtifact: pipelineConstruct.sourceAction.outputArtifact });
+        project.addToRolePolicy(new iam.PolicyStatement()
+            .addAllResources()
+            .addActions("ecr:GetAuthorizationToken",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:DescribeImages",
+                "ecr:BatchGetImage",
+                "ecr:InitiateLayerUpload",
+                "ecr:UploadLayerPart",
+                "ecr:CompleteLayerUpload",
+                "ecr:PutImage"));
+        project.addBuildToPipeline(buildStage, 'CodeBuild');
     }
 }
 
 const app = new cdk.App();
-new TriviaGameChatBotPipelineStack(app, 'TriviaGameChatBotPipeline');
+new TriviaGameBackendBaseImagePipeline(app, 'TriviaGameBackendBaseImagePipeline');
 app.run();

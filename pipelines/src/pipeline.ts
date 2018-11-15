@@ -49,7 +49,8 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
                 'ARTIFACTS_BUCKET': {
                     value: pipeline.artifactBucket.bucketName
                 }
-              }
+              },
+              privileged: true
             },
             artifacts: new codebuild.S3BucketBuildArtifacts({
                 bucket: pipeline.artifactBucket,
