@@ -6,6 +6,8 @@ Sample trivia game built with AWS Fargate, AWS Lambda, and Amazon Lex.
 
 aws ecr create-repository --repository-name reinvent-trivia-backend
 
+aws ecr create-repository --repository-name reinvent-trivia-backend-base
+
 ## License Summary
 
 This sample code is made available under the MIT license. See the LICENSE file.

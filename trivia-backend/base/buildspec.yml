@@ -1,0 +1,21 @@
+version: 0.2
+
+env:
+  variables:
+    IMAGE_REPO_NAME: reinvent-trivia-backend-base
+    IMAGE_TAG: release
+
+phases:
+  pre_build:
+    commands:
+      # Set up environment variables
+      - cd $CODEBUILD_SRC_DIR/trivia-backend/base
+      - AWS_ACCOUNT_ID=`echo $CODEBUILD_BUILD_ARN | awk -F":" '{print $5}'`
+      - ECR_REPO=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+      - $(aws ecr get-login --no-include-email)
+  build:
+    commands:
+      # Build Docker image
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $ECR_REPO:$IMAGE_TAG
+      - docker push $ECR_REPO:$IMAGE_TAG

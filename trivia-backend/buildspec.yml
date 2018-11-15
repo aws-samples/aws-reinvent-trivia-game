@@ -20,6 +20,10 @@ phases:
       - AWS_ACCOUNT_ID=`echo $CODEBUILD_BUILD_ARN | awk -F":" '{print $5}'`
       - ECR_REPO=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
       - $(aws ecr get-login --no-include-email)
+      # Build base Docker image
+      - cd base
+      - docker build -t reinvent-trivia-backend-base:release .
+      - cd ..
       # Build Docker image
       - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $ECR_REPO:$IMAGE_TAG
