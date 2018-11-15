@@ -2,10 +2,17 @@
 import { CertificateRef } from '@aws-cdk/aws-certificatemanager';
 import { VpcNetwork } from '@aws-cdk/aws-ec2';
 import { RepositoryRef } from '@aws-cdk/aws-ecr';
-import { Cluster, ContainerImage, LoadBalancedFargateService} from '@aws-cdk/aws-ecs';
-import { ApplicationProtocol, ApplicationTargetGroup, IApplicationLoadBalancerTarget, LoadBalancerTargetProps, TargetType } from '@aws-cdk/aws-elasticloadbalancingv2';
+import { Cluster, ContainerImage, LoadBalancedFargateService } from '@aws-cdk/aws-ecs';
+import {
+  ApplicationProtocol,
+  ApplicationTargetGroup,
+  HttpCodeTarget,
+  IApplicationLoadBalancerTarget,
+  LoadBalancerTargetProps,
+  TargetType
+} from '@aws-cdk/aws-elasticloadbalancingv2';
 import { HostedZoneProvider } from '@aws-cdk/aws-route53';
-import { Alarm, Metric } from '@aws-cdk/aws-cloudwatch';
+import { Alarm } from '@aws-cdk/aws-cloudwatch';
 import cdk = require('@aws-cdk/cdk');
 
 interface TriviaBackendStackProps extends cdk.StackProps {
@@ -63,64 +70,27 @@ class TriviaBackendStack extends cdk.Stack {
       ]
     });
 
-    // Alarms: monitor 500s and unhealthy hosts
-    // TODO use an L2 method on the load balancer and on the service
-    new Alarm(this, 'AlarmUnhealthyHostsOne', {
-      metric: new Metric({
-        namespace: "AWS/ApplicationELB",
-        metricName: "UnHealthyHostCount",
-        dimensions: {
-          TargetGroup: service.targetGroup.targetGroupFullName,
-          LoadBalancer: service.loadBalancer.fullName
-        },
-        periodSec: 60,
-        statistic: "Sum"
-      }),
-      threshold: 2,
-      evaluationPeriods: 2,
-    });
-
-    new Alarm(this, 'AlarmUnhealthyHostsTwo', {
-      metric: new Metric({
-        namespace: "AWS/ApplicationELB",
-        metricName: "UnHealthyHostCount",
-        dimensions: {
-          TargetGroup: tg2.targetGroupFullName,
-          LoadBalancer: service.loadBalancer.fullName
-        },
-        periodSec: 60,
-        statistic: "Sum"
-      }),
-      threshold: 2,
-      evaluationPeriods: 2,
-    });
-
-    new Alarm(this, 'Alarm5xxOne', {
-      metric: new Metric({
-        namespace: "AWS/ApplicationELB",
-        metricName: "HTTPCode_Target_5XX_Count",
-        dimensions: {
-          TargetGroup: service.targetGroup.targetGroupFullName,
-          LoadBalancer: service.loadBalancer.fullName
-        },
-        periodSec: 60,
-        statistic: "Sum"
-      }),
+    // Alarms: monitor 500s and unhealthy hosts on target groups
+    new Alarm(this, 'TargetGroupUnhealthyHosts', {
+      metric: service.targetGroup.metricUnhealthyHostCount(),
       threshold: 1,
       evaluationPeriods: 2,
     });
 
-    new Alarm(this, 'Alarm5xxTwo', {
-      metric: new Metric({
-        namespace: "AWS/ApplicationELB",
-        metricName: "HTTPCode_Target_5XX_Count",
-        dimensions: {
-          TargetGroup: tg2.targetGroupFullName,
-          LoadBalancer: service.loadBalancer.fullName
-        },
-        periodSec: 60,
-        statistic: "Sum"
-      }),
+    new Alarm(this, 'TargetGroup5xx', {
+      metric: service.targetGroup.metricHttpCodeTarget(HttpCodeTarget.Target5xxCount),
+      threshold: 1,
+      evaluationPeriods: 2,
+    });
+
+    new Alarm(this, 'TargetGroup2UnhealthyHosts', {
+      metric: tg2.metricUnhealthyHostCount(),
+      threshold: 1,
+      evaluationPeriods: 2,
+    });
+
+    new Alarm(this, 'TargetGroup25xx', {
+      metric: tg2.metricHttpCodeTarget(HttpCodeTarget.Target5xxCount),
       threshold: 1,
       evaluationPeriods: 2,
     });
@@ -131,8 +101,8 @@ class TriviaBackendStack extends cdk.Stack {
 
 const app = new cdk.App();
 new TriviaBackendStack(app, 'TriviaBackendTest', {
-    domainName: 'api-test.reinvent-trivia.com',
-    domainZone: 'reinvent-trivia.com'
+  domainName: 'api-test.reinvent-trivia.com',
+  domainZone: 'reinvent-trivia.com'
 });
 new TriviaBackendStack(app, 'TriviaBackendProd', {
   domainName: 'api.reinvent-trivia.com',
