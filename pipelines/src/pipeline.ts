@@ -68,6 +68,20 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
                 resource: 'parameter',
                 resourceName: 'CertificateArn-*'
             })));
+        buildProject.addToRolePolicy(new iam.PolicyStatement()
+            .addAllResources()
+            .addActions("ecr:GetAuthorizationToken",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:DescribeImages",
+                "ecr:BatchGetImage",
+                "ecr:InitiateLayerUpload",
+                "ecr:UploadLayerPart",
+                "ecr:CompleteLayerUpload",
+                "ecr:PutImage"));
 
         const buildStage = pipeline.addStage('Build');
         const buildAction = buildProject.addBuildToPipeline(buildStage, 'CodeBuild');

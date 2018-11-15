@@ -8,10 +8,8 @@ phases:
   install:
     commands:
       # Install CDK
-      - cd $CODEBUILD_SRC_DIR/trivia-backend/cdk
       - npm install -g npm@6.4.1
       - npm install -g aws-cdk
-      - npm ci
   pre_build:
     commands:
       # Set up environment variables
@@ -32,6 +30,7 @@ phases:
     commands:
       # Synthesize CloudFormation templates
       - cd $CODEBUILD_SRC_DIR/trivia-backend/cdk
+      - npm ci
       - npm run build
       - cdk synth -o build --app 'node ecs-service.js'
 
