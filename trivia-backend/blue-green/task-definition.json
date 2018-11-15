@@ -1,0 +1,25 @@
+{
+    "family": "trivia-backend",
+    "containerDefinitions": [
+        {
+            "portMappings": [
+                {
+                    "hostPort": 80,
+                    "protocol": "tcp",
+                    "containerPort": 80
+                }
+            ],
+            "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/reinvent-trivia-backend:latest",
+            "essential": true,
+            "name": "web"
+        }
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "taskRoleArn": "arn:aws:iam::123456789012:role/TriviaBackendTest-ServiceTaskDefTaskRole0CFE2F57-1CGBN028CGQSC",
+    "executionRoleArn": "arn:aws:iam::123456789012:role/TriviaBackendTest-ServiceTaskDefExecutionRole919F7-1NIJ2W4OM4W50",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "networkMode": "awsvpc"
+}

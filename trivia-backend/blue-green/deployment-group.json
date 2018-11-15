@@ -1,0 +1,65 @@
+{
+    "applicationName": "trivia-backend-blue-green",
+    "autoRollbackConfiguration": {
+        "enabled": true,
+        "events": [
+            "DEPLOYMENT_FAILURE",
+            "DEPLOYMENT_STOP_ON_REQUEST",
+            "DEPLOYMENT_STOP_ON_ALARM"
+        ]
+    },
+    "blueGreenDeploymentConfiguration": {
+        "deploymentReadyOption": {
+            "actionOnTimeout": "CONTINUE_DEPLOYMENT",
+            "waitTimeInMinutes": 0
+        },
+        "terminateBlueInstancesOnDeploymentSuccess": {
+            "action": "TERMINATE",
+            "terminationWaitTimeInMinutes": 5
+        }
+    },
+    "deploymentStyle": {
+        "deploymentOption": "WITH_TRAFFIC_CONTROL",
+        "deploymentType": "BLUE_GREEN"
+    },
+    "loadBalancerInfo": {
+        "targetGroupPairInfoList": [
+            {
+                "targetGroups": [
+                    {
+                        "name": "TARGET_GROUP_PLACEHOLDER1"
+                    },
+                    {
+                        "name": "TARGET_GROUP_PLACEHOLDER2"
+                    }
+                ],
+                "prodTrafficRoute": {
+                    "listenerArns": [
+                        "arn:aws:elasticloadbalancing:us-east-1:1234567890:listener/app/ecs-demo/1c70194522f801da/PLACEHOLDER"
+                    ]
+                },
+                "testTrafficRoute": {
+                    "listenerArns": [
+                        "arn:aws:elasticloadbalancing:us-east-1:1234567890:listener/app/ecs-demo/1c70194522f801da/PLACEHOLDER"
+                    ]
+                }
+            }
+        ]
+    },
+    "alarmConfiguration": {
+        "enabled": true,
+        "ignorePollAlarmFailure": false,
+        "alarms": [
+            {
+                "name": "PLACEHOLDER_ALARM"
+            }
+        ]
+    },
+    "serviceRoleArn": "arn:aws:iam::123456789012:role/CodeDeployServiceRole",
+    "ecsServices": [
+        {
+            "serviceName": "trivia-backend-blue-green-PLACEHOLDER_STAGE",
+            "clusterName": "default"
+        }
+    ]
+}

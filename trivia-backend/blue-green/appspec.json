@@ -1,0 +1,30 @@
+{
+  "version": 0.0,
+  "Resources": [
+    {
+      "TargetService": {
+        "Type": "AWS::ECS::Service",
+        "Properties": {
+          "TaskDefinition": "arn:aws:ecs:us-east-1:123456789012:task-definition/trivia-backend:1",
+          "LoadBalancerInfo": {
+            "ContainerName": "web",
+            "ContainerPort": 80
+          },
+          "PlatformVersion": "LATEST",
+          "NetworkConfiguration": {
+            "AwsvpcConfiguration": {
+              "Subnets": [
+                "PLACEHOLDER_SUBNET"
+              ],
+              "SecurityGroups": [
+                "PLACEHOLDER_SECURITY_GROUP"
+              ],
+              "AssignPublicIp": "DISABLED"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "Hooks": []
+}
