@@ -9,6 +9,7 @@ import cdk = require('@aws-cdk/cdk');
 export interface TriviaGameCfnPipelineProps {
     stackName: string;
     templateName: string;
+    pipelineName: string;
     directory: string;
 }
 
@@ -21,7 +22,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
         super(parent, name);
 
         const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
-            pipelineName: 'reinvent-trivia-game-' + props.stackName,
+            pipelineName: 'reinvent-trivia-game-' + props.pipelineName,
         });
         this.pipeline = pipeline;
 
@@ -56,7 +57,10 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
             })
         });
 
-        buildProject.addToRolePolicy(new iam.PolicyStatement().addAllResources().addAction('ec2:DescribeAvailabilityZones'));
+        buildProject.addToRolePolicy(new iam.PolicyStatement()
+            .addAllResources()
+            .addAction('ec2:DescribeAvailabilityZones')
+            .addAction('route53:ListHostedZonesByName'));
         buildProject.addToRolePolicy(new iam.PolicyStatement()
             .addAction('ssm:GetParameter')
             .addResource(cdk.ArnUtils.fromComponents({
@@ -71,7 +75,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
         // Test
         const testStage = pipeline.addStage('Test');
         const templatePrefix =  'TriviaGame' + props.templateName;
-        const testStackName = 'reinvent-trivia-' + props.stackName + '-test';
+        const testStackName = 'TriviaGame' + props.stackName + 'Test';
         const changeSetName = 'StagedChangeSet';
 
         new cfn.PipelineCreateReplaceChangeSetAction(this, 'PrepareChangesTest', {
@@ -92,7 +96,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
 
         // Prod
         const prodStage = pipeline.addStage('Prod');
-        const prodStackName = 'reinvent-trivia-' + props.stackName + '-prod';
+        const prodStackName = 'TriviaGame' + props.stackName + 'Prod';
 
         new cfn.PipelineCreateReplaceChangeSetAction(this, 'PrepareChanges', {
             stage: prodStage,

@@ -3,7 +3,7 @@
 set -ex
 
 # Generate the model
-lambda_function_name=$(aws cloudformation describe-stack-resource --stack-name reinvent-trivia-chat-bot-prod --logical-resource-id BotFunction --output text --query 'StackResourceDetail.PhysicalResourceId')
+lambda_function_name=$(aws cloudformation describe-stack-resource --stack-name TriviaGameChatBotProd --logical-resource-id BotFunction --output text --query 'StackResourceDetail.PhysicalResourceId')
 
 lambda_function_arn="arn:aws:lambda:$AWS_DEFAULT_REGION:$AWS_ACCOUNT_ID:function:$lambda_function_name:live"
 

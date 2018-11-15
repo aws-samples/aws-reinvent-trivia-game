@@ -7,9 +7,10 @@ class TriviaGameStaticSiteInfraPipelineStack extends cdk.Stack {
         super(parent, name, props);
 
         new TriviaGameCfnPipeline(this, 'Pipeline', {
-           stackName: 'static-site-infra',
-           templateName: 'StaticSiteInfra',
-           directory: 'static-site/cdk'
+            pipelineName: 'static-site-infra',
+            stackName: 'StaticSiteInfra',
+            templateName: 'StaticSiteInfra',
+            directory: 'static-site/cdk'
         });
     }
 }

@@ -9,9 +9,10 @@ class TriviaGameChatBotPipelineStack extends cdk.Stack {
         super(parent, name, props);
 
         const pipelineConstruct = new TriviaGameCfnPipeline(this, 'Pipeline', {
-           stackName: 'chat-bot',
-           templateName: 'ChatBot',
-           directory: 'chat-bot'
+            pipelineName: 'chat-bot',
+            stackName: 'ChatBot',
+            templateName: 'ChatBot',
+            directory: 'chat-bot'
         });
         const pipeline = pipelineConstruct.pipeline;
 
@@ -20,7 +21,7 @@ class TriviaGameChatBotPipelineStack extends cdk.Stack {
             source: new codebuild.CodePipelineSource(),
             buildSpec: 'chat-bot/lex-model/buildspec.yml',
             environment: {
-              buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0
+                buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0
             },
             artifacts: new codebuild.CodePipelineBuildArtifacts()
         });
@@ -36,7 +37,7 @@ class TriviaGameChatBotPipelineStack extends cdk.Stack {
             .addResource(cdk.ArnUtils.fromComponents({
                 service: 'cloudformation',
                 resource: 'stack',
-                resourceName: 'reinvent-trivia-chat-bot-*'
+                resourceName: 'TriviaGameChatBot*'
             })));
 
         const deployLexStage = pipeline.addStage('DeployLexBot');

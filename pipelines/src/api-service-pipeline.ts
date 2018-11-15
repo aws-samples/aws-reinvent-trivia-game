@@ -7,9 +7,10 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
         super(parent, name, props);
 
         new TriviaGameCfnPipeline(this, 'Pipeline', {
-           stackName: 'trivia-backend',
-           templateName: 'TriviaBackend',
-           directory: 'trivia-backend'
+            pipelineName: 'trivia-backend',
+            stackName: 'TriviaBackend',
+            templateName: 'TriviaBackend',
+            directory: 'trivia-backend'
         });
     }
 }
