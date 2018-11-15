@@ -10,7 +10,7 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
             pipelineName: 'trivia-backend',
             stackName: 'TriviaBackend',
             templateName: 'TriviaBackend',
-            directory: 'trivia-backend'
+            directory: 'trivia-backend/cdk'
         });
     }
 }
