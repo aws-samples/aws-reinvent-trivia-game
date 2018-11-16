@@ -44,8 +44,8 @@ phases:
 
 artifacts:
   files:
-    - image-detail.json
-    - blue-green-setup/build/appspec-prod.json
-    - blue-green-setup/build/appspec-test.json
-    - blue-green-setup/build/task-definition.json
+    - trivia-backend/image-detail.json
+    - trivia-backend/blue-green-setup/build/appspec-prod.json
+    - trivia-backend/blue-green-setup/build/appspec-test.json
+    - trivia-backend/blue-green-setup/build/task-definition.json
   discard-paths: yes
