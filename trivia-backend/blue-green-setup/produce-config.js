@@ -72,4 +72,7 @@ async function produceConfigs() {
     fs.writeFileSync(`./build/appspec-${stage}.json`, JSON.stringify(appSpec, null, 2) , 'utf-8');
 }
 
-produceConfigs();
+produceConfigs().catch(err => {
+    console.error('There was an uncaught error', err);
+    process.exit(1);
+});
