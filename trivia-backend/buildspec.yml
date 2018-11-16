@@ -32,7 +32,7 @@ phases:
       - echo Built image $IMAGE_URI, pushed with tag $IMAGE_TAG
       - echo "{\"ImageURI\":\"$IMAGE_URI\"}" > image-detail.json
   post_build:
-    command:
+    commands:
       # Add subnet and security group info to appspec
       - cd blue-green-setup
       - mkdir build
