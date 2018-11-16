@@ -11,6 +11,7 @@ COPY app/package.json app/package-lock.json ./
 RUN npm ci && npm prune --production && npm cache clean --force
 COPY ./app /opt/app
 COPY ./data /opt/data
+RUN apidoc -f "routes/.*\\.js$" -i ./  -o apidoc/
 
 HEALTHCHECK --interval=30s CMD node healthcheck.js
 
