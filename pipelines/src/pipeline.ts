@@ -88,7 +88,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
                 "ecr:CompleteLayerUpload",
                 "ecr:PutImage"));
         buildProject.addToRolePolicy(new iam.PolicyStatement()
-            .addAction('cloudformation:DescribeStackResource')
+            .addAction('cloudformation:DescribeStackResources')
             .addResource(cdk.ArnUtils.fromComponents({
                 service: 'cloudformation',
                 resource: 'stack',
