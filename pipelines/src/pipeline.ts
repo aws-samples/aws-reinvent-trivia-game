@@ -26,6 +26,10 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
         });
         this.pipeline = pipeline;
 
+        pipeline.addToRolePolicy(new iam.PolicyStatement()
+            .addAllResources()
+            .addActions("ecr:DescribeImages"));
+
         // Source
         const githubAccessToken = new cdk.SecretParameter(this, 'GitHubToken', { ssmParameter: 'GitHubToken' });
         const sourceAction = new codepipeline.GitHubSourceAction(this, 'GitHubSource', {

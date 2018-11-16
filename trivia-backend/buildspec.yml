@@ -13,7 +13,9 @@ phases:
       - AWS_ACCOUNT_ID=`echo $CODEBUILD_BUILD_ARN | awk -F":" '{print $5}'`
       - ECR_REPO=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
       - $(aws ecr get-login --no-include-email)
-      # TODO Consume base image
+      # Consume base image
+      - export BASE_IMAGE=`jq -r '.ImageURI' <$CODEBUILD_SRC_DIR_BaseImage/imageDetail.json`
+      - sed -i "s|reinvent-trivia-backend-base:release|$BASE_IMAGE|g" Dockerfile
   build:
     commands:
       # Build Docker image
@@ -23,7 +25,7 @@ phases:
       # Save the Docker image digest
       - IMAGE_URI=`docker inspect --format='{{index .RepoDigests 0}}' $ECR_REPO:$IMAGE_TAG`
       - echo Built image $IMAGE_URI, pushed with tag $IMAGE_TAG
-      - echo "{\"imageURI\":\"$IMAGE_URI\"}" > image-detail.json
+      - echo "{\"ImageURI\":\"$IMAGE_URI\"}" > image-detail.json
       # Add subnet and security group info to appspec
       - cd blue-green-setup
       - mkdir build
