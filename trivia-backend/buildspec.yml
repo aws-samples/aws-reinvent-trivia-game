@@ -5,6 +5,11 @@ env:
     IMAGE_REPO_NAME: reinvent-trivia-backend
 
 phases:
+  install:
+    commands:
+      - apt-get update
+      - apt-get install -y jq
+      - npm install -g npm@6.4.1
   pre_build:
     commands:
       # Set up environment variables like image tag and repo
@@ -14,8 +19,6 @@ phases:
       - ECR_REPO=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
       - $(aws ecr get-login --no-include-email)
       # Consume base image
-      - apt-get update
-      - apt-get install -y jq
       - export BASE_IMAGE=`jq -r '.ImageURI' <$CODEBUILD_SRC_DIR_BaseImage/imageDetail.json`
       - sed -i "s|reinvent-trivia-backend-base:release|$BASE_IMAGE|g" Dockerfile
   build:
@@ -28,6 +31,8 @@ phases:
       - IMAGE_URI=`docker inspect --format='{{index .RepoDigests 0}}' $ECR_REPO:$IMAGE_TAG`
       - echo Built image $IMAGE_URI, pushed with tag $IMAGE_TAG
       - echo "{\"ImageURI\":\"$IMAGE_URI\"}" > image-detail.json
+  post_build:
+    command:
       # Add subnet and security group info to appspec
       - cd blue-green-setup
       - mkdir build
