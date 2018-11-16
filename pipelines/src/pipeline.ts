@@ -92,7 +92,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
             .addResource(cdk.ArnUtils.fromComponents({
                 service: 'cloudformation',
                 resource: 'stack',
-                resourceName: 'TriviaGame*'
+                resourceName: 'Trivia*'
             })));
 
         const buildStage = pipeline.addStage('Build');
