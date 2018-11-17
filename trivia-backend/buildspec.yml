@@ -34,7 +34,7 @@ phases:
       # Save the Docker image digest
       - IMAGE_URI=`docker inspect --format='{{index .RepoDigests 0}}' $ECR_REPO:$IMAGE_TAG`
       - echo Built image $IMAGE_URI, pushed with tag $IMAGE_TAG
-      - echo "{\"ImageURI\":\"$IMAGE_URI\"}" > image-detail.json
+      - echo "{\"ImageURI\":\"$IMAGE_URI\"}" > imageDetail.json
 
       # Add subnet and security group info to appspec
       - cd blue-green-setup
@@ -47,7 +47,7 @@ phases:
 
 artifacts:
   files:
-    - trivia-backend/image-detail.json
+    - trivia-backend/imageDetail.json
     - trivia-backend/blue-green-setup/build/appspec-prod.json
     - trivia-backend/blue-green-setup/build/appspec-test.json
     - trivia-backend/blue-green-setup/build/task-definition.json
