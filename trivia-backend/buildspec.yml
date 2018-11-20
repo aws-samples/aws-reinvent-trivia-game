@@ -51,7 +51,7 @@ secondary-artifacts:
       - trivia-backend/blue-green-setup/build/appspec-prod.json
       - trivia-backend/blue-green-setup/build/appspec-test.json
       - trivia-backend/blue-green-setup/build/task-definition.json
-      discard-paths: yes
+    discard-paths: yes
   ImageDetails:
     files:
       - trivia-backend/imageDetail.json
