@@ -9,7 +9,7 @@
                     "containerPort": 80
                 }
             ],
-            "image": "<IMAGE_PLACEHOLDER>",
+            "image": "<PLACEHOLDER>",
             "essential": true,
             "name": "web"
         }
