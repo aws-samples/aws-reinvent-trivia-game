@@ -45,10 +45,14 @@ phases:
       - cp task-definition.json build/
       - sed -i "s/123456789012/$AWS_ACCOUNT_ID/g" build/*
 
-artifacts:
-  files:
-    - trivia-backend/imageDetail.json
-    - trivia-backend/blue-green-setup/build/appspec-prod.json
-    - trivia-backend/blue-green-setup/build/appspec-test.json
-    - trivia-backend/blue-green-setup/build/task-definition.json
-  discard-paths: yes
+secondary-artifacts:
+  BuildArtifact:
+    files:
+      - trivia-backend/blue-green-setup/build/appspec-prod.json
+      - trivia-backend/blue-green-setup/build/appspec-test.json
+      - trivia-backend/blue-green-setup/build/task-definition.json
+      discard-paths: yes
+  ImageDetails:
+    files:
+      - trivia-backend/imageDetail.json
+    discard-paths: yes
