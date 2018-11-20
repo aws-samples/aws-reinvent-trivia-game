@@ -5,7 +5,7 @@
       "TargetService": {
         "Type": "AWS::ECS::Service",
         "Properties": {
-          "TaskDefinition": "arn:aws:ecs:us-east-1:123456789012:task-definition/trivia-backend:1",
+          "TaskDefinition": "<TASK_DEFINITION>",
           "LoadBalancerInfo": {
             "ContainerName": "web",
             "ContainerPort": 80

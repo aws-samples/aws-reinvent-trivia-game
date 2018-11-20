@@ -3,7 +3,7 @@
     "cluster": "default",
     "loadBalancers": [
         {
-            "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/PLACEHOLDER-NAME/PLACEHOLDER-ID",
+            "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:131296546870:targetgroup/PLACEHOLDER-NAME/PLACEHOLDER-ID",
             "containerName": "web",
             "containerPort": 80
         }
