@@ -12,14 +12,14 @@
           },
           "PlatformVersion": "LATEST",
           "NetworkConfiguration": {
-            "AwsvpcConfiguration": {
-              "Subnets": [
+            "awsvpcConfiguration": {
+              "subnets": [
                 "PLACEHOLDER_SUBNET"
               ],
-              "SecurityGroups": [
+              "securityGroups": [
                 "PLACEHOLDER_SECURITY_GROUP"
               ],
-              "AssignPublicIp": "DISABLED"
+              "assignPublicIp": "DISABLED"
             }
           }
         }
