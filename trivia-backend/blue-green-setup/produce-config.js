@@ -57,7 +57,8 @@ async function produceConfigs() {
     deploymentGroupConfig.loadBalancerInfo.targetGroupPairInfoList[0].prodTrafficRoute.listenerArns = [ mainTrafficListener ];
     deploymentGroupConfig.loadBalancerInfo.targetGroupPairInfoList[0].testTrafficRoute.listenerArns = [ testTrafficListener ];
     deploymentGroupConfig.alarmConfiguration.alarms = alarms;
-    deploymentGroupConfig.ecsServices[0].serviceName = "trivia-backend-blue-green-" + stage;
+    deploymentGroupConfig.ecsServices[0].serviceName = "trivia-backend-" + stage;
+    deploymentGroupConfig.applicationName = "AppECS-default-trivia-backend-" + stage;
     fs.writeFileSync(`./build/deployment-group-${stage}.json`, JSON.stringify(deploymentGroupConfig, null, 2) , 'utf-8');
 
     // Write out service config

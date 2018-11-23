@@ -1,5 +1,5 @@
 {
-    "applicationName": "trivia-backend-blue-green",
+    "applicationName": "AppECS-default-trivia-backend-PLACEHOLDER_STAGE",
     "autoRollbackConfiguration": {
         "enabled": true,
         "events": [
@@ -15,7 +15,7 @@
         },
         "terminateBlueInstancesOnDeploymentSuccess": {
             "action": "TERMINATE",
-            "terminationWaitTimeInMinutes": 5
+            "terminationWaitTimeInMinutes": 1
         }
     },
     "deploymentStyle": {
@@ -58,7 +58,7 @@
     "serviceRoleArn": "arn:aws:iam::131296546870:role/CodeDeployServiceRole",
     "ecsServices": [
         {
-            "serviceName": "trivia-backend-blue-green-PLACEHOLDER_STAGE",
+            "serviceName": "trivia-backend-PLACEHOLDER_STAGE",
             "clusterName": "default"
         }
     ]
