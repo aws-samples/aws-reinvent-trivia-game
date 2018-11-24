@@ -146,7 +146,7 @@ router.post('/question/:question_id', function(req, res, next) {
   });
 
   if (foundQuestion) {
-    if (foundQuestion.answerType == 'STRING' && typeof answer === 'string') {
+    if (foundQuestion.answerType == 'NUMBER' && typeof answer === 'string') {
       answer = parseInt(answer, 10);
     }
 
