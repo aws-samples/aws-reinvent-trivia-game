@@ -4,9 +4,9 @@ mkdir build
 
 export AWS_REGION=us-east-1
 
-node produce-config.js -g test -s TriviaBackendTest
+node produce-config.js -g test -s TriviaBackendTest -h TriviaBackendHooksTest
 
-node produce-config.js -g prod -s TriviaBackendProd
+node produce-config.js -g prod -s TriviaBackendProd -h TriviaBackendHooksProd
 
 # Create ECS resources
 

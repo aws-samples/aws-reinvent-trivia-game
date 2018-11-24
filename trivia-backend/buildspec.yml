@@ -40,8 +40,8 @@ phases:
       - cd blue-green-setup
       - mkdir build
       - npm ci
-      - node produce-config.js -g test -s TriviaBackendTest
-      - node produce-config.js -g prod -s TriviaBackendProd
+      - node produce-config.js -g test -s TriviaBackendTest -h TriviaBackendHooksTest
+      - node produce-config.js -g prod -s TriviaBackendProd -h TriviaBackendHooksProd
       - cp task-definition.json build/
       - sed -i "s/123456789012/$AWS_ACCOUNT_ID/g" build/*
 

@@ -26,5 +26,9 @@
       }
     }
   ],
-  "Hooks": []
+  "Hooks": [
+    {
+      "BeforeAllowTraffic": "PLACEHOLDER_HOOK_FUNCTION"
+    }
+  ]
 }

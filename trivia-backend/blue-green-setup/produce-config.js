@@ -8,6 +8,7 @@ const argv = require('yargs')
     .demandOption(['s', 'g'])
     .alias('s', 'stack-name')
     .alias('g', 'stage-name')
+    .alias('h', 'hook-stack-name')
     .argv;
 
 const deploymentGroupConfig = require('./deployment-group.json');
@@ -16,11 +17,13 @@ const appSpec = require('./appspec.json');
 
 const stack = argv.stackName;
 const stage = argv.stageName;
+const hookStack = argv.hookStackName;
 
 const cfn = new aws.CloudFormation();
 
 async function produceConfigs() {
     let data = await cfn.describeStackResources({ StackName: stack }).promise();
+    let hookData = await cfn.describeStackResources({ StackName: hookStack }).promise();
 
     // Make a whole bunch of assumptions about the contents of the CFN stack
     let targetGroupNames = [];
@@ -30,6 +33,7 @@ async function produceConfigs() {
     let privateSubnets = [];
     let serviceSecurityGroups = [];
     let alarms = [];
+    let preTrafficHook;
 
     for (const resource of data.StackResources) {
         if (resource.ResourceType == "AWS::CloudWatch::Alarm") {
@@ -52,6 +56,12 @@ async function produceConfigs() {
         }
     }
 
+    for (const resource of hookData.StackResources) {
+        if (resource.LogicalResourceId == 'PreTrafficHook') {
+            preTrafficHook = resource.PhysicalResourceId;
+        }
+    }
+
     // Write out deployment config
     deploymentGroupConfig.loadBalancerInfo.targetGroupPairInfoList[0].targetGroups = targetGroupNames;
     deploymentGroupConfig.loadBalancerInfo.targetGroupPairInfoList[0].prodTrafficRoute.listenerArns = [ mainTrafficListener ];
@@ -70,6 +80,7 @@ async function produceConfigs() {
     // Write out appspec
     appSpec.Resources[0].TargetService.Properties.NetworkConfiguration.awsvpcConfiguration.subnets = privateSubnets;
     appSpec.Resources[0].TargetService.Properties.NetworkConfiguration.awsvpcConfiguration.securityGroups = serviceSecurityGroups;
+    appSpec.Hooks[0].BeforeAllowTraffic = preTrafficHook;
     fs.writeFileSync(`./build/appspec-${stage}.json`, JSON.stringify(appSpec, null, 2) , 'utf-8');
 }
 

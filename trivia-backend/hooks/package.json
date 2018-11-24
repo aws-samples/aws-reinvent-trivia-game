@@ -1,0 +1,8 @@
+{
+  "name": "aws-trivia-game-backend-validation-hooks",
+  "version": "1.0.0",
+  "dependencies": {
+    "axios": "^0.18.0"
+  },
+  "private": true
+}

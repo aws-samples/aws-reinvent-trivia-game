@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Validation hooks for trivia backend
+
+Parameters:
+  TriviaBackendDomain:
+    Type: String
+    Default: 'api.reinvent-trivia.com'
+
+  TriviaBackendTestPort:
+    Type: Number
+    Default: 9002
+
+Resources:
+  PreTrafficHook:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Join
+        - '-'
+        - - 'CodeDeployHook_'
+          - !Ref "AWS::StackName"
+          - 'pre-traffic-hook'
+      CodeUri: ./
+      Timeout: 300
+      Handler: pre-traffic-hook.handler
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+          - Effect: "Allow"
+            Action:
+              - "codedeploy:PutLifecycleEventHookExecutionStatus"
+            Resource:
+              !Sub 'arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:AppECS-*/DgpECS-*'
+      Runtime: nodejs8.10
+      DeploymentPreference:
+        Enabled: false
+        Role: ""
+      Environment:
+        Variables:
+          TargetUrl: !Join # Example: https://api.reinvent-trivia.com:9002/api/trivia/all
+            - ''
+            - - 'https://'
+              - !Ref TriviaBackendDomain
+              - ':'
+              - !Ref TriviaBackendTestPort
+              - '/api/trivia/all'
