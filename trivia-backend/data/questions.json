@@ -62,7 +62,7 @@
       {
         "id": 6,
         "points": 200,
-        "question": "How many casinos does the re:Invent campus span this year (2018)?",
+        "question": "How many venues does the re:Invent campus span this year (2018)?",
         "answer": 7,
         "answerType": "NUMBER"
       },
@@ -113,7 +113,7 @@
       {
         "id": 11,
         "points": 300,
-        "question": "What venue hosts the re:play party?",
+        "question": "What venue hosted the re:play party in 2017?",
         "answer": "The Linq",
         "answerType": "STRING",
         "alternativeAnswers": [
