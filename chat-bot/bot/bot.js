@@ -47,7 +47,7 @@ async function getQuestion(id) {
 // Post answer to backend
 async function answerQuestion(id, answer) {
     const url = API_ENDPOINT + '/api/trivia/question/' + id;
-    console.log('Requesting (POST) ' + url);
+    console.log('Requesting (POST) ' + url + ' with answer ' + answer);
     return await axios.post(url, { answer });
 }
 
@@ -93,6 +93,7 @@ async function nextQuestion(intentRequest) {
     // null user answer means a string response did not match any of the sample utterances
     if (userAnswer) {
         const answerData = await answerQuestion(currentQuestionId, userAnswer);
+        console.log(answerData.data);
         isCorrect = answerData.data.result;
     }
 
@@ -139,6 +140,7 @@ async function finishGame(intentRequest) {
     // null user answer means a string response did not match any of the sample utterances
     if (userAnswer) {
         const answerData = await answerQuestion(currentQuestionId, userAnswer);
+        console.log(answerData.data);
         isCorrect = answerData.data.result;
     }
 
