@@ -39,7 +39,7 @@ Resources:
       AutoPublishAlias: live
       DeploymentPreference:
         Enabled: true
-        Type: Linear10PercentEvery1Minute
+        Type: Canary10Percent5Minutes
         Alarms:
           - !Ref BotLatestVersionErrorMetricGreaterThanZeroAlarm
           - !Ref BotAliasErrorMetricGreaterThanZeroAlarm
