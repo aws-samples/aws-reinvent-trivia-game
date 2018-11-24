@@ -29,7 +29,7 @@
     "slotToElicit": "two",
     "message": {
       "contentType": "PlainText",
-      "content": "That is correct! New score is 100 points! For 200 points: What Amazon-favorite sport was introduced in re:Invent attendees in 2016?"
+      "content": "That is correct! The answer is \"2012\". New score is 100 points! For 200 points: What Amazon-favorite sport was introduced in re:Invent attendees in 2016?"
     }
   }
 }

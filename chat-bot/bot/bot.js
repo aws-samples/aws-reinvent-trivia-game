@@ -101,7 +101,7 @@ async function nextQuestion(intentRequest) {
 
     if (isCorrect) {
         score += currentQuestionData.data.points;
-        messageContent += "That is correct! New score is " + score + " points! ";
+        messageContent += `That is correct! The answer is "${currentQuestionData.data.answer}". New score is ${score} points! `;
     } else {
         messageContent += `Incorrect! The correct answer is "${currentQuestionData.data.answer}". `;
     }
