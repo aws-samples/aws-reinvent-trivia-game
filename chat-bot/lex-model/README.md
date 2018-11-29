@@ -1,1 +1,0 @@
-aws iam create-service-linked-role --aws-service-name lex.amazonaws.com

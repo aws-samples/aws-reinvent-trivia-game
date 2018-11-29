@@ -5,7 +5,7 @@ const fs = require('fs');
 
 const argv = require('yargs')
     .usage('Create ECS/CodeDeploy config files with values from CloudFormation stack\nUsage: $0')
-    .demandOption(['s', 'g'])
+    .demandOption(['s', 'g', 'h'])
     .alias('s', 'stack-name')
     .alias('g', 'stage-name')
     .alias('h', 'hook-stack-name')
