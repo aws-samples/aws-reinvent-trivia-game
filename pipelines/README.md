@@ -12,18 +12,6 @@ In src/ directory:
 
 ## Prep
 
-Create AWS Certificate Manager for the various subdomain names, then put the unique ARN of those certificates in an AWS Systems Manager Parameter Store parameter.  Note that the certificates for the static site (www and test subdomains) must be created in us-east-1, because they are used by CloudFront.
-
-```
-aws ssm put-parameter --name CertificateArn-www.reinvent-trivia.com --type String --value arn:aws:acm:...
-
-aws ssm put-parameter --name CertificateArn-test.reinvent-trivia.com --type String --value arn:aws:acm:...
-
-aws ssm put-parameter --name CertificateArn-api.reinvent-trivia.com --type String --value arn:aws:acm:...
-
-aws ssm put-parameter --name CertificateArn-test-api.reinvent-trivia.com --type String --value arn:aws:acm:...
-```
-
 Create a GitHub [personal access token](https://github.com/settings/tokens) with access to your fork of the repo, including "admin:repo_hook" and "repo" permissions.  Then store the token in Parameter Store:
 
 ```
