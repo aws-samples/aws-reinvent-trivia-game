@@ -96,7 +96,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
             })));
 
         const buildStage = pipeline.addStage('Build');
-        const buildAction = buildProject.addBuildToPipeline(buildStage, 'CodeBuild');
+        const buildAction = buildProject.addToPipeline(buildStage, 'CodeBuild');
 
         // Test
         const testStage = pipeline.addStage('Test');
@@ -109,7 +109,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
             stackName: testStackName,
             changeSetName,
             runOrder: 1,
-            fullPermissions: true,
+            adminPermissions: true,
             templatePath: buildAction.outputArtifact.atPath(templatePrefix + 'Test.template.yaml'),
         });
 
@@ -129,7 +129,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
             stackName: prodStackName,
             changeSetName,
             runOrder: 1,
-            fullPermissions: true,
+            adminPermissions: true,
             templatePath: buildAction.outputArtifact.atPath(templatePrefix + 'Prod.template.yaml'),
         });
 

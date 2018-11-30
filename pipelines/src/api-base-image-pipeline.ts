@@ -44,7 +44,7 @@ class TriviaGameBackendBaseImagePipeline extends cdk.Stack {
                 "ecr:UploadLayerPart",
                 "ecr:CompleteLayerUpload",
                 "ecr:PutImage"));
-        project.addBuildToPipeline(buildStage, 'CodeBuild');
+        project.addToPipeline(buildStage, 'CodeBuild');
     }
 }
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { CertificateRef } from '@aws-cdk/aws-certificatemanager';
 import { VpcNetwork } from '@aws-cdk/aws-ec2';
-import { RepositoryRef } from '@aws-cdk/aws-ecr';
+import { Repository } from '@aws-cdk/aws-ecr';
 import { Cluster, ContainerImage, LoadBalancedFargateService } from '@aws-cdk/aws-ecs';
 import {
   ApplicationProtocol,
@@ -32,13 +32,7 @@ class TriviaBackendStack extends cdk.Stack {
     const domainZone = new HostedZoneProvider(this, { domainName: props.domainZone }).findAndImport(this, 'Zone');
     const certParam = new cdk.SSMParameterProvider(this, { parameterName: 'CertificateArn-' + props.domainName });
     const certificate = CertificateRef.import(this, 'Cert', { certificateArn: certParam.parameterValue() });
-    const imageRepo = RepositoryRef.import(this, 'Repo', {
-      repositoryArn: cdk.ArnUtils.fromComponents({
-        service: 'ecr',
-        resource: 'repository',
-        resourceName: 'reinvent-trivia-backend'
-      })
-    });
+    const imageRepo = Repository.import(this, 'Repo', { repositoryName: 'reinvent-trivia-backend' });
     const tag = (process.env.IMAGE_TAG) ? process.env.IMAGE_TAG : 'latest';
     const image = ContainerImage.fromEcrRepository(imageRepo, tag)
 

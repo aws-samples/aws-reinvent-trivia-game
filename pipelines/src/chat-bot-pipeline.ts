@@ -41,7 +41,7 @@ class TriviaGameChatBotPipelineStack extends cdk.Stack {
             })));
 
         const deployLexStage = pipeline.addStage('DeployLexBot');
-        lexProject.addBuildToPipeline(deployLexStage, 'Deploy',
+        lexProject.addToPipeline(deployLexStage, 'Deploy',
             { inputArtifact: pipelineConstruct.sourceAction.outputArtifact });
     }
 }
