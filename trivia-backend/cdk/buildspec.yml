@@ -7,27 +7,32 @@ env:
 phases:
   install:
     commands:
-      # Install CDK
+      # Install CDK & jq, upgrade npm
+      - apt-get update
+      - apt-get install -y jq
       - npm install -g npm@6.4.1
       - npm install -g aws-cdk
+
   pre_build:
     commands:
-      # Set up environment variables
+      # Set up environment variables like image tag and repo
       - cd $CODEBUILD_SRC_DIR/trivia-backend
       - export IMAGE_TAG=build-`echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}'`
       - AWS_ACCOUNT_ID=`echo $CODEBUILD_BUILD_ARN | awk -F":" '{print $5}'`
       - ECR_REPO=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
       - $(aws ecr get-login --no-include-email)
-      # Build base Docker image
-      - cd base
-      - docker build -t reinvent-trivia-backend-base:release .
-      - cd ..
+
+      # Consume base image
+      - export BASE_IMAGE=`jq -r '.ImageURI' <$CODEBUILD_SRC_DIR_BaseImage/imageDetail.json`
+      - sed -i "s|reinvent-trivia-backend-base:release|$BASE_IMAGE|g" Dockerfile
+
+  build:
+    commands:
       # Build Docker image
       - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $ECR_REPO:$IMAGE_TAG
       - docker push $ECR_REPO:$IMAGE_TAG
-  build:
-    commands:
+
       # Synthesize CloudFormation templates
       - cd $CODEBUILD_SRC_DIR/trivia-backend/cdk
       - npm ci
