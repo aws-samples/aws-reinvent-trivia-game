@@ -7,6 +7,9 @@ phases:
       - npm install -g npm@6.4.1
       - npm install -g aws-cdk
       - npm ci
+  pre_build:
+    commands:
+      - export AWS_ACCOUNT_ID=`echo $CODEBUILD_BUILD_ARN | awk -F":" '{print $5}'`
   build:
     commands:
       - npm run build

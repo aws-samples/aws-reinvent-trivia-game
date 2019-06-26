@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import cdk = require('@aws-cdk/cdk');
+import cdk = require('@aws-cdk/core');
 import { StaticSite } from './static-site';
 
 interface TriviaGameInfrastructureStackProps extends cdk.StackProps {
@@ -21,10 +21,12 @@ class TriviaGameInfrastructureStack extends cdk.Stack {
 const app = new cdk.App();
 new TriviaGameInfrastructureStack(app, 'TriviaGameStaticSiteInfraTest', {
     domainName: 'reinvent-trivia.com',
-    siteSubDomain: 'test'
+    siteSubDomain: 'test',
+    env: { account: process.env["AWS_ACCOUNT_ID"], region: 'us-east-1' }
 });
 new TriviaGameInfrastructureStack(app, 'TriviaGameStaticSiteInfraProd', {
-    domainName: 'reinvent-trivia.com', 
-    siteSubDomain: 'www'
+    domainName: 'reinvent-trivia.com',
+    siteSubDomain: 'www',
+    env: { account: process.env["AWS_ACCOUNT_ID"], region: 'us-east-1' }
 });
-app.run();
+app.synth();

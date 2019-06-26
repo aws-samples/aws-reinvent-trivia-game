@@ -2,7 +2,9 @@
 import cloudfront = require('@aws-cdk/aws-cloudfront');
 import route53 = require('@aws-cdk/aws-route53');
 import s3 = require('@aws-cdk/aws-s3');
-import cdk = require('@aws-cdk/cdk');
+import ssm = require('@aws-cdk/aws-ssm');
+import cdk = require('@aws-cdk/core');
+import targets = require('@aws-cdk/aws-route53-targets/lib');
 
 export interface StaticSiteProps {
     domainName: string;
@@ -22,17 +24,18 @@ export class StaticSite extends cdk.Construct {
             websiteErrorDocument: 'error.html',
             publicReadAccess: true
         });
+        new cdk.CfnOutput(this, 'Bucket', { value: siteBucket.bucketName });
 
-        const certificateArn = new cdk.SSMParameterProvider(this, {
-            parameterName: 'CertificateArn-' + siteDomain
-        }).parameterValue();
+        // Pre-existing ACM certificate, with the ARN stored in an SSM Parameter
+        const certificateArn = ssm.StringParameter.fromStringParameterName(this, 'ArnParameter', 'CertificateArn-' + siteDomain).stringValue;
 
+        // CloudFront distribution that provides HTTPS
         const distribution = new cloudfront.CloudFrontWebDistribution(this, 'SiteDistribution', {
             aliasConfiguration: {
                 acmCertRef: certificateArn,
                 names: [ siteDomain ],
                 sslMethod: cloudfront.SSLMethod.SNI,
-                securityPolicy: cloudfront.SecurityPolicyProtocol.TLSv1_1_2016
+                securityPolicy: cloudfront.SecurityPolicyProtocol.TLS_V1_1_2016
             },
             originConfigs: [
                 {
@@ -43,11 +46,14 @@ export class StaticSite extends cdk.Construct {
                 }
             ]
         });
+        new cdk.CfnOutput(this, 'DistributionId', { value: distribution.distributionId });
 
-        const zone = new route53.HostedZoneProvider(this, { domainName: props.domainName }).findAndImport(this, 'Zone');
-        new route53.AliasRecord(zone, 'SiteAliasRecord', {
+        // Route53 alias record for the CloudFront distribution
+        const zone = route53.HostedZone.fromLookup(this, 'Zone', { domainName: props.domainName });
+        new route53.ARecord(this, 'SiteAliasRecord', {
             recordName: siteDomain,
-            target: distribution
+            target: route53.AddressRecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
+            zone
         });
     }
 }
