@@ -12,12 +12,14 @@
   "devDependencies": {
     "@types/node": "^10.9.4",
     "typescript": "^3.1.2",
-    "aws-cdk": "^0.19.0"
+    "aws-cdk": "^0.36.0"
   },
   "dependencies": {
-    "@aws-cdk/aws-cloudfront": "^0.19.0",
-    "@aws-cdk/aws-route53": "^0.19.0",
-    "@aws-cdk/aws-s3": "^0.19.0",
-    "@aws-cdk/cdk": "^0.19.0"
+    "@aws-cdk/aws-cloudfront": "^0.36.0",
+    "@aws-cdk/aws-route53": "^0.36.0",
+    "@aws-cdk/aws-route53-targets": "^0.36.0",
+    "@aws-cdk/aws-s3": "^0.36.0",
+    "@aws-cdk/aws-ssm": "^0.36.0",
+    "@aws-cdk/cdk": "^0.36.0"
   }
 }
