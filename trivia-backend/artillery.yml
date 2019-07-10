@@ -1,0 +1,36 @@
+config:
+  target: "https://{{ $processEnvironment.TRIVIA_SUBDOMAIN }}.reinvent-trivia.com"
+  phases:
+    - duration: 600
+      arrivalRate: 1
+      name: "Minimal load"
+    - duration: 1200
+      arrivalRate: 1
+      rampTo: 50
+      name: "Ramp up load"
+    - duration: 1800
+      arrivalRate: 50
+      name: "High load"
+scenarios:
+  - name: "Documentation"
+    weight: 1
+    flow:
+    - get:
+        url: "/api/docs/"
+  - name: "Get all questions"
+    weight: 5
+    flow:
+    - get:
+        url: "/api/trivia/all"
+  - name: "Get single question"
+    weight: 2
+    flow:
+    - get:
+        url: "/api/trivia/question/1"
+  - name: "Answer single question"
+    weight: 2
+    flow:
+    - post:
+        url: "/api/trivia/question/1"
+        json:
+          answer: "Broomball"
