@@ -12,14 +12,6 @@ aws ecr create-repository --repository-name reinvent-trivia-backend
 aws ecr create-repository --repository-name reinvent-trivia-backend-base
 ```
 
-Create AWS Certificate Manager certificates for the 'api' and 'test-api' subdomains, then put the unique ARN of those certificates in an AWS Systems Manager Parameter Store parameter.
-
-```
-aws ssm put-parameter --name CertificateArn-api.reinvent-trivia.com --type String --value arn:aws:acm:...
-
-aws ssm put-parameter --name CertificateArn-test-api.reinvent-trivia.com --type String --value arn:aws:acm:...
-```
-
 ## Customize
 
 Replace all references to 'reinvent-trivia.com' with your own domain name.
@@ -28,7 +20,7 @@ Replace all references to 'reinvent-trivia.com' with your own domain name.
 
 The base image Dockerfile can be found in the base/ directory.  In the backend pipeline modeled in the "pipelines" folder, the base image is built in one "base image" pipeline, which triggers another pipeline for the main application.  In the main application pipeline, the base image URI is replaced in the main Dockerfile with the latest base image that triggered the pipeline.
 
-Locally, it can be built with:
+Locally, it can be built with the following commands.  Follow the "push commands" instructions in the ECR console to push them into the ECR repository.
 
 ```
 docker build -t reinvent-trivia-backend-base:release base/
@@ -40,20 +32,17 @@ docker build -t reinvent-trivia-backend:release .
 
 The cdk folder contains examples of how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and provision the service with AWS CloudFormation.
 
-To deploy the "declarative" example (yaml-based), run the following, then deploy the resulting CloudFormation templates with CloudFormation:
-```
-npm intall
-
-npx cdk --app fargate-services.yaml synth -o build
-```
-
-To deploy the Typescript example, run the following, then deploy the resulting CloudFormation templates with CloudFormation.  But ideally, use the pipeline defined in the "pipelines" folder.
+To deploy the Typescript example, run the following.
 ```
 npm install
 
 npm run build
 
 cdk synth -o build --app 'node ecs-service.js'
+
+cdk deploy --app ecs-service.js TriviaBackendTest
+
+cdk deploy --app ecs-service.js TriviaBackendProd
 ```
 
 # Blue-green deployments
