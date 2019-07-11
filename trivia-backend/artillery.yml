@@ -1,15 +1,21 @@
+# Run with:
+# artillery run -t https://api-test.reinvent-trivia.com artillery.yml
+
 config:
-  target: "https://{{ $processEnvironment.TRIVIA_SUBDOMAIN }}.reinvent-trivia.com"
+  http:
+    pool: 250
   phases:
     - duration: 600
-      arrivalRate: 1
+      arrivalRate: 10
       name: "Minimal load"
     - duration: 1200
-      arrivalRate: 1
-      rampTo: 50
+      arrivalRate: 10
+      rampTo: 1000
       name: "Ramp up load"
     - duration: 1800
-      arrivalRate: 50
+       # This seems to be the max RPS for single core.
+       # Run multiple instances of artillery to utilize multiple cores.
+      arrivalRate: 1000
       name: "High load"
 scenarios:
   - name: "Documentation"
