@@ -11,15 +11,16 @@
   },
   "devDependencies": {
     "@types/node": "^10.9.4",
-    "aws-cdk": "^0.36.0",
+    "aws-cdk": "^1.7.0",
     "typescript": "^3.1.2"
   },
   "dependencies": {
-    "@aws-cdk/aws-certificatemanager": "^0.36.0",
-    "@aws-cdk/aws-cloudfront": "^0.36.0",
-    "@aws-cdk/aws-route53": "^0.36.0",
-    "@aws-cdk/aws-route53-targets": "^0.36.0",
-    "@aws-cdk/aws-s3": "^0.36.0",
-    "@aws-cdk/cdk": "^0.36.0"
+    "@aws-cdk/aws-certificatemanager": "^1.7.0",
+    "@aws-cdk/aws-cloudfront": "^1.7.0",
+    "@aws-cdk/aws-route53": "^1.7.0",
+    "@aws-cdk/aws-route53-targets": "^1.7.0",
+    "@aws-cdk/aws-s3": "^1.7.0",
+    "@aws-cdk/aws-s3-deployment": "^1.7.0",
+    "@aws-cdk/core": "^1.7.0"
   }
 }
