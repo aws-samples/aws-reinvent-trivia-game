@@ -16,16 +16,16 @@
   "devDependencies": {
     "@types/node": "^10.9.4",
     "typescript": "^3.1.2",
-    "aws-cdk": "^0.19.0"
+    "aws-cdk": "^1.7.0"
   },
   "dependencies": {
-    "@aws-cdk/aws-cloudformation": "^0.19.0",
-    "@aws-cdk/aws-codebuild": "^0.19.0",
-    "@aws-cdk/aws-codecommit": "^0.19.0",
-    "@aws-cdk/aws-codepipeline": "^0.19.0",
-    "@aws-cdk/aws-codepipeline-api": "^0.19.0",
-    "@aws-cdk/aws-ecr": "^0.19.0",
-    "@aws-cdk/aws-iam": "^0.19.0",
-    "@aws-cdk/cdk": "^0.19.0"
+    "@aws-cdk/aws-cloudformation": "^1.7.0",
+    "@aws-cdk/aws-codebuild": "^1.7.0",
+    "@aws-cdk/aws-codecommit": "^1.7.0",
+    "@aws-cdk/aws-codepipeline": "^1.7.0",
+    "@aws-cdk/aws-codepipeline-actions": "^1.7.0",
+    "@aws-cdk/aws-ecr": "^1.7.0",
+    "@aws-cdk/aws-iam": "^1.7.0",
+    "@aws-cdk/core": "^1.7.0"
   }
 }
