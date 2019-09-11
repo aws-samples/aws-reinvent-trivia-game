@@ -1,0 +1,27 @@
+version: 0.2
+
+env:
+  variables:
+    STAGE: "dev"
+
+phases:
+  install:
+    commands:
+      # Install dependencies for both site content and for CDK
+      - npm install -g npm@6.4.1
+      - npm install -g aws-cdk
+      - cd static-site/app
+      - npm ci
+      - cd ../cdk
+      - npm ci
+  build:
+    commands:
+      # Compile the site content
+      - cd ../app/
+      - npm run build:$STAGE
+      - cp index.html build/
+      - cp -rf assets build/
+      # Deploy via the CDK
+      - cd ../cdk
+      - npm run build
+      - npm run deploy-infra-$STAGE

@@ -3,6 +3,7 @@ import acm = require('@aws-cdk/aws-certificatemanager');
 import cloudfront = require('@aws-cdk/aws-cloudfront');
 import route53 = require('@aws-cdk/aws-route53');
 import s3 = require('@aws-cdk/aws-s3');
+import s3deploy = require('@aws-cdk/aws-s3-deployment');
 import cdk = require('@aws-cdk/core');
 import targets = require('@aws-cdk/aws-route53-targets/lib');
 
@@ -16,6 +17,7 @@ export class StaticSite extends cdk.Construct {
         super(parent, name);
 
         const siteDomain = props.siteSubDomain + '.' + props.domainName;
+        new cdk.CfnOutput(this, 'Site', { value: 'https://' + siteDomain });
         const zone = route53.HostedZone.fromLookup(this, 'Zone', { domainName: props.domainName });
 
         // Content bucket
@@ -28,16 +30,16 @@ export class StaticSite extends cdk.Construct {
         new cdk.CfnOutput(this, 'Bucket', { value: siteBucket.bucketName });
 
         // TLS certificate
-        const certificate = new acm.DnsValidatedCertificate(this, 'SiteCertificate', {
+        const certificateArn = new acm.DnsValidatedCertificate(this, 'SiteCertificate', {
             domainName: siteDomain,
             hostedZone: zone
-        });
-        new cdk.CfnOutput(this, 'Certificate', { value: certificate.certificateArn });
+        }).certificateArn;
+        new cdk.CfnOutput(this, 'Certificate', { value: certificateArn });
 
         // CloudFront distribution that provides HTTPS
         const distribution = new cloudfront.CloudFrontWebDistribution(this, 'SiteDistribution', {
             aliasConfiguration: {
-                acmCertRef: certificate.certificateArn,
+                acmCertRef: certificateArn,
                 names: [ siteDomain ],
                 sslMethod: cloudfront.SSLMethod.SNI,
                 securityPolicy: cloudfront.SecurityPolicyProtocol.TLS_V1_1_2016
@@ -59,6 +61,13 @@ export class StaticSite extends cdk.Construct {
             target: route53.AddressRecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
             zone
         });
-        new cdk.CfnOutput(this, 'Site', { value: 'https://' + siteDomain });
+
+        // Deploy site contents to S3 bucket
+        new s3deploy.BucketDeployment(this, 'DeployWithInvalidation', {
+            source: s3deploy.Source.asset('../app/build'),
+            destinationBucket: siteBucket,
+            distribution,
+            distributionPaths: ['/*'],
+          });
     }
 }
