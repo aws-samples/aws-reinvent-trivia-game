@@ -22,44 +22,34 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
             oauthToken: githubAccessToken.value
         });
 
-        // Build
-        const buildStage = pipeline.addStage('Build');
-        this.addBuildAction(buildStage, 'Build', 'dev', '', source.outputArtifact);
-
-        // Test
+        // Deploy to test site
         const testStage = pipeline.addStage('Test');
-        this.addBuildAction(testStage, 'Test', 'test', 'test.reinvent-trivia.com', source.outputArtifact);
+        this.addBuildAction(testStage, 'Test', 'dev', source.outputArtifact);
 
-        // Prod
+        // Deploy to prod site
         const prodStage = pipeline.addStage('Prod');
-        this.addBuildAction(prodStage, 'Prod', 'prod', 'www.reinvent-trivia.com', source.outputArtifact);
+        this.addBuildAction(prodStage, 'Prod', 'prod', source.outputArtifact);
     }
 
-    private addBuildAction(stage: codepipeline.Stage, stageName: string, buildTarget: string, websiteBucket: string, input: codepipelineApi.Artifact) {
+    private addBuildAction(stage: codepipeline.Stage, stageName: string, buildTarget: string, input: codepipelineApi.Artifact) {
         const project = new codebuild.PipelineProject(this, stageName + 'Project', {
-            buildSpec: 'static-site/app/buildspec.yml',
+            buildSpec: 'static-site/buildspec.yml',
             environment: {
                 buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0,
                 environmentVariables: {
                     'STAGE': {
                         value: buildTarget
-                    },
-                    'WEBSITE_BUCKET': {
-                        value: websiteBucket
                     }
                 }
             }
         });
-        if (websiteBucket.length > 0) {
-            project.addToRolePolicy(new iam.PolicyStatement()
-                .addActions('s3:PutObject', 's3:ListBucket')
-                .addResource('arn:aws:s3:::' + websiteBucket)
-                .addResource('arn:aws:s3:::' + websiteBucket + '/*'));
-            project.addToRolePolicy(new iam.PolicyStatement()
-                .addActions('cloudfront:ListDistributions', 'cloudfront:CreateInvalidation')
-                .addAllResources());
-        }
-        new codebuild.PipelineBuildAction(this, 'Webpack' + stageName, {
+
+        // TODO scope down permissions needed for cdk deploy
+        project.addToRolePolicy(new iam.PolicyStatement()
+            .addAction('*')
+            .addAllResources());
+
+        new codebuild.PipelineBuildAction(this, 'Deploy' + stageName, {
             stage,
             project,
             inputArtifact: input

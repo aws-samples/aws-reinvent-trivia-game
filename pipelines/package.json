@@ -4,8 +4,6 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "synth-static-site-infra-pipeline": "cdk synth -o build --app 'node src/static-site-infra-pipeline.js'",
-    "deploy-static-site-infra-pipeline": "cdk deploy --app 'node src/static-site-infra-pipeline.js'",
     "synth-static-site-pipeline": "cdk synth -o build --app 'node src/static-site-pipeline.js'",
     "deploy-static-site-pipeline": "cdk deploy --app 'node src/static-site-pipeline.js'",
     "synth-backend-pipeline": "cdk synth -o build --app 'node src/api-service-pipeline.js'",
