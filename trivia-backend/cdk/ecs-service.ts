@@ -105,11 +105,11 @@ const app = new cdk.App();
 new TriviaBackendStack(app, 'TriviaBackendTest', {
   domainName: 'api-test.reinvent-trivia.com',
   domainZone: 'reinvent-trivia.com',
-  env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: process.env['CDK_DEFAULT_REGION'] }
+  env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' }
 });
 new TriviaBackendStack(app, 'TriviaBackendProd', {
   domainName: 'api.reinvent-trivia.com',
   domainZone: 'reinvent-trivia.com',
-  env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: process.env['CDK_DEFAULT_REGION'] }
+  env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' }
 });
 app.synth();

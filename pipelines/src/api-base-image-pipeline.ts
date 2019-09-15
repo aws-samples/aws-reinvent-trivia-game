@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import codebuild = require('@aws-cdk/aws-codebuild');
 import codepipeline = require('@aws-cdk/aws-codepipeline');
+import actions = require('@aws-cdk/aws-codepipeline-actions');
 import iam = require('@aws-cdk/aws-iam');
-import cdk = require('@aws-cdk/cdk');
+import cdk = require('@aws-cdk/core');
 
 class TriviaGameBackendBaseImagePipeline extends cdk.Stack {
     constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
@@ -13,26 +14,30 @@ class TriviaGameBackendBaseImagePipeline extends cdk.Stack {
         });
 
         // Source
-        const githubAccessToken = new cdk.SecretParameter(this, 'GitHubToken', { ssmParameter: 'GitHubToken' });
-        new codepipeline.GitHubSourceAction(this, 'GitHubSource', {
-            stage: pipeline.addStage('Source'),
+        const githubAccessToken = cdk.SecretValue.secretsManager('TriviaGitHubToken');
+        const sourceOutput = new codepipeline.Artifact('SourceArtifact');
+        const sourceAction = new actions.GitHubSourceAction({
+            actionName: 'GitHubSource',
             owner: 'aws-samples',
             repo: 'aws-reinvent-2018-trivia-game',
-            oauthToken: githubAccessToken.value
+            oauthToken: githubAccessToken,
+            output: sourceOutput
+        });
+        pipeline.addStage({
+            stageName: 'Source',
+            actions: [sourceAction],
         });
 
         // Build
-        const buildStage = pipeline.addStage('Build');
         const project = new codebuild.PipelineProject(this, 'BuildBaseImage', {
-            buildSpec: 'trivia-backend/base/buildspec.yml',
+            buildSpec: codebuild.BuildSpec.fromSourceFilename('trivia-backend/base/buildspec.yml'),
             environment: {
                 buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_DOCKER_17_09_0,
                 privileged: true
             }
         });
-        project.addToRolePolicy(new iam.PolicyStatement()
-            .addAllResources()
-            .addActions("ecr:GetAuthorizationToken",
+        project.addToRolePolicy(new iam.PolicyStatement({
+            actions: ["ecr:GetAuthorizationToken",
                 "ecr:BatchCheckLayerAvailability",
                 "ecr:GetDownloadUrlForLayer",
                 "ecr:GetRepositoryPolicy",
@@ -43,11 +48,26 @@ class TriviaGameBackendBaseImagePipeline extends cdk.Stack {
                 "ecr:InitiateLayerUpload",
                 "ecr:UploadLayerPart",
                 "ecr:CompleteLayerUpload",
-                "ecr:PutImage"));
-        project.addToPipeline(buildStage, 'CodeBuild');
+                "ecr:PutImage"
+            ],
+            resources: ["*"]
+        }));
+
+        const buildAction = new actions.CodeBuildAction({
+            actionName: 'CodeBuild',
+            project,
+            input: sourceOutput
+        });
+
+        pipeline.addStage({
+            stageName: 'Build',
+            actions: [buildAction]
+        });
     }
 }
 
 const app = new cdk.App();
-new TriviaGameBackendBaseImagePipeline(app, 'TriviaGameBackendBaseImagePipeline');
-app.run();
+new TriviaGameBackendBaseImagePipeline(app, 'TriviaGameBackendBaseImagePipeline', {
+    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' }
+});
+app.synth();

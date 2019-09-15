@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import codebuild = require('@aws-cdk/aws-codebuild');
 import codepipeline = require('@aws-cdk/aws-codepipeline');
+import actions = require('@aws-cdk/aws-codepipeline-actions');
 import ecr = require('@aws-cdk/aws-ecr');
-import cfn = require('@aws-cdk/aws-cloudformation');
 import iam = require('@aws-cdk/aws-iam');
-import cdk = require('@aws-cdk/cdk');
+import cdk = require('@aws-cdk/core');
 
 class TriviaGameBackendPipelineStack extends cdk.Stack {
     constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
@@ -14,35 +14,43 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
             pipelineName: 'reinvent-trivia-game-trivia-backend-cfn-deploy',
         });
 
-        pipeline.addToRolePolicy(new iam.PolicyStatement()
-            .addAllResources()
-            .addActions("ecr:DescribeImages"));
+        pipeline.addToRolePolicy(new iam.PolicyStatement({
+            actions: ["ecr:DescribeImages"],
+            resources: ["*"]
+        }));
 
         // Source
-        const sourceStage = pipeline.addStage('Source');
-
-        const githubAccessToken = new cdk.SecretParameter(this, 'GitHubToken', { ssmParameter: 'GitHubToken' });
-        new codepipeline.GitHubSourceAction(this, 'GitHubSource', {
-            stage: sourceStage,
+        const githubAccessToken = cdk.SecretValue.secretsManager('TriviaGitHubToken');
+        const sourceOutput = new codepipeline.Artifact('SourceArtifact');
+        const sourceAction = new actions.GitHubSourceAction({
+            actionName: 'GitHubSource',
             owner: 'aws-samples',
             repo: 'aws-reinvent-2018-trivia-game',
-            oauthToken: githubAccessToken.value
+            oauthToken: githubAccessToken,
+            output: sourceOutput
         });
 
-        const baseImageRepo = ecr.Repository.import(this, 'BaseRepo', { repositoryName: 'reinvent-trivia-backend-base' });
-        const dockerImageSourceAction = new ecr.PipelineSourceAction(this, 'BaseImage', {
-            stage: sourceStage,
-            repository: baseImageRepo,
-            outputArtifactName: 'BaseImage'
+        const baseImageRepo = ecr.Repository.fromRepositoryName(this, 'BaseRepo', 'reinvent-trivia-backend-base');
+        const baseImageOutput = new codepipeline.Artifact('BaseImage');
+        const dockerImageSourceAction = new actions.EcrSourceAction({
+          actionName: 'BaseImage',
+          repository: baseImageRepo,
+          imageTag: 'release',
+          output: baseImageOutput,
+        });
+
+        pipeline.addStage({
+            stageName: 'Source',
+            actions: [sourceAction, dockerImageSourceAction],
         });
 
         // Build
         const buildProject = new codebuild.Project(this, 'BuildProject', {
-            source: new codebuild.GitHubSource({
-                cloneUrl: 'https://github.com/aws-samples/aws-reinvent-2018-trivia-game',
-                oauthToken: githubAccessToken.value
+            source: codebuild.Source.gitHub({
+                owner: 'aws-samples',
+                repo: 'aws-reinvent-2018-trivia-game'
             }),
-            buildSpec: 'trivia-backend/cdk/buildspec.yml',
+            buildSpec: codebuild.BuildSpec.fromSourceFilename('trivia-backend/cdk/buildspec.yml'),
             environment: {
               buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0,
               environmentVariables: {
@@ -52,26 +60,29 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
               },
               privileged: true
             },
-            artifacts: new codebuild.S3BucketBuildArtifacts({
+            artifacts: codebuild.Artifacts.s3({
                 bucket: pipeline.artifactBucket,
                 name: 'output.zip'
             })
         });
 
-        buildProject.addToRolePolicy(new iam.PolicyStatement()
-            .addAllResources()
-            .addAction('ec2:DescribeAvailabilityZones')
-            .addAction('route53:ListHostedZonesByName'));
-        buildProject.addToRolePolicy(new iam.PolicyStatement()
-            .addAction('ssm:GetParameter')
-            .addResource(cdk.ArnUtils.fromComponents({
+        buildProject.addToRolePolicy(new iam.PolicyStatement({
+            actions: [
+                'ec2:DescribeAvailabilityZones',
+                'route53:ListHostedZonesByName'
+            ],
+            resources: ['*']
+        }));
+        buildProject.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['ssm:GetParameter'],
+            resources: [cdk.Stack.of(this).formatArn({
                 service: 'ssm',
                 resource: 'parameter',
                 resourceName: 'CertificateArn-*'
-            })));
-        buildProject.addToRolePolicy(new iam.PolicyStatement()
-            .addAllResources()
-            .addActions("ecr:GetAuthorizationToken",
+            })]
+        }));
+        buildProject.addToRolePolicy(new iam.PolicyStatement({
+            actions: ["ecr:GetAuthorizationToken",
                 "ecr:BatchCheckLayerAvailability",
                 "ecr:GetDownloadUrlForLayer",
                 "ecr:GetRepositoryPolicy",
@@ -82,64 +93,85 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
                 "ecr:InitiateLayerUpload",
                 "ecr:UploadLayerPart",
                 "ecr:CompleteLayerUpload",
-                "ecr:PutImage"));
-        buildProject.addToRolePolicy(new iam.PolicyStatement()
-            .addAction('cloudformation:DescribeStackResources')
-            .addResource(cdk.ArnUtils.fromComponents({
+                "ecr:PutImage"
+            ],
+            resources: ["*"]
+        }));
+        buildProject.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['cloudformation:DescribeStackResources'],
+            resources: [cdk.Stack.of(this).formatArn({
                 service: 'cloudformation',
                 resource: 'stack',
                 resourceName: 'Trivia*'
-            })));
+            })]
+        }));
 
-        const buildStage = pipeline.addStage('Build');
-        const buildAction = buildProject.addToPipeline(buildStage, 'CodeBuild', {
-            additionalInputArtifacts: [dockerImageSourceAction.outputArtifact]
+        const buildArtifact = new codepipeline.Artifact('BuildArtifact');
+        const buildAction = new actions.CodeBuildAction({
+            actionName: 'CodeBuild',
+            project: buildProject,
+            input: sourceOutput,
+            extraInputs: [baseImageOutput],
+            outputs: [buildArtifact],
+          });
+
+        pipeline.addStage({
+            stageName: 'Build',
+            actions: [buildAction],
         });
 
         // Test
-        const testStage = pipeline.addStage('Test');
         const templatePrefix =  'TriviaBackend';
         const testStackName = 'TriviaBackendTest';
         const changeSetName = 'StagedChangeSet';
 
-        new cfn.PipelineCreateReplaceChangeSetAction(this, 'PrepareChangesTest', {
-            stage: testStage,
-            stackName: testStackName,
-            changeSetName,
-            runOrder: 1,
-            adminPermissions: true,
-            templatePath: buildAction.outputArtifact.atPath(templatePrefix + 'Test.template.yaml'),
-        });
-
-        new cfn.PipelineExecuteChangeSetAction(this, 'ExecuteChangesTest', {
-            stage: testStage,
-            stackName: testStackName,
-            changeSetName,
-            runOrder: 2
+        pipeline.addStage({
+            stageName: 'Test',
+            actions: [
+                new actions.CloudFormationCreateReplaceChangeSetAction({
+                    actionName: 'PrepareChangesTest',
+                    stackName: testStackName,
+                    changeSetName,
+                    runOrder: 1,
+                    adminPermissions: true,
+                    templatePath: buildArtifact.atPath(templatePrefix + 'Test.template.json'),
+                }),
+                new actions.CloudFormationExecuteChangeSetAction({
+                    actionName: 'ExecuteChangesTest',
+                    stackName: testStackName,
+                    changeSetName,
+                    runOrder: 2
+                })
+            ],
         });
 
         // Prod
-        const prodStage = pipeline.addStage('Prod');
         const prodStackName = 'TriviaBackendProd';
 
-        new cfn.PipelineCreateReplaceChangeSetAction(this, 'PrepareChanges', {
-            stage: prodStage,
-            stackName: prodStackName,
-            changeSetName,
-            runOrder: 1,
-            adminPermissions: true,
-            templatePath: buildAction.outputArtifact.atPath(templatePrefix + 'Prod.template.yaml'),
-        });
-
-        new cfn.PipelineExecuteChangeSetAction(this, 'ExecuteChangesProd', {
-            stage: prodStage,
-            stackName: prodStackName,
-            changeSetName,
-            runOrder: 2
+        pipeline.addStage({
+            stageName: 'Prod',
+            actions: [
+                new actions.CloudFormationCreateReplaceChangeSetAction({
+                    actionName: 'PrepareChangesProd',
+                    stackName: prodStackName,
+                    changeSetName,
+                    runOrder: 1,
+                    adminPermissions: true,
+                    templatePath: buildArtifact.atPath(templatePrefix + 'Prod.template.json'),
+                }),
+                new actions.CloudFormationExecuteChangeSetAction({
+                    actionName: 'ExecuteChangesProd',
+                    stackName: prodStackName,
+                    changeSetName,
+                    runOrder: 2
+                })
+            ],
         });
     }
 }
 
 const app = new cdk.App();
-new TriviaGameBackendPipelineStack(app, 'TriviaGameBackendPipeline');
-app.run();
+new TriviaGameBackendPipelineStack(app, 'TriviaGameBackendPipeline', {
+    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' }
+});
+app.synth();

@@ -2,3 +2,5 @@
 *.d.ts
 node_modules
 cdk.json
+cdk.context.json
+cdk.out

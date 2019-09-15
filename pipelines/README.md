@@ -11,10 +11,10 @@ In src/ directory:
 
 ## Prep
 
-Create a GitHub [personal access token](https://github.com/settings/tokens) with access to your fork of the repo, including "admin:repo_hook" and "repo" permissions.  Then store the token in Parameter Store:
+Create a GitHub [personal access token](https://github.com/settings/tokens) with access to your fork of the repo, including "admin:repo_hook" and "repo" permissions.  Then store the token in Secrets Manager:
 
 ```
-aws ssm put-parameter --name GitHubToken --type String --value 12345
+aws secretsmanager create-secret --region us-east-1 --name TriviaGitHubToken --secret-string --value 12345
 ```
 
 ## Customize

@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 import codebuild = require('@aws-cdk/aws-codebuild');
 import codepipeline = require('@aws-cdk/aws-codepipeline');
-import actions = require('@aws-cdk/aws-codepipeline-api');
-import cfn = require('@aws-cdk/aws-cloudformation');
+import actions = require('@aws-cdk/aws-codepipeline-actions');
 import iam = require('@aws-cdk/aws-iam');
-import cdk = require('@aws-cdk/cdk');
+import cdk = require('@aws-cdk/core');
 
 export interface TriviaGameCfnPipelineProps {
     stackName: string;
@@ -16,7 +15,7 @@ export interface TriviaGameCfnPipelineProps {
 export class TriviaGameCfnPipeline extends cdk.Construct {
     public readonly pipeline: codepipeline.Pipeline;
 
-    public readonly sourceAction: actions.SourceAction
+    public readonly sourceOutput: codepipeline.Artifact;
 
     constructor(parent: cdk.Construct, name: string, props: TriviaGameCfnPipelineProps) {
         super(parent, name);
@@ -26,27 +25,34 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
         });
         this.pipeline = pipeline;
 
-        pipeline.addToRolePolicy(new iam.PolicyStatement()
-            .addAllResources()
-            .addActions("ecr:DescribeImages"));
+        pipeline.addToRolePolicy(new iam.PolicyStatement({
+            actions: ["ecr:DescribeImages"],
+            resources: ["*"]
+        }));
 
         // Source
-        const githubAccessToken = new cdk.SecretParameter(this, 'GitHubToken', { ssmParameter: 'GitHubToken' });
-        const sourceAction = new codepipeline.GitHubSourceAction(this, 'GitHubSource', {
-            stage: pipeline.addStage('Source'),
+        const githubAccessToken = cdk.SecretValue.secretsManager('TriviaGitHubToken');
+        const sourceOutput = new codepipeline.Artifact('SourceArtifact');
+        const sourceAction = new actions.GitHubSourceAction({
+            actionName: 'GitHubSource',
             owner: 'aws-samples',
             repo: 'aws-reinvent-2018-trivia-game',
-            oauthToken: githubAccessToken.value
+            oauthToken: githubAccessToken,
+            output: sourceOutput
         });
-        this.sourceAction = sourceAction;
+        pipeline.addStage({
+            stageName: 'Source',
+            actions: [sourceAction],
+        });
+        this.sourceOutput = sourceOutput;
 
         // Build
         const buildProject = new codebuild.Project(this, 'BuildProject', {
-            source: new codebuild.GitHubSource({
-                cloneUrl: 'https://github.com/aws-samples/aws-reinvent-2018-trivia-game',
-                oauthToken: githubAccessToken.value
+            source: codebuild.Source.gitHub({
+                owner: 'aws-samples',
+                repo: 'aws-reinvent-2018-trivia-game'
             }),
-            buildSpec: props.directory + '/buildspec.yml',
+            buildSpec: codebuild.BuildSpec.fromSourceFilename(props.directory + '/buildspec.yml'),
             environment: {
               buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0,
               environmentVariables: {
@@ -56,26 +62,26 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
               },
               privileged: true
             },
-            artifacts: new codebuild.S3BucketBuildArtifacts({
+            artifacts: codebuild.Artifacts.s3({
                 bucket: pipeline.artifactBucket,
                 name: 'output.zip'
             })
         });
 
-        buildProject.addToRolePolicy(new iam.PolicyStatement()
-            .addAllResources()
-            .addAction('ec2:DescribeAvailabilityZones')
-            .addAction('route53:ListHostedZonesByName'));
-        buildProject.addToRolePolicy(new iam.PolicyStatement()
-            .addAction('ssm:GetParameter')
-            .addResource(cdk.ArnUtils.fromComponents({
+        buildProject.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['ec2:DescribeAvailabilityZones', 'route53:ListHostedZonesByName'],
+            resources: ['*']
+        }));
+        buildProject.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['ssm:GetParameter'],
+            resources: [cdk.Stack.of(this).formatArn({
                 service: 'ssm',
                 resource: 'parameter',
                 resourceName: 'CertificateArn-*'
-            })));
-        buildProject.addToRolePolicy(new iam.PolicyStatement()
-            .addAllResources()
-            .addActions("ecr:GetAuthorizationToken",
+            })]
+        }));
+        buildProject.addToRolePolicy(new iam.PolicyStatement({
+            actions: ["ecr:GetAuthorizationToken",
                 "ecr:BatchCheckLayerAvailability",
                 "ecr:GetDownloadUrlForLayer",
                 "ecr:GetRepositoryPolicy",
@@ -86,58 +92,78 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
                 "ecr:InitiateLayerUpload",
                 "ecr:UploadLayerPart",
                 "ecr:CompleteLayerUpload",
-                "ecr:PutImage"));
-        buildProject.addToRolePolicy(new iam.PolicyStatement()
-            .addAction('cloudformation:DescribeStackResources')
-            .addResource(cdk.ArnUtils.fromComponents({
+                "ecr:PutImage"
+            ],
+            resources: ["*"]
+        }));
+        buildProject.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['cloudformation:DescribeStackResources'],
+            resources: [cdk.Stack.of(this).formatArn({
                 service: 'cloudformation',
                 resource: 'stack',
                 resourceName: 'Trivia*'
-            })));
+            })]
+        }));
 
-        const buildStage = pipeline.addStage('Build');
-        const buildAction = buildProject.addToPipeline(buildStage, 'CodeBuild');
+        const buildArtifact = new codepipeline.Artifact('BuildArtifact');
+        const buildAction = new actions.CodeBuildAction({
+            actionName: 'CodeBuild',
+            project: buildProject,
+            input: sourceOutput,
+            outputs: [buildArtifact],
+          });
+
+        pipeline.addStage({
+            stageName: 'Build',
+            actions: [buildAction],
+        });
 
         // Test
-        const testStage = pipeline.addStage('Test');
         const templatePrefix =  'TriviaGame' + props.templateName;
         const testStackName = 'TriviaGame' + props.stackName + 'Test';
         const changeSetName = 'StagedChangeSet';
 
-        new cfn.PipelineCreateReplaceChangeSetAction(this, 'PrepareChangesTest', {
-            stage: testStage,
-            stackName: testStackName,
-            changeSetName,
-            runOrder: 1,
-            adminPermissions: true,
-            templatePath: buildAction.outputArtifact.atPath(templatePrefix + 'Test.template.yaml'),
-        });
-
-        new cfn.PipelineExecuteChangeSetAction(this, 'ExecuteChangesTest', {
-            stage: testStage,
-            stackName: testStackName,
-            changeSetName,
-            runOrder: 2
+        pipeline.addStage({
+            stageName: 'Test',
+            actions: [
+                new actions.CloudFormationCreateReplaceChangeSetAction({
+                    actionName: 'PrepareChangesTest',
+                    stackName: testStackName,
+                    changeSetName,
+                    runOrder: 1,
+                    adminPermissions: true,
+                    templatePath: buildArtifact.atPath(templatePrefix + 'Test.template.yaml'),
+                }),
+                new actions.CloudFormationExecuteChangeSetAction({
+                    actionName: 'ExecuteChangesTest',
+                    stackName: testStackName,
+                    changeSetName,
+                    runOrder: 2
+                })
+            ],
         });
 
         // Prod
-        const prodStage = pipeline.addStage('Prod');
         const prodStackName = 'TriviaGame' + props.stackName + 'Prod';
 
-        new cfn.PipelineCreateReplaceChangeSetAction(this, 'PrepareChanges', {
-            stage: prodStage,
-            stackName: prodStackName,
-            changeSetName,
-            runOrder: 1,
-            adminPermissions: true,
-            templatePath: buildAction.outputArtifact.atPath(templatePrefix + 'Prod.template.yaml'),
-        });
-
-        new cfn.PipelineExecuteChangeSetAction(this, 'ExecuteChangesProd', {
-            stage: prodStage,
-            stackName: prodStackName,
-            changeSetName,
-            runOrder: 2
+        pipeline.addStage({
+            stageName: 'Prod',
+            actions: [
+                new actions.CloudFormationCreateReplaceChangeSetAction({
+                    actionName: 'PrepareChangesProd',
+                    stackName: prodStackName,
+                    changeSetName,
+                    runOrder: 1,
+                    adminPermissions: true,
+                    templatePath: buildArtifact.atPath(templatePrefix + 'Prod.template.yaml'),
+                }),
+                new actions.CloudFormationExecuteChangeSetAction({
+                    actionName: 'ExecuteChangesProd',
+                    stackName: prodStackName,
+                    changeSetName,
+                    runOrder: 2
+                })
+            ],
         });
     }
 }

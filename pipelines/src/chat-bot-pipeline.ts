@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import cdk = require('@aws-cdk/cdk');
+import cdk = require('@aws-cdk/core');
 import codebuild = require('@aws-cdk/aws-codebuild');
+import actions = require('@aws-cdk/aws-codepipeline-actions');
 import iam = require('@aws-cdk/aws-iam');
 import { TriviaGameCfnPipeline } from './pipeline';
 
@@ -17,35 +18,46 @@ class TriviaGameChatBotPipelineStack extends cdk.Stack {
         const pipeline = pipelineConstruct.pipeline;
 
         // Use CodeBuild to run script that deploys the Lex model
-        const lexProject = new codebuild.Project(this, 'LexProject', {
-            source: new codebuild.CodePipelineSource(),
-            buildSpec: 'chat-bot/lex-model/buildspec.yml',
+        const lexProject = new codebuild.PipelineProject(this, 'LexProject', {
+            buildSpec: codebuild.BuildSpec.fromSourceFilename('chat-bot/lex-model/buildspec.yml'),
             environment: {
                 buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0
-            },
-            artifacts: new codebuild.CodePipelineBuildArtifacts()
+            }
         });
 
-        lexProject.addToRolePolicy(new iam.PolicyStatement()
-            .addActions('lex:StartImport', 'lex:GetImport')
-            .addActions('lex:GetIntent', 'lex:PutIntent')
-            .addActions('lex:GetSlotType', 'lex:PutSlotType')
-            .addActions('lex:GetBot', 'lex:PutBot', 'lex:PutBotAlias')
-            .addAllResources());
-        lexProject.addToRolePolicy(new iam.PolicyStatement()
-            .addAction('cloudformation:DescribeStackResource')
-            .addResource(cdk.ArnUtils.fromComponents({
+        lexProject.addToRolePolicy(new iam.PolicyStatement({
+            actions: [
+                'lex:StartImport', 'lex:GetImport',
+                'lex:GetIntent', 'lex:PutIntent',
+                'lex:GetSlotType', 'lex:PutSlotType',
+                'lex:GetBot', 'lex:PutBot', 'lex:PutBotAlias'
+            ],
+            resources: ["*"]
+        }));
+        lexProject.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['cloudformation:DescribeStackResource'],
+            resources: [cdk.Stack.of(this).formatArn({
                 service: 'cloudformation',
                 resource: 'stack',
                 resourceName: 'TriviaGameChatBot*'
-            })));
+            })]
+        }));
 
-        const deployLexStage = pipeline.addStage('DeployLexBot');
-        lexProject.addToPipeline(deployLexStage, 'Deploy',
-            { inputArtifact: pipelineConstruct.sourceAction.outputArtifact });
+        const deployBotAction = new actions.CodeBuildAction({
+            actionName: 'Deploy',
+            project: lexProject,
+            input: pipelineConstruct.sourceOutput
+        });
+
+        pipeline.addStage({
+            stageName: 'DeployLexBot',
+            actions: [deployBotAction]
+        });
     }
 }
 
 const app = new cdk.App();
-new TriviaGameChatBotPipelineStack(app, 'TriviaGameChatBotPipeline');
-app.run();
+new TriviaGameChatBotPipelineStack(app, 'TriviaGameChatBotPipeline', {
+    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' }
+});
+app.synth();

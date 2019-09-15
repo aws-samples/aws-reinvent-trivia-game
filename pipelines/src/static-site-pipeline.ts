@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import codebuild = require('@aws-cdk/aws-codebuild');
 import codepipeline = require('@aws-cdk/aws-codepipeline');
-import codepipelineApi = require('@aws-cdk/aws-codepipeline-api');
+import actions = require('@aws-cdk/aws-codepipeline-actions');
 import iam = require('@aws-cdk/aws-iam');
-import cdk = require('@aws-cdk/cdk');
+import cdk = require('@aws-cdk/core');
 
 class TriviaGameStaticSitePipeline extends cdk.Stack {
     constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
@@ -14,26 +14,36 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
         });
 
         // Source
-        const githubAccessToken = new cdk.SecretParameter(this, 'GitHubToken', { ssmParameter: 'GitHubToken' });
-        const source = new codepipeline.GitHubSourceAction(this, 'GitHubSource', {
-            stage: pipeline.addStage('Source'),
+        const githubAccessToken = cdk.SecretValue.secretsManager('TriviaGitHubToken');
+        const sourceOutput = new codepipeline.Artifact('SourceArtifact');
+        const sourceAction = new actions.GitHubSourceAction({
+            actionName: 'GitHubSource',
             owner: 'aws-samples',
             repo: 'aws-reinvent-2018-trivia-game',
-            oauthToken: githubAccessToken.value
+            oauthToken: githubAccessToken,
+            output: sourceOutput
+        });
+        pipeline.addStage({
+            stageName: 'Source',
+            actions: [sourceAction],
         });
 
         // Deploy to test site
-        const testStage = pipeline.addStage('Test');
-        this.addBuildAction(testStage, 'Test', 'dev', source.outputArtifact);
+        pipeline.addStage({
+            stageName: 'Test',
+            actions: [this.createDeployAction('Test', 'dev', sourceOutput)]
+        });
 
         // Deploy to prod site
-        const prodStage = pipeline.addStage('Prod');
-        this.addBuildAction(prodStage, 'Prod', 'prod', source.outputArtifact);
+        pipeline.addStage({
+            stageName: 'Prod',
+            actions: [this.createDeployAction('Prod', 'prod', sourceOutput)]
+        });
     }
 
-    private addBuildAction(stage: codepipeline.Stage, stageName: string, buildTarget: string, input: codepipelineApi.Artifact) {
+    private createDeployAction(stageName: string, buildTarget: string, input: codepipeline.Artifact): actions.Action {
         const project = new codebuild.PipelineProject(this, stageName + 'Project', {
-            buildSpec: 'static-site/buildspec.yml',
+            buildSpec: codebuild.BuildSpec.fromSourceFilename('static-site/buildspec.yml'),
             environment: {
                 buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0,
                 environmentVariables: {
@@ -45,18 +55,21 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
         });
 
         // TODO scope down permissions needed for cdk deploy
-        project.addToRolePolicy(new iam.PolicyStatement()
-            .addAction('*')
-            .addAllResources());
+        project.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['*'],
+            resources: ['*']
+        }));
 
-        new codebuild.PipelineBuildAction(this, 'Deploy' + stageName, {
-            stage,
+        return new actions.CodeBuildAction({
+            actionName: 'Deploy' + stageName,
             project,
-            inputArtifact: input
+            input
         });
     }
 }
 
 const app = new cdk.App();
-new TriviaGameStaticSitePipeline(app, 'TriviaGameStaticSitePipeline');
-app.run();
+new TriviaGameStaticSitePipeline(app, 'TriviaGameStaticSitePipeline', {
+    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' }
+});
+app.synth();
