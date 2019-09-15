@@ -7,7 +7,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "synth-infra": "cdk synth -o build --app 'node infrastructure.js'",
-    "deploy-infra-dev": "cdk deploy --app 'node infrastructure.js' --require-approval never TriviaGameStaticSiteInfraTest",
+    "deploy-infra-test": "cdk deploy --app 'node infrastructure.js' --require-approval never TriviaGameStaticSiteInfraTest",
     "deploy-infra-prod": "cdk deploy --app 'node infrastructure.js' --require-approval never TriviaGameStaticSiteInfraProd"
   },
   "devDependencies": {

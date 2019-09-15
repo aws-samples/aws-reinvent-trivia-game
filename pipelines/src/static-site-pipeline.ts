@@ -31,24 +31,24 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
         // Deploy to test site
         pipeline.addStage({
             stageName: 'Test',
-            actions: [this.createDeployAction('Test', 'dev', sourceOutput)]
+            actions: [this.createDeployAction('Test', sourceOutput)]
         });
 
         // Deploy to prod site
         pipeline.addStage({
             stageName: 'Prod',
-            actions: [this.createDeployAction('Prod', 'prod', sourceOutput)]
+            actions: [this.createDeployAction('Prod', sourceOutput)]
         });
     }
 
-    private createDeployAction(stageName: string, buildTarget: string, input: codepipeline.Artifact): actions.Action {
+    private createDeployAction(stageName: string, input: codepipeline.Artifact): actions.Action {
         const project = new codebuild.PipelineProject(this, stageName + 'Project', {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('static-site/buildspec.yml'),
             environment: {
                 buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0,
                 environmentVariables: {
                     'STAGE': {
-                        value: buildTarget
+                        value: stageName.toLowerCase()
                     }
                 }
             }
