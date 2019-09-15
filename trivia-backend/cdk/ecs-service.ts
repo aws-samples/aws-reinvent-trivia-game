@@ -29,7 +29,10 @@ class TriviaBackendStack extends cdk.Stack {
 
     // Network infrastructure
     const vpc = new Vpc(this, 'VPC', { maxAzs: 2 });
-    const cluster = new Cluster(this, 'Cluster', { vpc });
+    const cluster = new Cluster(this, 'Cluster', {
+      clusterName: props.domainName.replace(/\./g, '-'),
+      vpc
+    });
 
     // Configuration parameters
     const domainZone = HostedZone.fromLookup(this, 'Zone', { domainName: props.domainZone });
