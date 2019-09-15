@@ -68,6 +68,16 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
             ],
             resources: ['*']
         }));
+
+        buildProject.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['ssm:GetParameter'],
+            resources: [cdk.Stack.of(this).formatArn({
+                service: 'ssm',
+                resource: 'parameter',
+                resourceName: 'CertificateArn-*'
+            })]
+        }));
+
         buildProject.addToRolePolicy(new iam.PolicyStatement({
             actions: ["ecr:GetAuthorizationToken",
                 "ecr:BatchCheckLayerAvailability",

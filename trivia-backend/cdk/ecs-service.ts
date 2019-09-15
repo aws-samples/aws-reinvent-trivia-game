@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { DnsValidatedCertificate } from '@aws-cdk/aws-certificatemanager';
+import { Certificate } from '@aws-cdk/aws-certificatemanager';
 import { Vpc } from '@aws-cdk/aws-ec2';
 import { Repository } from '@aws-cdk/aws-ecr';
 import { Cluster, ContainerImage } from '@aws-cdk/aws-ecs';
@@ -15,6 +15,7 @@ import {
 } from '@aws-cdk/aws-elasticloadbalancingv2';
 import { HostedZone } from '@aws-cdk/aws-route53';
 import { Alarm } from '@aws-cdk/aws-cloudwatch';
+import { StringParameter } from '@aws-cdk/aws-ssm';
 import cdk = require('@aws-cdk/core');
 
 interface TriviaBackendStackProps extends cdk.StackProps {
@@ -36,11 +37,11 @@ class TriviaBackendStack extends cdk.Stack {
     const tag = (process.env.IMAGE_TAG) ? process.env.IMAGE_TAG : 'latest';
     const image = ContainerImage.fromEcrRepository(imageRepo, tag)
 
-    // TLS certificate
-    const certificate = new DnsValidatedCertificate(this, 'SiteCertificate', {
-      domainName: props.domainName,
-      hostedZone: domainZone
-    });
+    // Lookup pre-existing TLS certificate
+    const certificateArn = StringParameter.fromStringParameterAttributes(this, 'CertArnParameter', {
+      parameterName: 'CertificateArn-' + props.domainName
+    }).stringValue;
+    const certificate = Certificate.fromCertificateArn(this, 'Cert', certificateArn);
 
     // Fargate service + load balancer
     const service = new LoadBalancedFargateService(this, 'Service', {
@@ -58,7 +59,7 @@ class TriviaBackendStack extends cdk.Stack {
       port: 9002, // port for testing
       protocol: ApplicationProtocol.HTTPS,
       open: true,
-      certificateArns: [certificate.certificateArn]
+      certificateArns: [certificateArn]
     });
     const tg2 = testListener.addTargets('ECS2', {
       port: 80,
