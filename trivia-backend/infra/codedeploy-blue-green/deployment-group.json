@@ -55,7 +55,7 @@
             }
         ]
     },
-    "serviceRoleArn": "arn:aws:iam::131296546870:role/CodeDeployServiceRole",
+    "serviceRoleArn": "PLACEHOLDER_ROLE",
     "ecsServices": [
         {
             "serviceName": "trivia-backend-PLACEHOLDER_STAGE",

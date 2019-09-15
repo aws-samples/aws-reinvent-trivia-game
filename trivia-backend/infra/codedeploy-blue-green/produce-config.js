@@ -12,6 +12,7 @@ const argv = require('yargs')
     .argv;
 
 const deploymentGroupConfig = require('./deployment-group.json');
+const taskDefConfig = require('./task-definition.json');
 const serviceConfig = require('./service-definition.json');
 const appSpec = require('./appspec.json');
 
@@ -20,10 +21,13 @@ const stage = argv.stageName;
 const hookStack = argv.hookStackName;
 
 const cfn = new aws.CloudFormation();
+const sts = new aws.STS();
 
 async function produceConfigs() {
     let data = await cfn.describeStackResources({ StackName: stack }).promise();
     let hookData = await cfn.describeStackResources({ StackName: hookStack }).promise();
+    let identity = await sts.getCallerIdentity().promise();
+    let accountId = identity.Account;
 
     // Make a whole bunch of assumptions about the contents of the CFN stack
     let targetGroupNames = [];
@@ -33,6 +37,9 @@ async function produceConfigs() {
     let privateSubnets = [];
     let serviceSecurityGroups = [];
     let alarms = [];
+    let taskRole;
+    let executionRole;
+    let codedeployRole;
     let preTrafficHook;
 
     for (const resource of data.StackResources) {
@@ -53,6 +60,15 @@ async function produceConfigs() {
         } else if (resource.ResourceType == "AWS::EC2::SecurityGroup" &&
                     resource.LogicalResourceId.startsWith("ServiceSecurityGroup")) {
             serviceSecurityGroups.push(resource.PhysicalResourceId);
+        } else if (resource.ResourceType == "AWS::IAM::Role" &&
+                    resource.LogicalResourceId.startsWith("ServiceTaskDefExecutionRole")) {
+            executionRole = resource.PhysicalResourceId;
+        } else if (resource.ResourceType == "AWS::IAM::Role" &&
+                    resource.LogicalResourceId.startsWith("ServiceTaskDefTaskRole")) {
+            taskRole = resource.PhysicalResourceId;
+        } else if (resource.ResourceType == "AWS::IAM::Role" &&
+                    resource.LogicalResourceId.startsWith("CodeDeployRole")) {
+            codedeployRole = resource.PhysicalResourceId;
         }
     }
 
@@ -68,8 +84,14 @@ async function produceConfigs() {
     deploymentGroupConfig.loadBalancerInfo.targetGroupPairInfoList[0].testTrafficRoute.listenerArns = [ testTrafficListener ];
     deploymentGroupConfig.alarmConfiguration.alarms = alarms;
     deploymentGroupConfig.ecsServices[0].serviceName = "trivia-backend-" + stage;
+    deploymentGroupConfig.serviceRoleArn = `arn:aws:iam::${accountId}:role/${codedeployRole}`;
     deploymentGroupConfig.applicationName = "AppECS-default-trivia-backend-" + stage;
     fs.writeFileSync(`./build/deployment-group-${stage}.json`, JSON.stringify(deploymentGroupConfig, null, 2) , 'utf-8');
+
+    // Write out task def config
+    taskDefConfig.taskRoleArn = taskRole;
+    taskDefConfig.executionRoleArn = executionRole;
+    fs.writeFileSync(`./build/task-definition-${stage}.json`, JSON.stringify(taskDefConfig, null, 2) , 'utf-8');
 
     // Write out service config
     serviceConfig.loadBalancers[0].targetGroupArn = targetGroupArns[0].name;

@@ -1,7 +1,24 @@
 {
   "name": "trivia-backend-blue-green",
   "version": "1.0.0",
+  "scripts": {
+    "deploy-test-infra": "tsc && cdk deploy --app 'node infra-setup.js' TriviaBackendTest",
+    "deploy-prod-infra": "tsc && cdk deploy --app 'node infra-setup.js' TriviaBackendProd"
+  },
+  "devDependencies": {
+    "@types/node": "^8.9.4",
+    "typescript": "^3.1.2",
+    "aws-cdk": "^1.8.0"
+  },
   "dependencies": {
+    "@aws-cdk/aws-certificatemanager": "^1.8.0",
+    "@aws-cdk/aws-cloudwatch": "^1.8.0",
+    "@aws-cdk/aws-ec2": "^1.8.0",
+    "@aws-cdk/aws-elasticloadbalancingv2": "^1.8.0",
+    "@aws-cdk/aws-iam": "^1.8.0",
+    "@aws-cdk/aws-route53": "^1.8.0",
+    "@aws-cdk/aws-route53-targets": "^1.8.0",
+    "@aws-cdk/core": "^1.8.0",
     "aws-sdk": "^2.528.0",
     "yargs": "^14.0.0"
   }

@@ -34,12 +34,12 @@ phases:
       - docker push $ECR_REPO:$IMAGE_TAG
 
       # Synthesize CloudFormation templates
-      - cd $CODEBUILD_SRC_DIR/trivia-backend/cdk
+      - cd $CODEBUILD_SRC_DIR/trivia-backend/infra/cdk
       - npm ci
       - npm run build
       - cdk synth -o build --app 'node ecs-service.js'
 
 artifacts:
   files:
-    - trivia-backend/cdk/build/*
+    - trivia-backend/infra/cdk/build/*
   discard-paths: yes

@@ -45,7 +45,7 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
                 owner: 'aws-samples',
                 repo: 'aws-reinvent-2018-trivia-game'
             }),
-            buildSpec: codebuild.BuildSpec.fromSourceFilename('trivia-backend/cdk/buildspec.yml'),
+            buildSpec: codebuild.BuildSpec.fromSourceFilename('trivia-backend/infra/cdk/buildspec.yml'),
             environment: {
               buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0,
               environmentVariables: {

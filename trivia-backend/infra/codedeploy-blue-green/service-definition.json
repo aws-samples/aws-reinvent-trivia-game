@@ -1,9 +1,9 @@
 {
-    "taskDefinition": "trivia-backend:1",
+    "taskDefinition": "trivia-backend",
     "cluster": "default",
     "loadBalancers": [
         {
-            "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:131296546870:targetgroup/PLACEHOLDER-NAME/PLACEHOLDER-ID",
+            "targetGroupArn": "PLACEHOLDER_TARGET_GROUP",
             "containerName": "web",
             "containerPort": 80
         }

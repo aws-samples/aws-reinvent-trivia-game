@@ -36,12 +36,18 @@ docker build -t reinvent-trivia-backend-base:release base/
 docker build -t reinvent-trivia-backend:release .
 ```
 
-# Infrastructure as code
+# Provision
 
-The cdk folder contains examples of how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and provision the service with AWS CloudFormation.
+There are two options in the infra directory for provisioning and deploying the backend services.
+
+## Infrastructure as code
+
+The cdk folder contains examples of how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and provision the service with AWS CloudFormation.  See the pipelines folder for instructions on how to continously deploy this example.
 
 To deploy the Typescript example, run the following.
 ```
+npm install -g aws-cdk
+
 npm install
 
 npm run build
@@ -53,20 +59,10 @@ cdk deploy --app ecs-service.js TriviaBackendTest
 cdk deploy --app ecs-service.js TriviaBackendProd
 ```
 
-# Blue-green deployments
+# CodeDeploy blue-green deployments
 
-The blue-green-setup folder contains examples of the configuration needed to setup and execute a blue-green deployment with CodeDeploy: CodeDeploy appspec file, ECS task definition file, ECS service, CodeDeploy application definition, and CodeDeploy deployment group.
+The codedeploy-blue-green folder contains examples of the configuration needed to setup and execute a blue-green deployment with CodeDeploy: CodeDeploy appspec file, ECS task definition file, ECS service, CodeDeploy application definition, and CodeDeploy deployment group.
 
-The hooks folder contains an example of a pre-traffic hook for use with CodeDeploy deployments.  To deploy the hook (replacing reinvent-trivia.com with your own domain name):
+The non-service infrastructure (load balancer, security groups, roles, etc) is modeled and provisioned with the AWS CDK.  A sample pre-traffic CodeDeploy hook is modeled and provisioned with CloudFormation.
 
-```
-cd hooks
-
-npm install
-
-aws cloudformation package --template-file template.yaml --s3-bucket <bucket-name> --output-template-file packaged-template.yaml
-
-aws cloudformation deploy --template-file packaged-template.yaml --stack-name TriviaBackendHooksTest --capabilities CAPABILITY_IAM --parameter-overrides TriviaBackendDomain=api-test.reinvent-trivia.com
-
-aws cloudformation deploy --template-file packaged-template.yaml --stack-name TriviaBackendHooksProd --capabilities CAPABILITY_IAM --parameter-overrides TriviaBackendDomain=api.reinvent-trivia.com
-```
+Follow the README in the codedeploy-blue-green folder to set it up and start a CodeDeploy deployment.
