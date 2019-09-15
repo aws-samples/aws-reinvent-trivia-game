@@ -14,11 +14,6 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
             pipelineName: 'reinvent-trivia-game-trivia-backend-cfn-deploy',
         });
 
-        pipeline.addToRolePolicy(new iam.PolicyStatement({
-            actions: ["ecr:DescribeImages"],
-            resources: ["*"]
-        }));
-
         // Source
         const githubAccessToken = cdk.SecretValue.secretsManager('TriviaGitHubToken');
         const sourceOutput = new codepipeline.Artifact('SourceArtifact');
@@ -74,14 +69,6 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
             resources: ['*']
         }));
         buildProject.addToRolePolicy(new iam.PolicyStatement({
-            actions: ['ssm:GetParameter'],
-            resources: [cdk.Stack.of(this).formatArn({
-                service: 'ssm',
-                resource: 'parameter',
-                resourceName: 'CertificateArn-*'
-            })]
-        }));
-        buildProject.addToRolePolicy(new iam.PolicyStatement({
             actions: ["ecr:GetAuthorizationToken",
                 "ecr:BatchCheckLayerAvailability",
                 "ecr:GetDownloadUrlForLayer",
@@ -96,14 +83,6 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
                 "ecr:PutImage"
             ],
             resources: ["*"]
-        }));
-        buildProject.addToRolePolicy(new iam.PolicyStatement({
-            actions: ['cloudformation:DescribeStackResources'],
-            resources: [cdk.Stack.of(this).formatArn({
-                service: 'cloudformation',
-                resource: 'stack',
-                resourceName: 'Trivia*'
-            })]
         }));
 
         const buildArtifact = new codepipeline.Artifact('BuildArtifact');

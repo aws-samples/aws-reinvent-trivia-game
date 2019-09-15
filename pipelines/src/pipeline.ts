@@ -2,7 +2,6 @@
 import codebuild = require('@aws-cdk/aws-codebuild');
 import codepipeline = require('@aws-cdk/aws-codepipeline');
 import actions = require('@aws-cdk/aws-codepipeline-actions');
-import iam = require('@aws-cdk/aws-iam');
 import cdk = require('@aws-cdk/core');
 
 export interface TriviaGameCfnPipelineProps {
@@ -24,11 +23,6 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
             pipelineName: 'reinvent-trivia-game-' + props.pipelineName,
         });
         this.pipeline = pipeline;
-
-        pipeline.addToRolePolicy(new iam.PolicyStatement({
-            actions: ["ecr:DescribeImages"],
-            resources: ["*"]
-        }));
 
         // Source
         const githubAccessToken = cdk.SecretValue.secretsManager('TriviaGitHubToken');
@@ -67,43 +61,6 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
                 name: 'output.zip'
             })
         });
-
-        buildProject.addToRolePolicy(new iam.PolicyStatement({
-            actions: ['ec2:DescribeAvailabilityZones', 'route53:ListHostedZonesByName'],
-            resources: ['*']
-        }));
-        buildProject.addToRolePolicy(new iam.PolicyStatement({
-            actions: ['ssm:GetParameter'],
-            resources: [cdk.Stack.of(this).formatArn({
-                service: 'ssm',
-                resource: 'parameter',
-                resourceName: 'CertificateArn-*'
-            })]
-        }));
-        buildProject.addToRolePolicy(new iam.PolicyStatement({
-            actions: ["ecr:GetAuthorizationToken",
-                "ecr:BatchCheckLayerAvailability",
-                "ecr:GetDownloadUrlForLayer",
-                "ecr:GetRepositoryPolicy",
-                "ecr:DescribeRepositories",
-                "ecr:ListImages",
-                "ecr:DescribeImages",
-                "ecr:BatchGetImage",
-                "ecr:InitiateLayerUpload",
-                "ecr:UploadLayerPart",
-                "ecr:CompleteLayerUpload",
-                "ecr:PutImage"
-            ],
-            resources: ["*"]
-        }));
-        buildProject.addToRolePolicy(new iam.PolicyStatement({
-            actions: ['cloudformation:DescribeStackResources'],
-            resources: [cdk.Stack.of(this).formatArn({
-                service: 'cloudformation',
-                resource: 'stack',
-                resourceName: 'Trivia*'
-            })]
-        }));
 
         const buildArtifact = new codepipeline.Artifact('BuildArtifact');
         const buildAction = new actions.CodeBuildAction({

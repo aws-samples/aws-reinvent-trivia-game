@@ -54,7 +54,7 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
             }
         });
 
-        // TODO scope down permissions needed for cdk deploy
+        // Admin permissions needed for cdk deploy
         project.addToRolePolicy(new iam.PolicyStatement({
             actions: ['*'],
             resources: ['*']
