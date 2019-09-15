@@ -3,7 +3,7 @@ import { Certificate } from '@aws-cdk/aws-certificatemanager';
 import { Vpc } from '@aws-cdk/aws-ec2';
 import { Repository } from '@aws-cdk/aws-ecr';
 import { Cluster, ContainerImage } from '@aws-cdk/aws-ecs';
-import { LoadBalancedFargateService } from '@aws-cdk/aws-ecs-patterns';
+import { ApplicationLoadBalancedFargateService } from '@aws-cdk/aws-ecs-patterns';
 import {
   ApplicationProtocol,
   ApplicationTargetGroup,
@@ -47,7 +47,7 @@ class TriviaBackendStack extends cdk.Stack {
     const certificate = Certificate.fromCertificateArn(this, 'Cert', certificateArn);
 
     // Fargate service + load balancer
-    const service = new LoadBalancedFargateService(this, 'Service', {
+    const service = new ApplicationLoadBalancedFargateService(this, 'Service', {
       cluster,
       image,
       desiredCount: 3,
