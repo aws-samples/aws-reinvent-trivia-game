@@ -106,7 +106,7 @@ Resources:
           - Effect: "Allow"
             Action:
               - "lambda:InvokeFunction"
-            Resource: !Ref BotFunction.Version
+            Resource: !Sub "${BotFunction.Arn}:*"
       Runtime: nodejs8.10
       DeploymentPreference:
         Enabled: false
