@@ -20,13 +20,13 @@ phases:
       - ECR_REPO=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
       - $(aws ecr get-login --no-include-email)
 
-      # Consume base image
+      # Consume base image from the pipeline
       - export BASE_IMAGE=`jq -r '.ImageURI' <$CODEBUILD_SRC_DIR_BaseImage/imageDetail.json`
       - sed -i "s|reinvent-trivia-backend-base:release|$BASE_IMAGE|g" Dockerfile
 
   build:
     commands:
-      # Build Docker image
+      # Build and push Docker image
       - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $ECR_REPO:$IMAGE_TAG
       - docker push $ECR_REPO:$IMAGE_TAG
@@ -36,22 +36,21 @@ phases:
       - echo Built image $IMAGE_URI, pushed with tag $IMAGE_TAG
       - echo "{\"ImageURI\":\"$IMAGE_URI\"}" > imageDetail.json
 
-      # Add subnet and security group info to appspec
-      - cd blue-green-setup
+      # Generate appspec and task definition files (filling in subnet IDs, security group IDs, etc)
+      - cd infra/codedeploy-blue-green
       - mkdir build
       - npm ci
       - node produce-config.js -g test -s TriviaBackendTest -h TriviaBackendHooksTest
       - node produce-config.js -g prod -s TriviaBackendProd -h TriviaBackendHooksProd
-      - cp task-definition.json build/
-      - sed -i "s/123456789012/$AWS_ACCOUNT_ID/g" build/*
 
 artifacts:
   secondary-artifacts:
     BuildArtifact:
       files:
-        - trivia-backend/blue-green-setup/build/appspec-prod.json
-        - trivia-backend/blue-green-setup/build/appspec-test.json
-        - trivia-backend/blue-green-setup/build/task-definition.json
+        - trivia-backend/infra/codedeploy-blue-green/build/appspec-prod.json
+        - trivia-backend/infra/codedeploy-blue-green/build/appspec-test.json
+        - trivia-backend/infra/codedeploy-blue-green/build/task-definition-test.json
+        - trivia-backend/infra/codedeploy-blue-green/build/task-definition-prod.json
       discard-paths: yes
     ImageDetails:
       files:

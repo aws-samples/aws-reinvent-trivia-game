@@ -2,8 +2,8 @@
   "name": "trivia-backend-blue-green",
   "version": "1.0.0",
   "scripts": {
-    "deploy-test-infra": "tsc && cdk deploy --app 'node infra-setup.js' TriviaBackendTest",
-    "deploy-prod-infra": "tsc && cdk deploy --app 'node infra-setup.js' TriviaBackendProd"
+    "deploy-test-infra": "tsc && cdk deploy --app 'node infra-setup.js' --require-approval never TriviaBackendTest",
+    "deploy-prod-infra": "tsc && cdk deploy --app 'node infra-setup.js' --require-approval never TriviaBackendProd"
   },
   "devDependencies": {
     "@types/node": "^8.9.4",

@@ -7,17 +7,17 @@ The trivia backend is a REST API that serves questions and answers.  A running e
 Create an ECR repository for both the base Docker image and the application image.
 
 ```
-aws ecr create-repository --repository-name reinvent-trivia-backend
+aws ecr create-repository --region us-east-1 --repository-name reinvent-trivia-backend
 
-aws ecr create-repository --repository-name reinvent-trivia-backend-base
+aws ecr create-repository --region us-east-1 --repository-name reinvent-trivia-backend-base
 ```
 
 Create AWS Certificate Manager certificates for the 'api' and 'test-api' subdomains, then put the unique ARN of those certificates in an AWS Systems Manager Parameter Store parameter.
 
 ```
-aws ssm put-parameter --name CertificateArn-api.reinvent-trivia.com --type String --value arn:aws:acm:...
+aws ssm put-parameter --region us-east-1 --name CertificateArn-api.reinvent-trivia.com --type String --value arn:aws:acm:...
 
-aws ssm put-parameter --name CertificateArn-test-api.reinvent-trivia.com --type String --value arn:aws:acm:...
+aws ssm put-parameter --region us-east-1 --name CertificateArn-test-api.reinvent-trivia.com --type String --value arn:aws:acm:...
 ```
 
 ## Customize
@@ -33,7 +33,7 @@ Locally, it can be built with the following commands.  Follow the "push commands
 ```
 docker build -t reinvent-trivia-backend-base:release base/
 
-docker build -t reinvent-trivia-backend:release .
+docker build -t reinvent-trivia-backend:latest .
 ```
 
 # Provision
@@ -65,4 +65,11 @@ The codedeploy-blue-green folder contains examples of the configuration needed t
 
 The non-service infrastructure (load balancer, security groups, roles, etc) is modeled and provisioned with the AWS CDK.  A sample pre-traffic CodeDeploy hook is modeled and provisioned with CloudFormation.
 
-Follow the README in the codedeploy-blue-green folder to set it up and start a CodeDeploy deployment.
+To deploy this example, run the following in infra/codedeploy-blue-green.
+```
+npm install -g aws-cdk
+
+./setup.sh <S3 bucket for storing temporary artifacts>
+```
+
+See the pipelines folder for instructions on how to continuously deploy this example.
