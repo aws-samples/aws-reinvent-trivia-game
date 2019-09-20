@@ -64,7 +64,7 @@ export class StaticSite extends cdk.Construct {
 
         // Deploy site contents to S3 bucket
         new s3deploy.BucketDeployment(this, 'DeployWithInvalidation', {
-            source: s3deploy.Source.asset('../app/build'),
+            sources: [ s3deploy.Source.asset('../app/build') ],
             destinationBucket: siteBucket,
             distribution,
             distributionPaths: ['/*'],
