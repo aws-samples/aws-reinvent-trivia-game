@@ -39,7 +39,7 @@ class TriviaBackendStack extends cdk.Stack {
     // Fargate service + load balancer
     new ApplicationLoadBalancedFargateService(this, 'Service', {
       cluster,
-      image,
+      taskImageOptions: { image },
       desiredCount: 3,
       domainName: props.domainName,
       domainZone,
