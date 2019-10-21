@@ -6,11 +6,9 @@ In src/ directory:
 * pipeline.ts: Generic pipeline class that defines an infrastructure-as-code pipeline
 * api-base-image-pipeline.ts: Builds and publishes the base Docker image for the backend API service
 * api-service-pipeline.ts: Builds and deploys the backend API service to Fargate
+* api-service-codedeploy-pipeline.ts: Builds and deploys the backend API service to Fargate with CodeDeploy
 * static-site-pipeline.ts: Provisions infrastructure for the static site, like a CloudFront distribution and an S3 bucket, plus bundles and uploads the static site pages to the site's S3 bucket
 * chat-bot-pipeline.ts: Builds and deploys the chat bot Lambda function and Lex model
-
-In templates/ directory:
-* trivia-backend-codedeploy-blue-green.template.yaml: Template for deploying the backend API service using CodeDeploy, instead of using CloudFormation for deployments.  This is an alternative to api-service-pipeline.ts listed above.
 
 ## Prep
 
@@ -38,14 +36,10 @@ cdk deploy --app 'node src/static-site-pipeline.js'
 cdk deploy --app 'node src/api-base-image-pipeline.js'
 
 cdk deploy --app 'node src/api-service-pipeline.js'
+OR
+cdk deploy --app 'node src/api-service-codedeploy-pipeline.js'
 
 cdk deploy --app 'node src/chat-bot-pipeline.js'
-```
-
-To use CodeDeploy blue-green deployments instead of CloudFormation deployments for the API backend service, use the following instead of using the api-service-pipeline template listed above:
-
-```
-aws cloudformation deploy --region us-east-1 --template-file templates/trivia-backend-codedeploy-blue-green.template.yaml --stack-name TriviaGameBackendPipeline --capabilities CAPABILITY_IAM
 ```
 
 See the pipelines in the CodePipeline console.
