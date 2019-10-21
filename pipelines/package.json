@@ -8,6 +8,8 @@
     "deploy-static-site-pipeline": "cdk deploy --app 'node src/static-site-pipeline.js'",
     "synth-backend-pipeline": "cdk synth -o build --app 'node src/api-service-pipeline.js'",
     "deploy-backend-pipeline": "cdk deploy --app 'node src/api-service-pipeline.js'",
+    "synth-backend-codedeploy-pipeline": "cdk synth -o build --app 'node src/api-service-codedeploy-pipeline.js'",
+    "deploy-backend-codedeploy-pipeline": "cdk deploy --app 'node src/api-service-codedeploy-pipeline.js'",
     "synth-backend-base-image-pipeline": "cdk synth -o build --app 'node src/api-base-image-pipeline.js'",
     "deploy-backend-base-image-pipeline": "cdk deploy --app 'node src/api-base-image-pipeline.js'",
     "synth-chat-bot-pipeline": "cdk synth -o build --app 'node src/chat-bot-pipeline.js'",
