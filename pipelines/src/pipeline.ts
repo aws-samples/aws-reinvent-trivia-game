@@ -41,11 +41,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
         this.sourceOutput = sourceOutput;
 
         // Build
-        const buildProject = new codebuild.Project(this, 'BuildProject', {
-            source: codebuild.Source.gitHub({
-                owner: 'aws-samples',
-                repo: 'aws-reinvent-2018-trivia-game'
-            }),
+        const buildProject = new codebuild.PipelineProject(this, 'BuildProject', {
             buildSpec: codebuild.BuildSpec.fromSourceFilename(props.directory + '/buildspec.yml'),
             environment: {
               buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0,
@@ -55,11 +51,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
                 }
               },
               privileged: true
-            },
-            artifacts: codebuild.Artifacts.s3({
-                bucket: pipeline.artifactBucket,
-                name: 'output.zip'
-            })
+            }
         });
 
         const buildArtifact = new codepipeline.Artifact('BuildArtifact');

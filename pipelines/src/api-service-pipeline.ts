@@ -40,11 +40,7 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
         });
 
         // Build
-        const buildProject = new codebuild.Project(this, 'BuildProject', {
-            source: codebuild.Source.gitHub({
-                owner: 'aws-samples',
-                repo: 'aws-reinvent-2018-trivia-game'
-            }),
+        const buildProject = new codebuild.PipelineProject(this, 'BuildProject', {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('trivia-backend/infra/cdk/buildspec.yml'),
             environment: {
               buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0,
@@ -54,11 +50,7 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
                 }
               },
               privileged: true
-            },
-            artifacts: codebuild.Artifacts.s3({
-                bucket: pipeline.artifactBucket,
-                name: 'output.zip'
-            })
+            }
         });
 
         buildProject.addToRolePolicy(new iam.PolicyStatement({
