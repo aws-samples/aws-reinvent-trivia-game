@@ -113,10 +113,10 @@ class TriviaGameBackendCodeDeployPipelineStack extends cdk.Stack {
                 new actions.CodeDeployEcsDeployAction({
                     actionName: 'Deploy' + stageName,
                     deploymentGroup,
-                    taskDefinitionTemplateInput: buildOutput,
-                    taskDefinitionTemplatePath: `task-definition-${stageName.toLowerCase()}.json`,
-                    appSpecTemplateInput: buildOutput,
-                    appSpecTemplatePath: `appspec-${stageName.toLowerCase()}.json`,
+                    taskDefinitionTemplateFile:
+                        new codepipeline.ArtifactPath(buildOutput, `task-definition-${stageName.toLowerCase()}.json`),
+                    appSpecTemplateFile:
+                        new codepipeline.ArtifactPath(buildOutput, `appspec-${stageName.toLowerCase()}.json`),
                     containerImageInputs: [{
                         input: imageDetailsOutput,
                         taskDefinitionPlaceholder: 'PLACEHOLDER'
