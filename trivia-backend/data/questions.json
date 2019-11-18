@@ -12,7 +12,7 @@
       {
         "id": 2,
         "points": 200,
-        "question": "What Amazon-favorite sport was introduced in re:Invent attendees in 2016?",
+        "question": "What Amazon-favorite sport was introduced to re:Invent attendees in 2016?",
         "answer": "Broomball",
         "answerType": "STRING",
         "alternativeAnswers": [
@@ -40,7 +40,7 @@
       {
         "id": 4,
         "points": 400,
-        "question": "Which year were both the ECS (Elastic Container Service) and Lambda announced at re:Invent?",
+        "question": "What year were both Lambda and ECS (Elastic Container Service) announced at re:Invent?",
         "answer": 2014,
         "answerType": "NUMBER"
       }
@@ -62,8 +62,8 @@
       {
         "id": 6,
         "points": 200,
-        "question": "How many venues does the re:Invent campus span this year (2018)?",
-        "answer": 7,
+        "question": "How many venues does the re:Invent campus span this year (2019)?",
+        "answer": 6,
         "answerType": "NUMBER"
       },
       {
@@ -76,8 +76,8 @@
       {
         "id": 8,
         "points": 400,
-        "question": "How many chalk talks are scheduled for re:Invent 2018?",
-        "answer": 644,
+        "question": "How many chalk talks are scheduled for re:Invent 2019 (as of Nov 17)?",
+        "answer": 694,
         "answerType": "NUMBER"
       }
     ]
@@ -88,7 +88,7 @@
       {
         "id": 9,
         "points": 100,
-        "question": "What genre of music is historically chosen for the re:play party?",
+        "question": "What genre of music is usually played at the re:Play party?",
         "answer": "EDM",
         "answerType": "STRING",
         "alternativeAnswers": [
@@ -103,17 +103,17 @@
       {
         "id": 10,
         "points": 200,
-        "question": "Who usually announces the DJ for re:play?",
-        "answer": "Werner Vogels",
+        "question": "What kind of musical group kicks off Midnight Madness?",
+        "answer": "Marching Band",
         "answerType": "STRING",
         "alternativeAnswers": [
-          "Werner"
+          "marching bands"
         ]
       },
       {
         "id": 11,
         "points": 300,
-        "question": "What venue hosted the re:play party in 2017?",
+        "question": "What venue hosted the re:Play party in 2017?",
         "answer": "The Linq",
         "answerType": "STRING",
         "alternativeAnswers": [
@@ -125,7 +125,7 @@
       {
         "id": 12,
         "points": 400,
-        "question": "Who was the re:play DJ at the 2013 re:Invent?",
+        "question": "Who was the re:Play DJ at the 2013 re:Invent?",
         "answer": "DeadMau5",
         "answerType": "STRING",
         "alternativeAnswers": [
@@ -145,6 +145,16 @@
       {
         "id": 13,
         "points": 100,
+        "question": "Who delivers the Thursday morning re:Invent keynote?",
+        "answer": "Werner Vogels",
+        "answerType": "STRING",
+        "alternativeAnswers": [
+          "Werner"
+        ]
+      },
+      {
+        "id": 14,
+        "points": 200,
         "question": "What sports star made a surprise experience at Midnight Madness in 2017?",
         "answer": "Shaq",
         "answerType": "STRING",
@@ -154,23 +164,6 @@
           "DJ Diesel",
           "Diesel",
           "DJ Shaq"
-        ]
-      },
-      {
-        "id": 14,
-        "points": 200,
-        "question": "Which AWS Engineer both appeared in the 2018 keynote, and also wrote this demo?",
-        "answer": "Clare Liguori (hi!)",
-        "answerType": "STRING",
-        "alternativeAnswers": [
-          "Clare Liguori",
-          "Clare",
-          "clareliguori",
-          "clare_liguori",
-          "Claire Liguori",
-          "Claire",
-          "claireliguori",
-          "claire_liguori"
         ]
       },
       {
