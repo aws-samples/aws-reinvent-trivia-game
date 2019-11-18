@@ -1,4 +1,4 @@
-## AWS re:Invent 2018 Trivia Game
+## AWS re:Invent 2019 Trivia Game
 
 Sample trivia game built with AWS Fargate, AWS Lambda, and Amazon Lex.  See [reinvent-trivia.com](https://www.reinvent-trivia.com) for a running example.
 

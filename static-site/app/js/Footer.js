@@ -14,7 +14,7 @@ class Footer extends React.Component {
         return (
             <div className='footer'>
                 <span className='footer' style={style}>
-                    © 2018, Amazon Web Services, Inc. or its affiliates. See the source code for this site on <a href="https://github.com/aws-samples/aws-reinvent-2018-trivia-game/">GitHub</a>.
+                    © 2019, Amazon Web Services, Inc. or its affiliates. See the source code for this site on <a href="https://github.com/aws-samples/aws-reinvent-2019-trivia-game/">GitHub</a>.
                 </span>
             </div>
         );
