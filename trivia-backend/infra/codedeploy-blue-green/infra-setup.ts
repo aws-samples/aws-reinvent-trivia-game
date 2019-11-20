@@ -105,7 +105,8 @@ class TriviaBackendStack extends cdk.Stack {
     new Alarm(this, 'TargetGroup5xx', {
       metric: tg1.metricHttpCodeTarget(HttpCodeTarget.TARGET_5XX_COUNT),
       threshold: 1,
-      evaluationPeriods: 2,
+      evaluationPeriods: 1,
+      period: cdk.Duration.minutes(1)
     });
 
     new Alarm(this, 'TargetGroup2UnhealthyHosts', {
@@ -117,7 +118,8 @@ class TriviaBackendStack extends cdk.Stack {
     new Alarm(this, 'TargetGroup25xx', {
       metric: tg2.metricHttpCodeTarget(HttpCodeTarget.TARGET_5XX_COUNT),
       threshold: 1,
-      evaluationPeriods: 2,
+      evaluationPeriods: 1,
+      period: cdk.Duration.minutes(1)
     });
 
     // Roles
