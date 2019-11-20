@@ -30,7 +30,10 @@ exports.handler = async function (event, context, callback) {
     // Perform validation or pre-warming steps.
     // Make a request to the target URL and check the response
     try {
+        console.log("Target: " + TARGET_URL);
         const response = await axios(TARGET_URL);
+        console.log("Response:");
+        console.log(response);
         if (response.status != 200) {
             console.error("Failure status");
             params.status = 'Failed';
