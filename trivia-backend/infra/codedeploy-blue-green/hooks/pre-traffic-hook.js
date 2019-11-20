@@ -6,6 +6,10 @@ const codedeploy = new aws.CodeDeploy();
 
 const TARGET_URL = process.env.TargetUrl;
 
+function sleep(seconds) {
+    return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+}
+
 exports.handler = async function (event, context, callback) {
 
     console.log("Entering PreTraffic Hook!");
@@ -18,6 +22,10 @@ exports.handler = async function (event, context, callback) {
     // Read the LifecycleEventHookExecutionId from the event payload
     var lifecycleEventHookExecutionId = event.LifecycleEventHookExecutionId;
     console.log("LifecycleEventHookExecutionId: " + lifecycleEventHookExecutionId);
+
+    // Ensure test traffic is fully shifted over to new target group
+    console.log("Waiting 30 seconds");
+    await sleep(30);
 
     // Prepare the validation test results with the deploymentId and
     // the lifecycleEventHookExecutionId for AWS CodeDeploy.
