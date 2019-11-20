@@ -64,7 +64,15 @@ class TriviaBackendStack extends cdk.Stack {
             return { targetType: TargetType.IP };
           }
         })()
-      ]
+      ],
+      deregistrationDelay: cdk.Duration.seconds(30),
+      healthCheck: {
+        interval: cdk.Duration.seconds(5),
+        healthyHttpCodes: '200',
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 3,
+        timeout: cdk.Duration.seconds(4)
+      }
     });
 
     // Second target group for green fleet
@@ -76,7 +84,15 @@ class TriviaBackendStack extends cdk.Stack {
             return { targetType: TargetType.IP };
           }
         })()
-      ]
+      ],
+      deregistrationDelay: cdk.Duration.seconds(30),
+      healthCheck: {
+        interval: cdk.Duration.seconds(5),
+        healthyHttpCodes: '200',
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 3,
+        timeout: cdk.Duration.seconds(4)
+      }
     });
 
     // Alarms: monitor 500s and unhealthy hosts on target groups
