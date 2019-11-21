@@ -42,15 +42,18 @@ phases:
       - npm ci
       - node produce-config.js -g test -s TriviaBackendTest -h TriviaBackendHooksTest
       - node produce-config.js -g prod -s TriviaBackendProd -h TriviaBackendHooksProd
+      - node produce-config.js -g onebox -s TriviaBackendProd -h TriviaBackendHooksProd
 
 artifacts:
   secondary-artifacts:
     BuildArtifact:
       files:
         - trivia-backend/infra/codedeploy-blue-green/build/appspec-prod.json
+        - trivia-backend/infra/codedeploy-blue-green/build/appspec-onebox.json
         - trivia-backend/infra/codedeploy-blue-green/build/appspec-test.json
         - trivia-backend/infra/codedeploy-blue-green/build/task-definition-test.json
         - trivia-backend/infra/codedeploy-blue-green/build/task-definition-prod.json
+        - trivia-backend/infra/codedeploy-blue-green/build/task-definition-onebox.json
       discard-paths: yes
     ImageDetails:
       files:
