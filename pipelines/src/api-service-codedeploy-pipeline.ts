@@ -90,7 +90,6 @@ class TriviaGameBackendCodeDeployPipelineStack extends cdk.Stack {
 
         // Deploy
         this.addDeployStage(pipeline, 'Test', buildArtifact, imageDetailsArtifact);
-        this.addDeployStage(pipeline, 'OneBox', buildArtifact, imageDetailsArtifact);
         this.addDeployStage(pipeline, 'Prod', buildArtifact, imageDetailsArtifact);
     }
 
