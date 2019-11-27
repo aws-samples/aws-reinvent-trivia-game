@@ -1,0 +1,263 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy a service on AWS Fargate using ECS task sets, hosted in a public subnet, and accessible via a public load balancer.
+
+Parameters:
+  Vpc:
+    Type: AWS::EC2::VPC::Id
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
+  ImageTag:
+    Type: String
+
+Resources:
+  # ECS resources
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Essential: true
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.us-east-1.${AWS::URLSuffix}/reinvent-trivia-backend:${ImageTag}"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref ServiceLogGroup
+              awslogs-stream-prefix: Service
+              awslogs-region: us-east-1
+          Name: web
+          PortMappings:
+            - ContainerPort: 80
+              Protocol: tcp
+      Cpu: "256"
+      ExecutionRoleArn: !GetAtt ServiceTaskExecutionRole.Arn
+      Family: !Ref AWS::StackName
+      Memory: "512"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !GetAtt ServiceTaskRole.Arn
+
+  Service:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: default
+      DesiredCount: 2
+      DeploymentController:
+        Type: EXTERNAL
+    DependsOn:
+      - ServiceTargetGroup
+      - Listener
+
+  TaskSet:
+    Type: AWS::ECS::TaskSet
+    Properties:
+      Cluster: default
+      Service: !Ref Service
+      Scale:
+        Unit: PERCENT
+        Value: 100
+      TaskDefinition: !Ref TaskDefinition
+      LaunchType: FARGATE
+      LoadBalancers:
+        - ContainerName: web
+          ContainerPort: 80
+          TargetGroupArn: !Ref ServiceTargetGroup
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !GetAtt ServiceSecurityGroup.GroupId
+          Subnets: !Ref Subnets
+
+  PrimaryTaskSet:
+    Type: AWS::ECS::PrimaryTaskSet
+    Properties:
+      Cluster: default
+      Service: !Ref Service
+      TaskSetId: !GetAtt TaskSet.Id
+
+  ServiceLogGroup:
+    Type: AWS::Logs::LogGroup
+
+  # Load balancer resources
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      SecurityGroups:
+        - !GetAtt LoadBalancerSecurityGroup.GroupId
+      Subnets: !Ref Subnets
+      Type: application
+
+  ServiceTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 5
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 3
+      HealthCheckTimeoutSeconds: 4
+      TargetGroupAttributes:
+        - Key: 'deregistration_delay.timeout_seconds'
+          Value: 5
+      Port: 80
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !Ref Vpc
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          ForwardConfig:
+            TargetGroups:
+              - TargetGroupArn: !Ref ServiceTargetGroup
+                Weight: 100
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  # Alarms
+  # Alarm on unhealthy hosts and HTTP 500s at the target group level
+  UnhealthyHostsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${AWS::StackName}-UnhealthyHosts
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 2
+      Dimensions:
+        - Name: TargetGroup
+          Value: !GetAtt ServiceTargetGroup.TargetGroupFullName
+        - Name: LoadBalancer
+          Value: !GetAtt LoadBalancer.LoadBalancerFullName
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Period: 300
+      Statistic: Average
+      Threshold: 1
+
+  Http5xxAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${AWS::StackName}-Http5xx
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      Dimensions:
+        - Name: TargetGroup
+          Value: !GetAtt ServiceTargetGroup.TargetGroupFullName
+        - Name: LoadBalancer
+          Value: !GetAtt LoadBalancer.LoadBalancerFullName
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+
+  # Security Groups:
+  # Allow traffic to the load balancer from the internet,
+  # and from the load balancer to the ECS containers.
+  ServiceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Security group for reInvent Trivia backend service'
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      VpcId: !Ref Vpc
+
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Security group for reInvent Trivia backend load balancer'
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow from anyone on production traffic port 80
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+        - CidrIp: 0.0.0.0/0
+          Description: Allow from anyone on test traffic ports 9000 - 9002
+          FromPort: 9000
+          IpProtocol: tcp
+          ToPort: 9002
+      VpcId: !Ref Vpc
+
+  LoadBalancerSecurityGroupToServiceSecurityGroupEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
+      IpProtocol: tcp
+      Description: Load balancer to target
+      DestinationSecurityGroupId: !GetAtt ServiceSecurityGroup.GroupId
+      FromPort: 80
+      ToPort: 80
+
+  LoadBalancerSecurityGroupToServiceSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      Description: Load balancer to target
+      FromPort: 80
+      GroupId: !GetAtt ServiceSecurityGroup.GroupId
+      SourceSecurityGroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
+      ToPort: 80
+
+  # Roles:
+  # Task role defines the policy that the ECS tasks will have, i.e. the code running in the containers.
+  # By default, the task role below has no permissions.
+  # Task execution role provides permissions to ECS to run the tasks, like pulling the image from ECR
+  # and pushing logs to CloudWatch Logs.
+  ServiceTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+        Version: "2012-10-17"
+
+  ServiceTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+        Version: "2012-10-17"
+
+  ServiceTaskExecutionRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - ecr:BatchCheckLayerAvailability
+              - ecr:GetDownloadUrlForLayer
+              - ecr:BatchGetImage
+            Effect: Allow
+            Resource: !Sub arn:aws:ecr:us-east-1:${AWS::AccountId}:repository/reinvent-trivia-backend
+          - Action: ecr:GetAuthorizationToken
+            Effect: Allow
+            Resource: "*"
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource: !GetAtt ServiceLogGroup.Arn
+        Version: "2012-10-17"
+      PolicyName: !Sub ${AWS::StackName}-ServiceTaskExecutionRolePolicy
+      Roles:
+        - !Ref ServiceTaskExecutionRole
+
+Outputs:
+  ServiceURL:
+    Value: !Join
+      - ""
+      - - http://
+        -  !GetAtt LoadBalancer.DNSName
