@@ -52,6 +52,8 @@ aws ecs create-service --region us-east-1 --service-name trivia-backend-prod --c
 
 # Create CodeDeploy resources
 
+aws deploy create-deployment-config --region us-east-1 --cli-input-json file://deployment-config.json
+
 aws deploy create-application --region us-east-1 --application-name AppECS-default-trivia-backend-test --compute-platform ECS
 
 aws deploy create-application --region us-east-1 --application-name AppECS-default-trivia-backend-prod --compute-platform ECS

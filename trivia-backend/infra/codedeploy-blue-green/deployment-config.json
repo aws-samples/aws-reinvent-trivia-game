@@ -1,0 +1,11 @@
+{
+    "deploymentConfigName": "trivia-backend-canary",
+    "trafficRoutingConfig": {
+        "type": "TimeBasedCanary",
+        "timeBasedCanary": {
+            "canaryPercentage": 20,
+            "canaryInterval": 15
+        }
+    },
+    "computePlatform": "ECS"
+}

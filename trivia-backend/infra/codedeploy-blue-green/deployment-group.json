@@ -1,5 +1,6 @@
 {
     "applicationName": "AppECS-default-trivia-backend-PLACEHOLDER_STAGE",
+    "deploymentConfigName": "trivia-backend-canary",
     "autoRollbackConfiguration": {
         "enabled": true,
         "events": [
@@ -15,7 +16,7 @@
         },
         "terminateBlueInstancesOnDeploymentSuccess": {
             "action": "TERMINATE",
-            "terminationWaitTimeInMinutes": 15
+            "terminationWaitTimeInMinutes": 30
         }
     },
     "deploymentStyle": {
