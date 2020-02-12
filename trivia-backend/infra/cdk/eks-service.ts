@@ -5,10 +5,11 @@ import {Vpc} from '@aws-cdk/aws-ec2';
 import {Repository} from '@aws-cdk/aws-ecr';
 import {FargateCluster, KubernetesResource} from '@aws-cdk/aws-eks';
 import {ContainerImage} from '@aws-cdk/aws-ecs';
-import {AccountRootPrincipal, FederatedPrincipal, Role} from '@aws-cdk/aws-iam';
+import {AccountRootPrincipal, Effect, FederatedPrincipal, ManagedPolicy, PolicyStatement, Role} from '@aws-cdk/aws-iam';
 import {StringParameter} from '@aws-cdk/aws-ssm';
 import {ReinventTriviaResource} from './eks/kubernetes-resources/reinvent-trivia';
 import {AlbIngressControllerPolicy} from './eks/alb-ingress-controller-policy';
+import {HostedZone} from '@aws-cdk/aws-route53';
 
 interface TriviaBackendStackProps extends cdk.StackProps {
   domainName: string;
@@ -131,6 +132,61 @@ class TriviaBackendStack extends cdk.Stack {
           }
         }]
       });
+
+      if (props.domainZone) {
+        const hostedZoneId = HostedZone.fromLookup(this, 'ApiDomainHostedZone', {domainName: props.domainZone}).hostedZoneId;
+        const externalDnsRole = new Role(this, 'ExternalDnsRole', {
+          assumedBy: new FederatedPrincipal(
+            'arn:aws:iam::' + cdk.Stack.of(this).account + ':oidc-provider/' + props.oidcProvider, {
+            'StringEquals': {
+              [`${OIDC_PROVIDER + ':sub'}`]: 'system:serviceaccount:kube-system:external-dns-rt'
+            }
+          },
+            'sts:AssumeRoleWithWebIdentity'
+          ),
+          roleName: 'ReinventTriviaExternalDnsRole',
+          managedPolicies: [
+            new ManagedPolicy(this, 'ExternalDnsPolicy', {
+              managedPolicyName: 'ExternalDnsPolicy',
+              description: 'Used by the ExternalDNS pod to make AWS API calls for updating DNS',
+              statements: [
+                new PolicyStatement({
+                  resources: ['arn:aws:route53:::hostedzone/' + hostedZoneId],
+                  effect: Effect.ALLOW,
+                  actions: [
+                    "route53:ChangeResourceRecordSets"
+                  ]
+                }),
+                new PolicyStatement({
+                  resources: ['*'],
+                  effect: Effect.ALLOW,
+                  actions: [
+                    'route53:ListHostedZones',
+                    'route53:ListResourceRecordSets',
+                  ]
+                })
+              ]
+            })
+          ]
+        });
+        cluster.addChart('ExternalDns', {
+          chart: 'external-dns',
+          release: 'external-dns-rt',
+          repository: 'https://kubernetes-charts.storage.googleapis.com',
+          version: '2.16.2',
+          namespace: 'kube-system',
+          values: {
+            domainFilters: [props.domainZone],
+            namespace: 'reinvent-trivia',
+            provider: 'aws',
+            rbac: {
+              serviceAccountAnnotations: {
+                'eks.amazonaws.com/role-arn': externalDnsRole.roleArn,
+              }
+            }
+          }
+        });
+      }
     }
   }
 }
@@ -138,6 +194,7 @@ class TriviaBackendStack extends cdk.Stack {
 const app = new cdk.App();
 new TriviaBackendStack(app, 'TriviaBackendProd', {
   domainName: 'api.reinvent-trivia.com',
+  // NOTE: `domainZone` must already exist in Route 53.
   domainZone: 'reinvent-trivia.com',
   env: {account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1'},
   /*
