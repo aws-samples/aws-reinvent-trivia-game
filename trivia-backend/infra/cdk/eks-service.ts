@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 import * as cdk from '@aws-cdk/core';
+import {Certificate} from '@aws-cdk/aws-certificatemanager';
 import {Vpc} from '@aws-cdk/aws-ec2';
 import {Repository} from '@aws-cdk/aws-ecr';
 import {FargateCluster} from '@aws-cdk/aws-eks';
 import {ContainerImage} from '@aws-cdk/aws-ecs';
-import {AccountRootPrincipal, Role} from '@aws-cdk/aws-iam';
+import {AccountRootPrincipal, FederatedPrincipal, Role} from '@aws-cdk/aws-iam';
+import {StringParameter} from '@aws-cdk/aws-ssm';
 import {ReinventTriviaResource} from './eks/kubernetes-resources/reinvent-trivia';
+import {AlbIngressControllerPolicy} from './eks/alb-ingress-controller-policy';
 
 interface TriviaBackendStackProps extends cdk.StackProps {
   domainName: string;
   domainZone: string;
+  oidcProvider?: string;
 }
 
 class TriviaBackendStack extends cdk.Stack {
@@ -46,8 +50,58 @@ class TriviaBackendStack extends cdk.Stack {
     const tag = (process.env.IMAGE_TAG) ? process.env.IMAGE_TAG : 'latest';
     const image = ContainerImage.fromEcrRepository(imageRepo, tag)
 
+    // Lookup pre-existing TLS certificate
+    const certificateArn = StringParameter.fromStringParameterAttributes(this, 'CertArnParameter', {
+      parameterName: 'CertificateArn-' + props.domainName
+    }).stringValue;
+    const certificate = Certificate.fromCertificateArn(this, 'Cert', certificateArn);
+
     // Kubernetes resources for the ReinventTrivia namespace, deployment, service, etc.
-    new ReinventTriviaResource(this, 'ReinventTrivia', {cluster, image, domainName: props.domainName})
+    new ReinventTriviaResource(this, 'ReinventTrivia', {cluster, certificate, image, domainName: props.domainName})
+
+    // This block creates the ALB Ingress Controller resources, but requires an OIDC provider in order
+    // to function, which will not exist until the cluster creation is completed. After the initial
+    // `cdk deploy` is complete, follow the README instructions on how to associate the OIDC provider
+    // and complete the initial setup.
+    if (props.oidcProvider) {
+      const OIDC_PROVIDER = props.oidcProvider;
+      const albIngressControllerRole = new Role(this, 'AlbIngressControllerRole', {
+        assumedBy: new FederatedPrincipal(
+          'arn:aws:iam::' + cdk.Stack.of(this).account + ':oidc-provider/' + props.oidcProvider, {
+          'StringEquals': {
+            [`${OIDC_PROVIDER + ':sub'}`]: 'system:serviceaccount:kube-system:incubator-aws-alb-ingress-controller'
+          }
+        },
+          'sts:AssumeRoleWithWebIdentity'
+        ),
+        roleName: 'ReinventTriviaAlbIngressControllerRole',
+        managedPolicies: [
+          new AlbIngressControllerPolicy(this, 'AlbIngressControllerPolicy')
+        ]
+      });
+
+      cluster.addChart('AlbIngress', {
+        chart: 'aws-alb-ingress-controller',
+        release: 'alb-ingress-controller-rt',
+        repository: 'https://kubernetes-charts-incubator.storage.googleapis.com',
+        version: '0.1.13',
+        namespace: 'kube-system',
+        values: {
+          awsRegion: cdk.Stack.of(cluster).region,
+          awsVpcID: vpc.vpcId,
+          clusterName: cluster.clusterName,
+          rbac: {
+            serviceAccountAnnotations: {
+              'eks.amazonaws.com/role-arn': albIngressControllerRole.roleArn
+            }
+          },
+          scope: {
+            singleNamespace: true,
+            watchNamespace: 'reinvent-trivia',
+          },
+        },
+      });
+    }
   }
 }
 
@@ -56,5 +110,10 @@ new TriviaBackendStack(app, 'TriviaBackendProd', {
   domainName: 'api.reinvent-trivia.com',
   domainZone: 'reinvent-trivia.com',
   env: {account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1'},
+  /*
+   * NOTE: `oidcProvider` will not be available until after the cluster is deployed for the first
+   * time. Leave the line below commented out for the initial `cdk deploy`. See README for details.
+   */
+  //oidcProvider: 'oidc.eks.<region>.amazonaws.com/id/<hexadecimal string>',
 });
 app.synth();

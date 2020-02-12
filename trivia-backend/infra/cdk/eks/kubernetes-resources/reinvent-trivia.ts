@@ -1,10 +1,15 @@
 import {Construct} from '@aws-cdk/core';
 import {Cluster, KubernetesResource} from '@aws-cdk/aws-eks';
+import {ICertificate} from '@aws-cdk/aws-certificatemanager';
 import {EcrImage} from '@aws-cdk/aws-ecs';
 /**
  * Properties for ReinventTriviaResources
  */
 export interface ReinventTriviaResourceProps {
+  /**
+   * Reference to the ACM certificate
+   */
+  readonly certificate: ICertificate;
   /**
    * The EKS cluster to apply this configuration to.
    */
@@ -106,6 +111,41 @@ export class ReinventTriviaResource extends KubernetesResource {
           "selector": {
             "app": "api"
           }
+        }
+      },
+      {
+        "apiVersion": "extensions/v1beta1",
+        "kind": "Ingress",
+        "metadata": {
+          "name": "api",
+          "namespace": "reinvent-trivia",
+          "annotations": {
+            "kubernetes.io/ingress.class": "alb",
+            "alb.ingress.kubernetes.io/scheme": "internet-facing",
+            "alb.ingress.kubernetes.io/target-type": "ip",
+            "alb.ingress.kubernetes.io/certificate-arn": props.certificate.certificateArn,
+            "external-dns.alpha.kubernetes.io/hostname": props.domainName,
+          },
+          "labels": {
+            "app": "api"
+          }
+        },
+        "spec": {
+          "rules": [
+            {
+              "http": {
+                "paths": [
+                  {
+                    "path": "/*",
+                    "backend": {
+                      "serviceName": "api",
+                      "servicePort": 80
+                    }
+                  }
+                ]
+              }
+            }
+          ]
         }
       }
     ]
