@@ -3,7 +3,7 @@ import * as cdk from '@aws-cdk/core';
 import {Certificate} from '@aws-cdk/aws-certificatemanager';
 import {Vpc} from '@aws-cdk/aws-ec2';
 import {Repository} from '@aws-cdk/aws-ecr';
-import {FargateCluster} from '@aws-cdk/aws-eks';
+import {FargateCluster, KubernetesResource} from '@aws-cdk/aws-eks';
 import {ContainerImage} from '@aws-cdk/aws-ecs';
 import {AccountRootPrincipal, FederatedPrincipal, Role} from '@aws-cdk/aws-iam';
 import {StringParameter} from '@aws-cdk/aws-ssm';
@@ -100,6 +100,36 @@ class TriviaBackendStack extends cdk.Stack {
             watchNamespace: 'reinvent-trivia',
           },
         },
+      });
+
+      cluster.addChart('MetricsServer', {
+        chart: 'metrics-server',
+        release: 'metrics-server-rt',
+        repository: 'https://kubernetes-charts.storage.googleapis.com',
+        version: '2.9.0',
+        namespace: 'kube-system'
+      });
+
+      new KubernetesResource(this, 'HorizontalPodAutoscaler', {
+        cluster,
+        manifest: [{
+          apiVersion: 'autoscaling/v1',
+          kind: 'HorizontalPodAutoscaler',
+          metadata: {
+            name: 'api',
+            namespace: 'reinvent-trivia',
+          },
+          spec: {
+            scaleTargetRef: {
+              apiVersion: 'apps/v1',
+              kind: 'Deployment',
+              name: 'api',
+            },
+            minReplicas: 2,
+            maxReplicas: 32,
+            targetCPUUtilizationPercentage: 50,
+          }
+        }]
       });
     }
   }
