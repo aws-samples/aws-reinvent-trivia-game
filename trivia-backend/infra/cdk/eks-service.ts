@@ -35,7 +35,6 @@ class TriviaBackendStack extends cdk.Stack {
           {namespace: 'reinvent-trivia'},
         ],
         subnetSelection: {subnets: vpc.privateSubnets},
-        vpc
       },
       mastersRole: new Role(this, 'ClusterAdminRole', {
         assumedBy: new AccountRootPrincipal(),
@@ -45,6 +44,7 @@ class TriviaBackendStack extends cdk.Stack {
       outputMastersRoleArn: true,
       vpc,
     });
+    const fargateProfile = cluster.node.findChild('fargate-profile-reinvent-trivia');
 
     // Configuration parameters
     const imageRepo = Repository.fromRepositoryName(this, 'Repo', 'reinvent-trivia-backend');
@@ -58,136 +58,154 @@ class TriviaBackendStack extends cdk.Stack {
     const certificate = Certificate.fromCertificateArn(this, 'Cert', certificateArn);
 
     // Kubernetes resources for the ReinventTrivia namespace, deployment, service, etc.
-    new ReinventTriviaResource(this, 'ReinventTrivia', {cluster, certificate, image, domainName: props.domainName})
+    const reinventTrivia = new ReinventTriviaResource(this, 'ReinventTrivia', {
+      cluster, certificate, image, domainName: props.domainName
+    });
+    reinventTrivia.node.addDependency(fargateProfile);
 
-    // This block creates the ALB Ingress Controller resources, but requires an OIDC provider in order
-    // to function, which will not exist until the cluster creation is completed. After the initial
-    // `cdk deploy` is complete, follow the README instructions on how to associate the OIDC provider
-    // and complete the initial setup.
-    if (props.oidcProvider) {
-      const OIDC_PROVIDER = props.oidcProvider;
-      const albIngressControllerRole = new Role(this, 'AlbIngressControllerRole', {
-        assumedBy: new FederatedPrincipal(
-          'arn:aws:iam::' + cdk.Stack.of(this).account + ':oidc-provider/' + props.oidcProvider, {
-          'StringEquals': {
-            [`${OIDC_PROVIDER + ':sub'}`]: 'system:serviceaccount:kube-system:incubator-aws-alb-ingress-controller'
-          }
-        },
-          'sts:AssumeRoleWithWebIdentity'
-        ),
-        roleName: 'ReinventTriviaAlbIngressControllerRole',
-        managedPolicies: [
-          new AlbIngressControllerPolicy(this, 'AlbIngressControllerPolicy')
-        ]
-      });
+    const metricsServerChart = cluster.addChart('MetricsServer', {
+      chart: 'metrics-server',
+      release: 'metrics-server-rt',
+      repository: 'https://kubernetes-charts.storage.googleapis.com',
+      version: '2.9.0',
+      namespace: 'kube-system'
+    });
+    metricsServerChart.node.addDependency(fargateProfile);
 
-      cluster.addChart('AlbIngress', {
-        chart: 'aws-alb-ingress-controller',
-        release: 'alb-ingress-controller-rt',
-        repository: 'https://kubernetes-charts-incubator.storage.googleapis.com',
-        version: '0.1.13',
-        namespace: 'kube-system',
-        values: {
-          awsRegion: cdk.Stack.of(cluster).region,
-          awsVpcID: vpc.vpcId,
-          clusterName: cluster.clusterName,
-          rbac: {
-            serviceAccountAnnotations: {
-              'eks.amazonaws.com/role-arn': albIngressControllerRole.roleArn
-            }
-          },
-          scope: {
-            singleNamespace: true,
-            watchNamespace: 'reinvent-trivia',
-          },
-        },
-      });
+    // This "new class extends cdk.Construct {" convention wraps the resources created within and allows
+    // us make all of them dependent on the EKS Cluster's Fargate Profile resource in one fell swoop. This
+    // will prevent pods from being stuck in a "Pending" state forever after initial creation if Kubernetes
+    // attempts to schedule them before the Fargate Profile is ready.
+    new class extends cdk.Construct {
+      constructor(parent: cdk.Construct, name: string) {
+        super(parent, name)
 
-      cluster.addChart('MetricsServer', {
-        chart: 'metrics-server',
-        release: 'metrics-server-rt',
-        repository: 'https://kubernetes-charts.storage.googleapis.com',
-        version: '2.9.0',
-        namespace: 'kube-system'
-      });
-
-      new KubernetesResource(this, 'HorizontalPodAutoscaler', {
-        cluster,
-        manifest: [{
-          apiVersion: 'autoscaling/v1',
-          kind: 'HorizontalPodAutoscaler',
-          metadata: {
-            name: 'api',
-            namespace: 'reinvent-trivia',
-          },
-          spec: {
-            scaleTargetRef: {
-              apiVersion: 'apps/v1',
-              kind: 'Deployment',
-              name: 'api',
+        // This block creates the ALB Ingress Controller resources, but requires an OIDC provider in order
+        // to function, which will not exist until the cluster creation is completed. After the initial
+        // `cdk deploy` is complete, follow the README instructions on how to associate the OIDC provider
+        // and complete the initial setup.
+        if (props.oidcProvider) {
+          const OIDC_PROVIDER = props.oidcProvider;
+          const albIngressControllerRole = new Role(this, 'AlbIngressControllerRole', {
+            assumedBy: new FederatedPrincipal(
+              'arn:aws:iam::' + cdk.Stack.of(this).account + ':oidc-provider/' + props.oidcProvider, {
+              'StringEquals': {
+                [`${OIDC_PROVIDER + ':sub'}`]: 'system:serviceaccount:kube-system:aws-alb-ingress-controller'
+              }
             },
-            minReplicas: 2,
-            maxReplicas: 32,
-            targetCPUUtilizationPercentage: 50,
-          }
-        }]
-      });
+              'sts:AssumeRoleWithWebIdentity'
+            ),
+            roleName: 'ReinventTriviaAlbIngressControllerRole',
+            managedPolicies: [
+              new AlbIngressControllerPolicy(this, 'AlbIngressControllerPolicy')
+            ]
+          });
 
-      if (props.domainZone) {
-        const hostedZoneId = HostedZone.fromLookup(this, 'ApiDomainHostedZone', {domainName: props.domainZone}).hostedZoneId;
-        const externalDnsRole = new Role(this, 'ExternalDnsRole', {
-          assumedBy: new FederatedPrincipal(
-            'arn:aws:iam::' + cdk.Stack.of(this).account + ':oidc-provider/' + props.oidcProvider, {
-            'StringEquals': {
-              [`${OIDC_PROVIDER + ':sub'}`]: 'system:serviceaccount:kube-system:external-dns-rt'
-            }
-          },
-            'sts:AssumeRoleWithWebIdentity'
-          ),
-          roleName: 'ReinventTriviaExternalDnsRole',
-          managedPolicies: [
-            new ManagedPolicy(this, 'ExternalDnsPolicy', {
-              managedPolicyName: 'ExternalDnsPolicy',
-              description: 'Used by the ExternalDNS pod to make AWS API calls for updating DNS',
-              statements: [
-                new PolicyStatement({
-                  resources: ['arn:aws:route53:::hostedzone/' + hostedZoneId],
-                  effect: Effect.ALLOW,
-                  actions: [
-                    "route53:ChangeResourceRecordSets"
-                  ]
-                }),
-                new PolicyStatement({
-                  resources: ['*'],
-                  effect: Effect.ALLOW,
-                  actions: [
-                    'route53:ListHostedZones',
-                    'route53:ListResourceRecordSets',
+          const albIngressChart = cluster.addChart('AlbIngress', {
+            chart: 'aws-alb-ingress-controller',
+            release: 'alb-ingress-controller-rt',
+            repository: 'https://kubernetes-charts-incubator.storage.googleapis.com',
+            version: '0.1.13',
+            namespace: 'kube-system',
+            values: {
+              awsRegion: cdk.Stack.of(cluster).region,
+              awsVpcID: cluster.vpc.vpcId,
+              clusterName: cluster.clusterName,
+              fullnameOverride: 'aws-alb-ingress-controller',
+              rbac: {
+                serviceAccountAnnotations: {
+                  'eks.amazonaws.com/role-arn': albIngressControllerRole.roleArn
+                }
+              },
+              scope: {
+                singleNamespace: true,
+                watchNamespace: 'reinvent-trivia',
+              },
+            },
+          });
+          albIngressChart.node.addDependency(metricsServerChart);
+
+          new KubernetesResource(this, 'HorizontalPodAutoscaler', {
+            cluster,
+            manifest: [{
+              apiVersion: 'autoscaling/v1',
+              kind: 'HorizontalPodAutoscaler',
+              metadata: {
+                name: 'api',
+                namespace: 'reinvent-trivia',
+              },
+              spec: {
+                scaleTargetRef: {
+                  apiVersion: 'apps/v1',
+                  kind: 'Deployment',
+                  name: 'api',
+                },
+                minReplicas: 2,
+                maxReplicas: 32,
+                targetCPUUtilizationPercentage: 50,
+              }
+            }]
+          });
+
+          if (props.domainZone) {
+            const hostedZoneId = HostedZone.fromLookup(this, 'ApiDomainHostedZone', {domainName: props.domainZone}).hostedZoneId;
+            const externalDnsRole = new Role(this, 'ExternalDnsRole', {
+              assumedBy: new FederatedPrincipal(
+                'arn:aws:iam::' + cdk.Stack.of(this).account + ':oidc-provider/' + props.oidcProvider, {
+                'StringEquals': {
+                  [`${OIDC_PROVIDER + ':sub'}`]: 'system:serviceaccount:kube-system:external-dns-rt'
+                }
+              },
+                'sts:AssumeRoleWithWebIdentity'
+              ),
+              roleName: 'ReinventTriviaExternalDnsRole',
+              managedPolicies: [
+                new ManagedPolicy(this, 'ExternalDnsPolicy', {
+                  managedPolicyName: 'ExternalDnsPolicy',
+                  description: 'Used by the ExternalDNS pod to make AWS API calls for updating DNS',
+                  statements: [
+                    new PolicyStatement({
+                      resources: ['arn:aws:route53:::hostedzone/' + hostedZoneId],
+                      effect: Effect.ALLOW,
+                      actions: [
+                        "route53:ChangeResourceRecordSets"
+                      ]
+                    }),
+                    new PolicyStatement({
+                      resources: ['*'],
+                      effect: Effect.ALLOW,
+                      actions: [
+                        'route53:ListHostedZones',
+                        'route53:ListResourceRecordSets',
+                      ]
+                    })
                   ]
                 })
               ]
-            })
-          ]
-        });
-        cluster.addChart('ExternalDns', {
-          chart: 'external-dns',
-          release: 'external-dns-rt',
-          repository: 'https://kubernetes-charts.storage.googleapis.com',
-          version: '2.16.2',
-          namespace: 'kube-system',
-          values: {
-            domainFilters: [props.domainZone],
-            namespace: 'reinvent-trivia',
-            provider: 'aws',
-            rbac: {
-              serviceAccountAnnotations: {
-                'eks.amazonaws.com/role-arn': externalDnsRole.roleArn,
+            });
+            const externalDnsChart = cluster.addChart('ExternalDns', {
+              chart: 'external-dns',
+              release: 'external-dns-rt',
+              repository: 'https://kubernetes-charts.storage.googleapis.com',
+              version: '2.16.2',
+              namespace: 'kube-system',
+              values: {
+                domainFilters: [props.domainZone],
+                namespace: 'reinvent-trivia',
+                provider: 'aws',
+                rbac: {
+                  serviceAccountAnnotations: {
+                    'eks.amazonaws.com/role-arn': externalDnsRole.roleArn,
+                  }
+                }
               }
-            }
+            });
+            externalDnsChart.node.addDependency(metricsServerChart);
           }
-        });
+        }
+
       }
-    }
+    }(this, 'KubernetesResources').node.addDependency(reinventTrivia);
   }
 }
 
