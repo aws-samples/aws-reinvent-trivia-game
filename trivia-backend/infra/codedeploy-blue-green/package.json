@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "tsc",
-    "synth-infra": "cdk synth --app 'node infra-setup.js",
+    "synth-infra": "cdk synth --app 'node infra-setup.js'",
     "deploy-test-infra": "tsc && cdk deploy --app 'node infra-setup.js' --require-approval never TriviaBackendTest",
     "deploy-prod-infra": "tsc && cdk deploy --app 'node infra-setup.js' --require-approval never TriviaBackendProd"
   },
