@@ -9,6 +9,9 @@ update_configs:
   - directory: /trivia-backend/app/
     package_manager: javascript
     update_schedule: monthly
+  - directory: /trivia-backend/base/
+    package_manager: docker
+    update_schedule: monthly
   - directory: /trivia-backend/infra/cdk/
     package_manager: javascript
     update_schedule: monthly
