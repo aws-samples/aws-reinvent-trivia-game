@@ -7,6 +7,8 @@ services:
   - docker
 
 install:
+  - npm install -g aws-cdk
+
   # pipelines
   - cd $TRAVIS_BUILD_DIR/pipelines
   - npm ci
@@ -27,6 +29,11 @@ script:
   # pipelines
   - cd $TRAVIS_BUILD_DIR/pipelines
   - npm run build
+  - npm run synth-static-site-pipeline
+  - npm run synth-backend-pipeline
+  - npm run synth-backend-codedeploy-pipeline
+  - npm run synth-backend-base-image-pipeline
+  - npm run synth-chat-bot-pipeline
 
   # static site
   - cd $TRAVIS_BUILD_DIR/static-site/cdk
@@ -44,4 +51,5 @@ script:
   - cd $TRAVIS_BUILD_DIR/trivia-backend/infra/cdk
   - npm run build
   - cd $TRAVIS_BUILD_DIR/trivia-backend/infra/codedeploy-blue-green
-  - tsc
+  - npm run build
+  - npm run synth-infra
