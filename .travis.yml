@@ -52,4 +52,3 @@ script:
   - npm run build
   - cd $TRAVIS_BUILD_DIR/trivia-backend/infra/codedeploy-blue-green
   - npm run build
-  - npm run synth-infra
