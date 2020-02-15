@@ -1,28 +1,47 @@
 language: node_js
 
+node_js:
+  - latest
+
 services:
   - docker
 
-script:
-  # Build pipelines
+install:
+  # pipelines
   - cd $TRAVIS_BUILD_DIR/pipelines
   - npm ci
+
+  # static site
+  - cd $TRAVIS_BUILD_DIR/static-site/cdk
+  - npm ci
+  - cd $TRAVIS_BUILD_DIR/static-site/app
+  - npm ci
+
+  # trivia game infra
+  - cd $TRAVIS_BUILD_DIR/trivia-backend/infra/cdk
+  - npm ci
+  - cd $TRAVIS_BUILD_DIR/trivia-backend/infra/codedeploy-blue-green
+  - npm ci
+
+script:
+  # pipelines
+  - cd $TRAVIS_BUILD_DIR/pipelines
   - npm run build
 
-  # Build static site
-  - cd $TRAVIS_BUILD_DIR/static-site/cdk && npm ci && npm run build
-  - cd $TRAVIS_BUILD_DIR/static-site/app && npm ci && npm run build
+  # static site
+  - cd $TRAVIS_BUILD_DIR/static-site/cdk
+  - npm run build
+  - cd $TRAVIS_BUILD_DIR/static-site/app
+  - npm run build
 
-  # Build trivia game app
+  # trivia game app
   - cd $TRAVIS_BUILD_DIR/trivia-backend/base
   - docker build -t reinvent-trivia-backend-base:release .
   - cd $TRAVIS_BUILD_DIR/trivia-backend/
   - docker build -t reinvent-trivia-backend:release .
 
-  # Build trivia game infra
+  # trivia game infra
   - cd $TRAVIS_BUILD_DIR/trivia-backend/infra/cdk
-  - npm ci
   - npm run build
   - cd $TRAVIS_BUILD_DIR/trivia-backend/infra/codedeploy-blue-green
-  - npm ci
   - tsc
