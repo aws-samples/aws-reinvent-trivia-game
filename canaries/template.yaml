@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Canary resources for trivia site
+
+Parameters:
+  Stage:
+    Type: String
+    AllowedValues:
+      - "test"
+      - "prod"
+
+Resources:
+  CanaryResultsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      LifecycleConfiguration:
+        Rules:
+        - Status: Enabled
+          ExpirationInDays: 31
+
+  CanaryRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "CloudWatchSyntheticsRole-trivia-game-${Stage}"
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: !Sub "CloudWatchSyntheticsPolicy-trivia-game-${Stage}"
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+              - "s3:PutObject"
+              - "s3:GetBucketLocation"
+            Resource: !Sub "arn:aws:s3:::!{CanaryResultsBucket}/*"
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+              - "logs:CreateLogGroup"
+            Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/cwsyn-trivia-game-${Stage}-*"
+          - Effect: Allow
+            Action:
+              - "s3:ListAllMyBuckets"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "cloudwatch:PutMetricData"
+            Resource: "*"
+            Condition:
+              StringEquals:
+                "cloudwatch:namespace": CloudWatchSynthetics

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import codebuild = require('@aws-cdk/aws-codebuild');
 import codepipeline = require('@aws-cdk/aws-codepipeline');
+import notifications = require('@aws-cdk/aws-codestarnotifications');
 import actions = require('@aws-cdk/aws-codepipeline-actions');
 import iam = require('@aws-cdk/aws-iam');
 import cdk = require('@aws-cdk/core');
@@ -11,6 +12,22 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
 
         const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
             pipelineName: 'reinvent-trivia-game-static-site',
+        });
+
+        new notifications.CfnNotificationRule(this, 'PipelineNotifications', {
+            name: pipeline.pipelineName,
+            detailType: 'FULL',
+            resource: pipeline.pipelineArn,
+            eventTypeIds: [ 'codepipeline-pipeline-pipeline-execution-failed' ],
+            targets: [
+                {
+                    targetType: 'SNS',
+                    targetAddress: cdk.Stack.of(this).formatArn({
+                        service: 'sns',
+                        resource: 'reinvent-trivia-notifications'
+                    }),
+                }
+            ]
         });
 
         // Source

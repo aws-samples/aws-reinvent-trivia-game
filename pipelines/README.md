@@ -18,6 +18,11 @@ Create a GitHub [personal access token](https://github.com/settings/tokens) with
 aws secretsmanager create-secret --region us-east-1 --name TriviaGitHubToken --secret-string <my-github-personal-access-token>
 ```
 
+Create an SNS topic for notifications about pipeline execution failures.  An email address or to a [chat bot](https://docs.aws.amazon.com/chatbot/latest/adminguide/setting-up.html) can be subscribed to the topic to receive notifications about pipeline failures.
+```
+aws sns create-topic --name reinvent-trivia-notifications --region us-east-1
+```
+
 ## Customize
 
 Replace all references to 'aws-samples' with your own fork of this repo.  Replace all references to 'reinvent-trivia.com' with your own domain name.

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import codebuild = require('@aws-cdk/aws-codebuild');
 import codepipeline = require('@aws-cdk/aws-codepipeline');
+import notifications = require('@aws-cdk/aws-codestarnotifications');
 import actions = require('@aws-cdk/aws-codepipeline-actions');
 import cdk = require('@aws-cdk/core');
 
@@ -23,6 +24,22 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
             pipelineName: 'reinvent-trivia-game-' + props.pipelineName,
         });
         this.pipeline = pipeline;
+
+        new notifications.CfnNotificationRule(this, 'PipelineNotifications', {
+            name: pipeline.pipelineName,
+            detailType: 'FULL',
+            resource: pipeline.pipelineArn,
+            eventTypeIds: [ 'codepipeline-pipeline-pipeline-execution-failed' ],
+            targets: [
+                {
+                    targetType: 'SNS',
+                    targetAddress: cdk.Stack.of(this).formatArn({
+                        service: 'sns',
+                        resource: 'reinvent-trivia-notifications'
+                    }),
+                }
+            ]
+        });
 
         // Source
         const githubAccessToken = cdk.SecretValue.secretsManager('TriviaGitHubToken');
