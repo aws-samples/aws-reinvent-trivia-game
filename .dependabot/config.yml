@@ -1,0 +1,29 @@
+version: 1
+update_configs:
+  - directory: /chat-bot/lex-model/
+    package_manager: javascript
+    update_schedule: monthly
+  - directory: /chat-bot/bot/
+    package_manager: javascript
+    update_schedule: monthly
+  - directory: /trivia-backend/app/
+    package_manager: javascript
+    update_schedule: monthly
+  - directory: /trivia-backend/infra/cdk/
+    package_manager: javascript
+    update_schedule: monthly
+  - directory: /trivia-backend/infra/codedeploy-blue-green/
+    package_manager: javascript
+    update_schedule: monthly
+  - directory: /trivia-backend/infra/codedeploy-blue-green/hooks/
+    package_manager: javascript
+    update_schedule: monthly
+  - directory: /static-site/cdk/
+    package_manager: javascript
+    update_schedule: monthly
+  - directory: /static-site/app/
+    package_manager: javascript
+    update_schedule: monthly
+  - directory: /pipelines/
+    package_manager: javascript
+    update_schedule: monthly
