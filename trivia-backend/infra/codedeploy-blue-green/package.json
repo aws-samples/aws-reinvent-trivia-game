@@ -8,7 +8,7 @@
     "deploy-prod-infra": "tsc && cdk deploy --app 'node infra-setup.js' --require-approval never TriviaBackendProd"
   },
   "devDependencies": {
-    "@types/node": "^12.12.5",
+    "@types/node": "^13.7.1",
     "typescript": "^3.6.4",
     "aws-cdk": "^1.15.0"
   },
