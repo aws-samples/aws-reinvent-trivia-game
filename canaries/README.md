@@ -2,8 +2,6 @@
 
 The trivia game application can use Amazon CloudWatch Synthetics (currently in Preview) to continuously load the webpage and APIs, and alarm when the page does not load or does not render correctly.
 
-Update both canary-prod.js and canary-test with the correct endpoint for your applications.
-
 ## Test endpoint canary
 
 Deploy the prerequisite resources:
@@ -21,11 +19,23 @@ Get the bucket name:
 aws cloudformation describe-stack-resources --stack-name TriviaGameCanariesTest --region us-east-1
 ```
 
+Update the endpoints in canary.js to your test endpoints, then package and upload the canary script:
+```
+npm install
+mkdir -p nodejs/
+cp -a node_modules/ nodejs/
+cp canary.js nodejs/node_modules/
+zip -r canary-test.zip nodejs/
+aws s3 cp canary-test.zip s3://$BUCKET_NAME/
+```
+
 Create the canary: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#synthetics:canary/create
 ```
 Name: trivia-game-test
-File: canary-test.js
-Entrypoint: trivia-game-test.handler
+Source Location: s3://$BUCKET_NAME/canary-test.zip
+Entrypoint: canary.handler
+Data Storage: s3://$BUCKET_NAME
+Thresholds: Enabled
 Role: CloudWatchSyntheticsRole-trivia-game-test
 ```
 
@@ -46,11 +56,23 @@ Get the bucket name:
 aws cloudformation describe-stack-resources --stack-name TriviaGameCanariesProd --region us-east-1
 ```
 
+Update the endpoints in canary.js to your prod endpoints, then package and upload the canary script:
+```
+npm install
+mkdir -p nodejs/
+cp -a node_modules/ nodejs/
+cp canary.js nodejs/node_modules/
+zip -r canary-prod.zip nodejs/
+aws s3 cp canary-prod.zip s3://$BUCKET_NAME/
+```
+
 Create the canary: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#synthetics:canary/create
 ```
 Name: trivia-game-prod
-File: canary-prod.js
-Entrypoint: trivia-game-prod.handler
+Source Location: s3://$BUCKET_NAME/canary-prod.zip
+Entrypoint: canary.handler
+Data Storage: s3://$BUCKET_NAME
+Thresholds: Enabled
 Role: CloudWatchSyntheticsRole-trivia-game-prod
 ```
 

@@ -38,8 +38,7 @@ Resources:
           - Effect: Allow
             Action:
               - "s3:PutObject"
-              - "s3:GetBucketLocation"
-            Resource: !Sub "arn:aws:s3:::!{CanaryResultsBucket}/*"
+            Resource: !Sub "arn:aws:s3:::${CanaryResultsBucket}/*"
           - Effect: Allow
             Action:
               - "logs:CreateLogStream"
@@ -48,6 +47,7 @@ Resources:
             Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/cwsyn-trivia-game-${Stage}-*"
           - Effect: Allow
             Action:
+              - "s3:GetBucketLocation"
               - "s3:ListAllMyBuckets"
             Resource: "*"
           - Effect: Allow

@@ -37,6 +37,7 @@ async function produceConfigs() {
     let privateSubnets = [];
     let serviceSecurityGroups = [];
     let alarms = [];
+    alarms.push({ name: 'Synthetics-Alarm-trivia-game-' + stage });
     let taskRole;
     let executionRole;
     let codedeployRole;

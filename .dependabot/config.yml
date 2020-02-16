@@ -39,3 +39,7 @@ update_configs:
     package_manager: javascript
     update_schedule: monthly
     version_requirement_updates: increase_versions
+  - directory: /canaries/
+    package_manager: javascript
+    update_schedule: monthly
+    version_requirement_updates: increase_versions
