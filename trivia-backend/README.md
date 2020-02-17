@@ -24,7 +24,7 @@ aws ssm put-parameter --region us-east-1 --name CertificateArn-test-api.reinvent
 
 Replace all references to 'reinvent-trivia.com' with your own domain name.
 
-# Docker images
+## Build Docker images
 
 The base image Dockerfile can be found in the base/ directory.  In the backend pipeline modeled in the "pipelines" folder, the base image is built in one "base image" pipeline, which triggers another pipeline for the main application.  In the main application pipeline, the base image URI is replaced in the main Dockerfile with the latest base image that triggered the pipeline.
 
@@ -36,11 +36,9 @@ docker build -t reinvent-trivia-backend-base:release base/
 docker build -t reinvent-trivia-backend:latest .
 ```
 
-# Provision
+## Provision using infrastructure as code
 
 There are three options in the infra directory for provisioning and deploying the backend services.
-
-## Infrastructure as code
 
 ### ECS on Fargate
 
@@ -61,7 +59,7 @@ cdk deploy --app ecs-service.js TriviaBackendTest
 cdk deploy --app ecs-service.js TriviaBackendProd
 ```
 
-#### ECS on Fargate, using CodeDeploy blue-green deployments
+### ECS on Fargate, using CodeDeploy blue-green deployments
 
 The codedeploy-blue-green folder contains examples of the configuration needed to setup and execute a blue-green deployment with CodeDeploy: CodeDeploy appspec file, ECS task definition file, ECS service, CodeDeploy application definition, and CodeDeploy deployment group.
 
@@ -76,11 +74,9 @@ npm install -g aws-cdk
 
 See the pipelines folder for instructions on how to continuously deploy this example.
 
-**NOTE:** This approach is not applicable for the EKS on Fargate deployment.
-
 ### EKS on Fargate
 
-The re:Invent Trivia backend can also be deployed to run using EKS on Fargate. If you'd like to try this, ignore the **Docker on ECS** instructions above (or run `cdk destroy --app ecs-service.js TriviaBackendTest TriviaBackendProd` if you've already followed them), and run the following instructions instead. Please note that this implementation is experimental and provided as an example, so a continuous deployment pipeline for it is not currently available.
+Note that this example does not currently have a continuous deployment pipeline example.
 
 First, install [kubectl](https://github.com/kubernetes/kubectl) and [eksctl](https://github.com/weaveworks/eksctl).
 
@@ -121,4 +117,3 @@ kubectl rollout restart -n reinvent-trivia deployment api
 ```
 
 Once the rollout process is complete, `kubectl get all --all-namespaces` will show everything in the `Running` state, and you'll see a `{status:ok}` response when visiting `https://<your api domain name here>` in your browser.
-
