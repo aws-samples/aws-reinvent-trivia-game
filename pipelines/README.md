@@ -23,6 +23,8 @@ Create an SNS topic for notifications about pipeline execution failures.  An ema
 aws sns create-topic --name reinvent-trivia-notifications --region us-east-1
 ```
 
+Follow the [CodeStar Notifications user guide](https://docs.aws.amazon.com/codestar-notifications/latest/userguide/set-up-sns.html) to configure the SNS topic to be able to receive notifications about pipeline failures.
+
 ## Customize
 
 Replace all references to 'aws-samples' with your own fork of this repo.  Replace all references to 'reinvent-trivia.com' with your own domain name.
