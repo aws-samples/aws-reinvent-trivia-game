@@ -12,7 +12,7 @@ The chat-bot uses canary deployments using AWS CodeDeploy.  When the serverless 
 
 ## Lex model
 
-The Lex model is built from the questions and answers found in the trivia-backend folder.  Each question is a slot, which the answer as the slot type.  The data file contains "alternative answers", which are used as synonyms for the slot type.  In order to associate the Lex bot with Slack, [follow these instructions](https://docs.aws.amazon.com/lex/latest/dg/slack-bot-association.html).
+The Lex model is built from the questions and answers found in the [trivia-backend](../trivia-backend/data/questions.json) folder.  Each question is a slot, which the answer as the slot type.  The data file contains "alternative answers", which are used as synonyms for the slot type.  In order to associate the Lex bot with Slack, [follow these instructions](https://docs.aws.amazon.com/lex/latest/dg/slack-bot-association.html).
 
 ## Prep
 
@@ -28,7 +28,7 @@ Replace all references to 'reinvent-trivia.com' with your own domain name.
 
 ## Deploy
 
-Ideally, use the pipelines in the "pipelines" folder to deploy the bot.  Alternatively, you can use the SAM CLI to deploy.  See the buildspec.yml for additional required commands, like installing dependencies.
+Ideally, use the pipelines in the "[pipelines](../pipelines/)" folder to deploy the bot.  Alternatively, you can use the SAM CLI to deploy.  See the buildspec.yml for additional required commands, like installing dependencies.
 
 ```bash
 sam package \

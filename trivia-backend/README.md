@@ -26,7 +26,7 @@ Replace all references to 'reinvent-trivia.com' with your own domain name.
 
 ## Build Docker images
 
-The base image Dockerfile can be found in the base/ directory.  In the backend pipeline modeled in the "pipelines" folder, the base image is built in one "base image" pipeline, which triggers another pipeline for the main application.  In the main application pipeline, the base image URI is replaced in the main Dockerfile with the latest base image that triggered the pipeline.
+The base image Dockerfile can be found in the [base](base/) folder.  In the backend pipeline modeled in the "[pipelines](../pipelines/)" folder, the base image is built in one "base image" pipeline, which triggers another pipeline for the main application.  In the main application pipeline, the base image URI is replaced in the main Dockerfile with the latest base image that triggered the pipeline.
 
 Locally, it can be built with the following commands.  Follow the "push commands" instructions in the ECR console to push them into the ECR repository.
 
@@ -38,11 +38,11 @@ docker build -t reinvent-trivia-backend:latest .
 
 ## Provision using infrastructure as code
 
-There are three options in the infra directory for provisioning and deploying the backend services.
+There are three options in the [infra](infra/) folder for provisioning and deploying the backend services.
 
 ### ECS on Fargate
 
-The cdk folder contains examples of how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and provision the service with AWS CloudFormation.  See the pipelines folder for instructions on how to continously deploy this example.
+The [cdk](infra/cdk/) folder contains examples of how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and provision the service with AWS CloudFormation.  See the [pipelines](../pipelines/) folder for instructions on how to continously deploy this example.
 
 To deploy the Typescript example, run the following.
 ```
@@ -61,7 +61,7 @@ cdk deploy --app ecs-service.js TriviaBackendProd
 
 ### ECS on Fargate, using CodeDeploy blue-green deployments
 
-The codedeploy-blue-green folder contains examples of the configuration needed to setup and execute a blue-green deployment with CodeDeploy: CodeDeploy appspec file, ECS task definition file, ECS service, CodeDeploy application definition, and CodeDeploy deployment group.
+The [codedeploy-blue-green](infra/codedeploy-blue-green/) folder contains examples of the configuration needed to setup and execute a blue-green deployment with CodeDeploy: CodeDeploy appspec file, ECS task definition file, ECS service, CodeDeploy application definition, and CodeDeploy deployment group.
 
 The non-service infrastructure (load balancer, security groups, roles, etc) is modeled and provisioned with the AWS CDK.  A sample pre-traffic CodeDeploy hook is modeled and provisioned with CloudFormation.
 
@@ -72,11 +72,11 @@ npm install -g aws-cdk
 ./setup.sh <S3 bucket for storing temporary artifacts>
 ```
 
-See the pipelines folder for instructions on how to continuously deploy this example.
+See the [pipelines](../pipelines/) folder for instructions on how to continuously deploy this example.
 
 ### EKS on Fargate
 
-Note that this example does not currently have a continuous deployment pipeline example.
+The [cdk](infra/cdk/) folder contains examples of how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and deploy it to EKS on Fargate.  Note that this example does not currently have a continuous deployment pipeline example.
 
 First, install [kubectl](https://github.com/kubernetes/kubectl) and [eksctl](https://github.com/weaveworks/eksctl).
 

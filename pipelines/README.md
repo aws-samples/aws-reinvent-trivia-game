@@ -2,7 +2,7 @@
 
 This package uses the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) to model AWS CodePipeline pipelines and to provision them with AWS CloudFormation.
 
-In src/ directory:
+In [src](src/) directory:
 * pipeline.ts: Generic pipeline class that defines an infrastructure-as-code pipeline
 * api-base-image-pipeline.ts: Builds and publishes the base Docker image for the backend API service
 * api-service-pipeline.ts: Builds and deploys the backend API service to Fargate
