@@ -38,9 +38,11 @@ docker build -t reinvent-trivia-backend:latest .
 
 # Provision
 
-There are two options in the infra directory for provisioning and deploying the backend services.
+There are three options in the infra directory for provisioning and deploying the backend services.
 
 ## Infrastructure as code
+
+### ECS on Fargate
 
 The cdk folder contains examples of how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and provision the service with AWS CloudFormation.  See the pipelines folder for instructions on how to continously deploy this example.
 
@@ -59,7 +61,7 @@ cdk deploy --app ecs-service.js TriviaBackendTest
 cdk deploy --app ecs-service.js TriviaBackendProd
 ```
 
-# CodeDeploy blue-green deployments
+#### ECS on Fargate, using CodeDeploy blue-green deployments
 
 The codedeploy-blue-green folder contains examples of the configuration needed to setup and execute a blue-green deployment with CodeDeploy: CodeDeploy appspec file, ECS task definition file, ECS service, CodeDeploy application definition, and CodeDeploy deployment group.
 
@@ -73,3 +75,50 @@ npm install -g aws-cdk
 ```
 
 See the pipelines folder for instructions on how to continuously deploy this example.
+
+**NOTE:** This approach is not applicable for the EKS on Fargate deployment.
+
+### EKS on Fargate
+
+The re:Invent Trivia backend can also be deployed to run using EKS on Fargate. If you'd like to try this, ignore the **Docker on ECS** instructions above (or run `cdk destroy --app ecs-service.js TriviaBackendTest TriviaBackendProd` if you've already followed them), and run the following instructions instead. Please note that this implementation is experimental and provided as an example, so a continuous deployment pipeline for it is not currently available.
+
+First, install [kubectl](https://github.com/kubernetes/kubectl) and [eksctl](https://github.com/weaveworks/eksctl).
+
+Then install CDK and the required Node dependencies.
+
+```
+npm install -g aws-cdk
+npm install
+```
+
+Next, modify the `TriviaBackendStack` parameters at the bottom of `eks-service.ts` to suit your environment. The value to use for `oidcProvider` will not be available until after the cluster has been deployed for the first time and the rest of the instructions below have been followed, so leave that line commented out.
+
+Now compile the Typescript example and deploy the initial infrastructure:
+
+```
+npm run build
+cdk deploy --app eks-service.js TriviaBackendProd
+```
+
+Once that's finished, you'll need to associate an IAM OIDC Provider to the cluster and obtain the provider URL:
+
+```
+eksctl utils associate-iam-oidc-provider --region <insert cluster region here> --cluster <insert cluster name here> --approve
+
+aws eks describe-cluster --name <insert cluster name here> --query "cluster.identity.oidc.issuer" --output text | sed -e "s/^https:\/\///"
+```
+
+Copy the `oidc.eks.<region>.amazonaws.com/id/<hexadecimal string>` value that is displayed as output, paste it into the `oidcProvider` parameter value in `eks-service.ts`, uncomment the line, then run `npm run build` and `cdk deploy --app eks-service.js TriviaBackendProd` again.
+
+Run the `aws eks update-kubeconfig` command that is output by CDK next to `TriviaBackendProd.FargateClusterConfigCommandXXXXXXXX = `, then check the status of your cluster using `kubectl get all --all-namespaces`. You may see one or more pods stuck in a `Pending` state, which could happen during the initial creation if Kubernetes tried to schedule them before CDK could finish creating the necessary Fargate Profile.
+
+Your first troubleshooting step should be to rollout a "new" deployment using `kubectl rollout restart -n <namespace> deployment <deployment-name>`, for example:
+
+```
+kubectl rollout restart -n kube-system deployment coredns
+kubectl rollout restart -n reinvent-trivia deployment api
+... etc ...
+```
+
+Once the rollout process is complete, `kubectl get all --all-namespaces` will show everything in the `Running` state, and you'll see a `{status:ok}` response when visiting `https://<your api domain name here>` in your browser.
+
