@@ -8,7 +8,7 @@ Sample trivia game built with AWS Fargate, AWS Lambda, and Amazon Lex.  See [rei
 * **Static Site** ([folder](static-site/)): Web application page, backed by Amazon S3, Amazon CloudFront, and Amazon Route53.
 * **Chat Bot** ([folder](chat-bot/)): Conversational bot that asks trivia questions and validates answers, and can be integrated into Slack workspace.  Running on Amazon Lex and AWS Lambda.
 * **Continuous delivery** ([folder](pipelines/)): Pipelines that deploy code and infrastructure for each of the components.
-* **Canaries** ([folder](folder/)): Monitoring canaries to continuously test the application and alarm in case of issues.
+* **Canaries** ([folder](canaries/)): Monitoring canaries to continuously test the application and alarm in case of issues.
 
 ## License Summary
 
