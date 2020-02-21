@@ -9,7 +9,7 @@
     "synth-infra": "cdk synth -o build --app 'node infrastructure.js'",
     "deploy-infra-test": "cdk deploy --app 'node infrastructure.js' --require-approval never TriviaGameStaticSiteInfraTest",
     "deploy-infra-prod": "cdk deploy --app 'node infrastructure.js' --require-approval never TriviaGameStaticSiteInfraProd",
-    "deploy-infra-root-domain": "cdk deploy --app 'node infrastructure.js' --require-approval never TriviaGameRootDomainSiteInfraProd"
+    "deploy-infra-root-domain": "cdk deploy --app 'node infrastructure.js' --require-approval never TriviaGameRootDomainRedirectProd"
   },
   "devDependencies": {
     "@types/node": "^13.7.1",

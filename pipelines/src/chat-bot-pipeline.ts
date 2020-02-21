@@ -58,6 +58,9 @@ class TriviaGameChatBotPipelineStack extends cdk.Stack {
 
 const app = new cdk.App();
 new TriviaGameChatBotPipelineStack(app, 'TriviaGameChatBotPipeline', {
-    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' }
+    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
+    tags: {
+        project: "reinvent-trivia"
+    }
 });
 app.synth();

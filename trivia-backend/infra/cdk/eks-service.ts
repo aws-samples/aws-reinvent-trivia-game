@@ -215,6 +215,9 @@ new TriviaBackendStack(app, 'TriviaBackendProd', {
   // NOTE: `domainZone` must already exist in Route 53.
   domainZone: 'reinvent-trivia.com',
   env: {account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1'},
+  tags: {
+      project: "reinvent-trivia"
+  },
   /*
    * NOTE: `oidcProvider` will not be available until after the cluster is deployed for the first
    * time. Leave the line below commented out for the initial `cdk deploy`. See README for details.

@@ -38,15 +38,24 @@ const app = new cdk.App();
 new TriviaGameInfrastructureStack(app, 'TriviaGameStaticSiteInfraTest', {
     domainName: 'reinvent-trivia.com',
     siteSubDomain: 'test',
-    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' }
+    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
+    tags: {
+        project: "reinvent-trivia"
+    }
 });
 new TriviaGameInfrastructureStack(app, 'TriviaGameStaticSiteInfraProd', {
     domainName: 'reinvent-trivia.com',
     siteSubDomain: 'www',
-    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' }
+    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
+    tags: {
+        project: "reinvent-trivia"
+    }
 });
-new TriviaGameRootDomainStack(app, 'TriviaGameRootDomainSiteInfraProd', {
+new TriviaGameRootDomainStack(app, 'TriviaGameRootDomainRedirectProd', {
     domainName: 'reinvent-trivia.com',
-    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' }
+    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
+    tags: {
+        project: "reinvent-trivia"
+    }
 });
 app.synth();

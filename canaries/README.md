@@ -11,7 +11,8 @@ aws cloudformation deploy \
   --template-file template.yaml \
   --stack-name TriviaGameCanariesTest \
   --capabilities CAPABILITY_NAMED_IAM \
-  --parameter-overrides Stage=test
+  --parameter-overrides Stage=test \
+  --tags project=reinvent-trivia
 ```
 
 Get the bucket name:
@@ -48,7 +49,8 @@ aws cloudformation deploy \
   --template-file template.yaml \
   --stack-name TriviaGameCanariesProd \
   --capabilities CAPABILITY_NAMED_IAM \
-  --parameter-overrides Stage=prod
+  --parameter-overrides Stage=prod \
+  --tags project=reinvent-trivia
 ```
 
 Get the bucket name:

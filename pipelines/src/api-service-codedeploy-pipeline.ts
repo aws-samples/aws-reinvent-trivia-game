@@ -151,6 +151,9 @@ class TriviaGameBackendCodeDeployPipelineStack extends cdk.Stack {
 
 const app = new cdk.App();
 new TriviaGameBackendCodeDeployPipelineStack(app, 'TriviaGameBackendCodeDeployPipeline', {
-    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' }
+    env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
+    tags: {
+        project: "reinvent-trivia"
+    }
 });
 app.synth();

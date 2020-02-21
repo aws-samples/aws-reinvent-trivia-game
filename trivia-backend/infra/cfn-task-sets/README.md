@@ -17,7 +17,8 @@ aws cloudformation deploy \
    --parameter-overrides \
         Vpc=$VPC_ID \
         Subnets=$SUBNET_IDS \
-        ImageTag=latest
+        ImageTag=latest \
+   --tags project=reinvent-trivia
 
 aws cloudformation describe-stacks \
    --region us-east-1 \
