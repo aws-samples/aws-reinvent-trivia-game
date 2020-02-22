@@ -17,4 +17,5 @@ artifacts:
   files:
     - chat-bot/TriviaGameChatBotTest.template.yaml
     - chat-bot/TriviaGameChatBotProd.template.yaml
+    - chat-bot/StackConfig.json
   discard-paths: yes

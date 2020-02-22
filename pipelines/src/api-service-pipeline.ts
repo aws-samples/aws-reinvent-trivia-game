@@ -133,6 +133,7 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
                     runOrder: 1,
                     adminPermissions: true,
                     templatePath: buildArtifact.atPath(templatePrefix + 'Test.template.json'),
+                    templateConfiguration: buildArtifact.atPath('StackConfig.json'),
                 }),
                 new actions.CloudFormationExecuteChangeSetAction({
                     actionName: 'ExecuteChangesTest',
@@ -156,6 +157,7 @@ class TriviaGameBackendPipelineStack extends cdk.Stack {
                     runOrder: 1,
                     adminPermissions: true,
                     templatePath: buildArtifact.atPath(templatePrefix + 'Prod.template.json'),
+                    templateConfiguration: buildArtifact.atPath('StackConfig.json'),
                 }),
                 new actions.CloudFormationExecuteChangeSetAction({
                     actionName: 'ExecuteChangesProd',

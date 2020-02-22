@@ -38,6 +38,7 @@ phases:
       - npm ci
       - npm run build
       - cdk synth -o build --app 'node ecs-service.js'
+      - cp StackConfig.json build/
 
 artifacts:
   files:

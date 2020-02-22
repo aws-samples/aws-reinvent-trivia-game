@@ -15,12 +15,12 @@ In [src](src/) directory:
 Create a GitHub [personal access token](https://github.com/settings/tokens) with access to your fork of the repo, including "admin:repo_hook" and "repo" permissions.  Then store the token in Secrets Manager:
 
 ```
-aws secretsmanager create-secret --region us-east-1 --name TriviaGitHubToken --secret-string <my-github-personal-access-token>
+aws secretsmanager create-secret --region us-east-1 --name TriviaGitHubToken --tags Key=project,Value=reinvent-trivia --secret-string <my-github-personal-access-token>
 ```
 
 Create an SNS topic for notifications about pipeline execution failures.  An email address or to a [chat bot](https://docs.aws.amazon.com/chatbot/latest/adminguide/setting-up.html) can be subscribed to the topic to receive notifications about pipeline failures.
 ```
-aws sns create-topic --name reinvent-trivia-notifications --region us-east-1
+aws sns create-topic --name reinvent-trivia-notifications --tags Key=project,Value=reinvent-trivia --region us-east-1
 ```
 
 Follow the [CodeStar Notifications user guide](https://docs.aws.amazon.com/codestar-notifications/latest/userguide/set-up-sns.html) to configure the SNS topic to be able to receive notifications about pipeline failures.

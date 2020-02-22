@@ -99,6 +99,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
                     runOrder: 1,
                     adminPermissions: true,
                     templatePath: buildArtifact.atPath(templatePrefix + 'Test.template.yaml'),
+                    templateConfiguration: buildArtifact.atPath('StackConfig.json'),
                 }),
                 new actions.CloudFormationExecuteChangeSetAction({
                     actionName: 'ExecuteChangesTest',
@@ -122,6 +123,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
                     runOrder: 1,
                     adminPermissions: true,
                     templatePath: buildArtifact.atPath(templatePrefix + 'Prod.template.yaml'),
+                    templateConfiguration: buildArtifact.atPath('StackConfig.json'),
                 }),
                 new actions.CloudFormationExecuteChangeSetAction({
                     actionName: 'ExecuteChangesProd',

@@ -2,7 +2,7 @@
 import { Certificate } from '@aws-cdk/aws-certificatemanager';
 import { Vpc } from '@aws-cdk/aws-ec2';
 import { Repository } from '@aws-cdk/aws-ecr';
-import { Cluster, ContainerImage } from '@aws-cdk/aws-ecs';
+import { Cluster, ContainerImage, PropagatedTagSource } from '@aws-cdk/aws-ecs';
 import { ApplicationLoadBalancedFargateService } from '@aws-cdk/aws-ecs-patterns';
 import { HostedZone } from '@aws-cdk/aws-route53';
 import { StringParameter } from '@aws-cdk/aws-ssm';
@@ -43,7 +43,8 @@ class TriviaBackendStack extends cdk.Stack {
       desiredCount: 3,
       domainName: props.domainName,
       domainZone,
-      certificate
+      certificate,
+      propagateTags: PropagatedTagSource.SERVICE,
     });
   }
 }
