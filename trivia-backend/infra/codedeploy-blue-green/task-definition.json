@@ -21,5 +21,11 @@
     "requiresCompatibilities": [
         "FARGATE"
     ],
-    "networkMode": "awsvpc"
+    "networkMode": "awsvpc",
+    "tags": [
+        {
+            "key": "project",
+            "value": "reinvent-trivia"
+        }
+    ]
 }

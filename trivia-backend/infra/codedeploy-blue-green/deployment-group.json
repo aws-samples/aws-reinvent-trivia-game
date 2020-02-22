@@ -62,5 +62,11 @@
             "serviceName": "trivia-backend-PLACEHOLDER_STAGE",
             "clusterName": "default"
         }
+    ],
+    "tags": [
+        {
+            "Key": "project",
+            "Value": "reinvent-trivia"
+        }
     ]
 }

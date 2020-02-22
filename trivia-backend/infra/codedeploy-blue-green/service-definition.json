@@ -24,5 +24,12 @@
             ],
             "assignPublicIp": "DISABLED"
         }
-    }
+    },
+    "tags": [
+        {
+            "key": "project",
+            "value": "reinvent-trivia"
+        }
+    ],
+    "propagateTags": "SERVICE"
 }
