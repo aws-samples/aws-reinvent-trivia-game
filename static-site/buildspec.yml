@@ -24,4 +24,5 @@ phases:
       # Deploy via the CDK
       - cd ../cdk
       - npm run build
+      - npm run bootstrap-infra
       - npm run deploy-infra-$STAGE
