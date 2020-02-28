@@ -20,13 +20,17 @@ export class StaticSite extends cdk.Construct {
         new cdk.CfnOutput(this, 'Site', { value: 'https://' + siteDomain });
         const zone = route53.HostedZone.fromLookup(this, 'Zone', { domainName: props.domainName });
 
+        const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, "OriginAccessIdentity", {
+            comment: "Access from CloudFront to reinvent-trivia website bucket"
+        });
+
         // Content bucket
         const siteBucket = new s3.Bucket(this, 'SiteBucket', {
             bucketName: siteDomain,
             websiteIndexDocument: 'index.html',
             websiteErrorDocument: 'error.html',
-            publicReadAccess: true
         });
+        siteBucket.grantRead(originAccessIdentity);
         new cdk.CfnOutput(this, 'Bucket', { value: siteBucket.bucketName });
 
         // TLS certificate
@@ -47,7 +51,8 @@ export class StaticSite extends cdk.Construct {
             originConfigs: [
                 {
                     s3OriginSource: {
-                        s3BucketSource: siteBucket
+                        s3BucketSource: siteBucket,
+                        originAccessIdentity
                     },
                     behaviors : [ {isDefaultBehavior: true}],
                 }
