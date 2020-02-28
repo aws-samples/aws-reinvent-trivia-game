@@ -26,9 +26,7 @@ export class StaticSite extends cdk.Construct {
 
         // Content bucket
         const siteBucket = new s3.Bucket(this, 'SiteBucket', {
-            bucketName: siteDomain,
-            websiteIndexDocument: 'index.html',
-            websiteErrorDocument: 'error.html',
+            bucketName: siteDomain
         });
         siteBucket.grantRead(originAccessIdentity);
         new cdk.CfnOutput(this, 'Bucket', { value: siteBucket.bucketName });
@@ -55,6 +53,18 @@ export class StaticSite extends cdk.Construct {
                         originAccessIdentity
                     },
                     behaviors : [ {isDefaultBehavior: true}],
+                }
+            ],
+            errorConfigurations: [
+                {
+                    errorCode: 404,
+                    responseCode: 404,
+                    responsePagePath: '/error.html'
+                },
+                {
+                    errorCode: 403,
+                    responseCode: 404,
+                    responsePagePath: '/error.html'
                 }
             ]
         });
