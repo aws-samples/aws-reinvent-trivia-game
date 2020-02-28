@@ -19,7 +19,7 @@ phases:
       # Compile the site content
       - cd ../app/
       - npm run build:$STAGE
-      - cp index.html build/
+      - cp index.html error.html build/
       - cp -rf assets build/
       # Deploy via the CDK
       - cd ../cdk
