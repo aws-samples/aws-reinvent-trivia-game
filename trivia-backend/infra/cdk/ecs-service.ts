@@ -21,7 +21,8 @@ class TriviaBackendStack extends cdk.Stack {
     const vpc = new Vpc(this, 'VPC', { maxAzs: 2 });
     const cluster = new Cluster(this, 'Cluster', {
       clusterName: props.domainName.replace(/\./g, '-'),
-      vpc
+      vpc,
+      containerInsights: true
     });
 
     // Configuration parameters

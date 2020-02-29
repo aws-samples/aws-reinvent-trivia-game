@@ -42,6 +42,8 @@ sed -i "s|<PLACEHOLDER>|$ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/reinvent-tri
 
 aws ecs create-cluster --region us-east-1 --cluster-name default --tags key=project,value=reinvent-trivia
 
+aws ecs update-cluster-settings --region us-east-1 --cluster default --settings name=containerInsights,value=enabled
+
 aws ecs register-task-definition --region us-east-1 --cli-input-json file://build/task-definition-test.json
 
 aws ecs create-service --region us-east-1 --service-name trivia-backend-test --cli-input-json file://build/service-definition-test.json
