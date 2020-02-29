@@ -8,6 +8,7 @@ const compression = require('compression');
 const bodyParser = require('body-parser');
 const { createTerminus } = require('@godaddy/terminus');
 const trivia = require('./routes/trivia');
+const load = require('./routes/load');
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:htt
 
 // APIs
 app.use('/api/trivia', trivia);
+app.use('/api/load', load);
 app.use('/api/docs', express.static('apidoc'));
 
 // Error handling
