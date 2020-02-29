@@ -1,0 +1,16 @@
+# Run with:
+# artillery run -t https://api-test.reinvent-trivia.com artillery-load-api.yml
+
+config:
+  http:
+    pool: 250
+  phases:
+    - duration: 600
+      arrivalRate: 10
+      name: "Constant load"
+scenarios:
+  - name: "Generate CPU-intensive load for one second"
+    weight: 1
+    flow:
+    - get:
+        url: "/api/load"
