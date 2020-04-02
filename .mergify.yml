@@ -1,0 +1,12 @@
+pull_request_rules:
+  - name: Automatically approve Dependabot PRs
+    conditions:
+      - base=master
+      - author~=^dependabot(|-preview)\[bot\]$
+      - -title~=(WIP|wip)
+      - -label~=(blocked|do-not-merge)
+      - -merged
+      - -closed
+    actions:
+      review:
+        type: APPROVE
