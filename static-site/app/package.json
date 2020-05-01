@@ -15,7 +15,7 @@
     "@babel/preset-react": "^7.9.4",
     "babel-loader": "^8.1.0",
     "react": "^16.13.1",
-    "react-dom": "^16.13.0",
+    "react-dom": "^16.13.1",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11"
   }
