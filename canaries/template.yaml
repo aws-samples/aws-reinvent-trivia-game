@@ -8,7 +8,59 @@ Parameters:
       - "test"
       - "prod"
 
+  SourceBucket:
+    Type: String
+
+  NotificationsTopic:
+    Type: String
+    Default: reinvent-trivia-notifications
+
 Resources:
+  Canary:
+    Type: AWS::Synthetics::Canary
+    DependsOn:
+      - CanaryResultsBucket
+      - CanaryRole
+      - CanaryAlarm
+    Properties:
+      Name: !Sub "trivia-game-${Stage}"
+      ExecutionRoleArn: !GetAtt CanaryRole.Arn
+      Code:
+        Handler: canary.handler
+        S3Bucket: !Ref SourceBucket
+        S3Key: !Sub "trivia-game-canary-${Stage}.zip"
+      ArtifactS3Location: !Sub "s3://${CanaryResultsBucket}"
+      RuntimeVersion: syn-1.0
+      Schedule:
+        Expression: 'rate(5 minutes)'
+        DurationInSeconds: 0
+      RunConfig:
+        TimeoutInSeconds: 60
+      FailureRetentionPeriod: 30
+      SuccessRetentionPeriod: 30
+      StartCanaryAfterCreation: true
+
+  CanaryAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "Synthetics-Alarm-trivia-game-${Stage}"
+      AlarmDescription: "Synthetics alarm thresholds: 2 test failures in 10 mins"
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${NotificationsTopic}"
+      MetricName: SuccessPercent
+      Namespace: CloudWatchSynthetics
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 2
+      DatapointsToAlarm: 2
+      Threshold: 0.0
+      TreatMissingData: breaching
+      ComparisonOperator: LessThanOrEqualToThreshold
+      Dimensions:
+        - Name: CanaryName
+          Value: !Sub "trivia-game-${Stage}"
+
   CanaryResultsBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
