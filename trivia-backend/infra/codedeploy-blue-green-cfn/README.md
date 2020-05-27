@@ -78,7 +78,13 @@ aws cloudformation update-stack \
    --region us-east-1 \
    --stack-name reinvent-trivia-backend-codedeploy-blue-green-cfn \
    --use-previous-template \
-   --rollback-configuration "RollbackTriggers=[{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:reinvent-trivia-backend-codedeploy-blue-green-cfn-Rollback-Trigger,Type=AWS::CloudWatch::Alarm}]"
+   --capabilities CAPABILITY_NAMED_IAM \
+   --parameters \
+        ParameterKey=Vpc,UsePreviousValue=true \
+        ParameterKey=Subnet1,UsePreviousValue=true \
+        ParameterKey=Subnet2,UsePreviousValue=true \
+        ParameterKey=ImageUrl,UsePreviousValue=true \
+   --rollback-configuration "RollbackTriggers=[{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:reinvent-trivia-backend-codedeploy-blue-green-cfn-Unhealthy-Hosts-Blue,Type=AWS::CloudWatch::Alarm},{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:reinvent-trivia-backend-codedeploy-blue-green-cfn-Http-500-Blue,Type=AWS::CloudWatch::Alarm},{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:reinvent-trivia-backend-codedeploy-blue-green-cfn-Unhealthy-Hosts-Green,Type=AWS::CloudWatch::Alarm},{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:reinvent-trivia-backend-codedeploy-blue-green-cfn-Http-500-Green,Type=AWS::CloudWatch::Alarm}]"
 ```
 
 # Trigger a blue-green deployment

@@ -225,22 +225,13 @@ Resources:
   # Alarms:
   # These resources alarm on unhealthy hosts and HTTP 500s at the target group level.
   # Note that stack updates will *not* automatically rollback based on these alarms.
-  # After the stack is created, the '${AWS::StackName}-Rollback-Trigger' alarm needs to
-  # manually be configured as a rollback trigger on the stack.
+  # After the stack is created, the alarms need to manually be configured as rollback
+  # triggers on the stack.
   # Directions: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-rollback-triggers.html
-  RollbackTriggerAlarm:
-    Type: AWS::CloudWatch::CompositeAlarm
-    Properties:
-      AlarmName: !Sub ${AWS::StackName}-Rollback-Trigger
-      AlarmRule: !Sub >-
-        ALARM(${UnhealthyHostsAlarmBlue}) OR
-        ALARM(${Http5xxAlarmBlue}) OR
-        ALARM(${UnhealthyHostsAlarmGreen}) OR
-        ALARM(${Http5xxAlarmGreen})
-
   UnhealthyHostsAlarmBlue:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmName: !Sub ${AWS::StackName}-Unhealthy-Hosts-Blue
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 2
       Dimensions:
@@ -257,6 +248,7 @@ Resources:
   Http5xxAlarmBlue:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmName: !Sub ${AWS::StackName}-Http-500-Blue
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 1
       Dimensions:
@@ -273,6 +265,7 @@ Resources:
   UnhealthyHostsAlarmGreen:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmName: !Sub ${AWS::StackName}-Unhealthy-Hosts-Green
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 2
       Dimensions:
@@ -289,6 +282,7 @@ Resources:
   Http5xxAlarmGreen:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmName: !Sub ${AWS::StackName}-Http-500-Green
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 1
       Dimensions:
