@@ -16,7 +16,7 @@
     "deploy-chat-bot-pipeline": "cdk deploy --app 'node src/chat-bot-pipeline.js'"
   },
   "devDependencies": {
-    "@types/node": "^13.13.4",
+    "@types/node": "^14.0.6",
     "typescript": "^3.8.3",
     "aws-cdk": "^1.36.1"
   },
