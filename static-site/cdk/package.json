@@ -15,7 +15,7 @@
   "devDependencies": {
     "@types/node": "^14.0.6",
     "aws-cdk": "^1.47.0",
-    "typescript": "^3.9.3"
+    "typescript": "^3.9.5"
   },
   "dependencies": {
     "@aws-cdk/aws-certificatemanager": "^1.24.0",
