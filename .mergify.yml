@@ -1,8 +1,9 @@
 pull_request_rules:
-  - name: Automatically approve Dependabot PRs
+  - name: Automatically merge Dependabot PRs
     conditions:
       - base=master
-      - author~=^dependabot(|-preview)\[bot\]$
+      - author=dependabot[bot]
+      - label=dependencies
       - -title~=(WIP|wip)
       - -label~=(blocked|do-not-merge)
       - -merged
@@ -10,3 +11,7 @@ pull_request_rules:
     actions:
       review:
         type: APPROVE
+      merge:
+        method: squash
+        strict: smart
+        strict_method: rebase

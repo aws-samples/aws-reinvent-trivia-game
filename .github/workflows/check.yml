@@ -1,0 +1,75 @@
+on:
+  [pull_request, push]
+
+name: Check
+
+jobs:
+  pipelines:
+    name: Pipelines
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+    - name: Test
+      run: |
+        cd pipelines
+
+        npm install -g aws-cdk
+        npm ci
+
+        npm run build
+        npm run synth-static-site-pipeline
+        npm run synth-backend-pipeline
+        npm run synth-backend-codedeploy-pipeline
+        npm run synth-backend-base-image-pipeline
+        npm run synth-chat-bot-pipeline
+
+  static-site:
+    name: Static Site
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+    - name: Test
+      run: |
+        npm install -g aws-cdk
+
+        cd static-site/cdk
+        npm ci
+        npm run build
+
+        cd ../app
+        npm ci
+        npm run build
+
+  game-infra:
+    name: Game Infra
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+    - name: Test
+      run: |
+        npm install -g aws-cdk
+
+        cd trivia-backend/infra/cdk
+        npm ci
+        npm run build
+
+        cd ../codedeploy-blue-green
+        npm ci
+        npm run build
+
+  game-app:
+    name: Game App
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+    - name: Test
+      run: |
+        cd trivia-backend/base
+        docker build -t reinvent-trivia-backend-base:release .
+
+        cd ..
+        docker build -t reinvent-trivia-backend:release .
