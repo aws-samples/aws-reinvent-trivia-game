@@ -13,5 +13,5 @@ pull_request_rules:
         type: APPROVE
       merge:
         method: squash
-        strict: smart
+        strict: smart+fasttrack
         strict_method: rebase
