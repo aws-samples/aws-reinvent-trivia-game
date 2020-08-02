@@ -32,7 +32,7 @@ export class StaticSite extends cdk.Construct {
         new cdk.CfnOutput(this, 'Bucket', { value: siteBucket.bucketName });
 
         // TLS certificate
-        const certificateArn = new acm.DnsValidatedCertificate(this, 'SiteCertificate', {
+        const certificateArn = new acm.DnsValidatedCertificate(this, 'Certificate', {
             domainName: siteDomain,
             hostedZone: zone
         }).certificateArn;
