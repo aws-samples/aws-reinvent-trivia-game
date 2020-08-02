@@ -3,7 +3,7 @@ import * as cdk from '@aws-cdk/core';
 import {Certificate} from '@aws-cdk/aws-certificatemanager';
 import {Vpc} from '@aws-cdk/aws-ec2';
 import {Repository} from '@aws-cdk/aws-ecr';
-import {FargateCluster, KubernetesResource} from '@aws-cdk/aws-eks';
+import {FargateCluster, KubernetesResource, KubernetesVersion} from '@aws-cdk/aws-eks';
 import {ContainerImage} from '@aws-cdk/aws-ecs';
 import {AccountRootPrincipal, Effect, FederatedPrincipal, ManagedPolicy, PolicyStatement, Role} from '@aws-cdk/aws-iam';
 import {StringParameter} from '@aws-cdk/aws-ssm';
@@ -43,6 +43,7 @@ class TriviaBackendStack extends cdk.Stack {
       outputConfigCommand: true,
       outputMastersRoleArn: true,
       vpc,
+      version: KubernetesVersion.V1_17,
     });
     const fargateProfile = cluster.node.findChild('fargate-profile-reinvent-trivia');
 
