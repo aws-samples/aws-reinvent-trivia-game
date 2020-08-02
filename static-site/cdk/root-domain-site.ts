@@ -18,9 +18,9 @@ export class RootDomainSite extends cdk.Construct {
         const zone = route53.HostedZone.fromLookup(this, 'Zone', { domainName: props.domainName });
 
         // TLS certificate
-        const certificateArn = new acm.DnsValidatedCertificate(this, 'SiteCertificate', {
+        const certificateArn = new acm.Certificate(this, 'SiteCertificate', {
             domainName: props.domainName,
-            hostedZone: zone
+            validation: acm.CertificateValidation.fromDns(zone),
         }).certificateArn;
         new cdk.CfnOutput(this, 'Certificate', { value: certificateArn });
 
