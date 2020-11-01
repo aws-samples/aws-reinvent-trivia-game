@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --config ./webpack.config.js --progress --colors && webpack --config ./webpack-errorpage.config.js --progress --colors",
+    "build": "webpack --config ./webpack.config.js --progress --color && webpack --config ./webpack-errorpage.config.js --progress --color",
     "build:dev": "NODE_ENV=development npm run build",
     "build:test": "NODE_ENV=test npm run build",
     "build:prod": "NODE_ENV=production npm run build"
