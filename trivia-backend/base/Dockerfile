@@ -1,4 +1,4 @@
-FROM node:15.3.0-alpine
+FROM public.ecr.aws/bitnami/node:15
 
 RUN npm config set unsafe-perm true
 
