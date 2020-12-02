@@ -7,7 +7,7 @@ env:
 phases:
   install:
     runtime-versions:
-      node: latest
+      nodejs: latest
     commands:
       # Install dependencies for both site content and for CDK
       - npm install -g npm@latest

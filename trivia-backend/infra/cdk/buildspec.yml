@@ -7,7 +7,7 @@ env:
 phases:
   install:
     runtime-versions:
-      node: latest
+      nodejs: latest
     commands:
       # Install CDK & jq, upgrade npm
       - apt-get update

@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      node: latest
+      nodejs: latest
     commands:
       - cd chat-bot/bot
       - npm install -g npm@latest
