@@ -6,6 +6,7 @@ phases:
       node: latest
     commands:
       - cd chat-bot/bot
+      - npm install -g npm@latest
       - npm ci
       - cd ..
   build:

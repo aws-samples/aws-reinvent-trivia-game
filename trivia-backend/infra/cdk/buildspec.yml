@@ -12,6 +12,7 @@ phases:
       # Install CDK & jq, upgrade npm
       - apt-get update
       - apt-get install -y jq
+      - npm install -g npm@latest
       - npm install -g aws-cdk
 
   pre_build:

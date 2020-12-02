@@ -10,6 +10,7 @@ phases:
       node: latest
     commands:
       # Install dependencies for both site content and for CDK
+      - npm install -g npm@latest
       - npm install -g aws-cdk
       - cd static-site/app
       - npm ci
