@@ -6,11 +6,12 @@ env:
 
 phases:
   install:
+    runtime-versions:
+      node: latest
     commands:
       # Install CDK & jq, upgrade npm
       - apt-get update
       - apt-get install -y jq
-      - npm install -g npm@6.4.1
       - npm install -g aws-cdk
 
   pre_build:

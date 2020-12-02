@@ -49,7 +49,7 @@ class TriviaGameBackendBaseImagePipeline extends cdk.Stack {
         const project = new codebuild.PipelineProject(this, 'BuildBaseImage', {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('trivia-backend/base/buildspec.yml'),
             environment: {
-                buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_DOCKER_17_09_0,
+                buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_3,
                 privileged: true
             }
         });

@@ -2,10 +2,10 @@ version: 0.2
 
 phases:
   install:
+    runtime-versions:
+      node: latest
     commands:
-      - cd chat-bot
-      - npm install -g npm@6.4.1
-      - cd bot
+      - cd chat-bot/bot
       - npm ci
       - cd ..
   build:

@@ -6,10 +6,11 @@ env:
 
 phases:
   install:
+    runtime-versions:
+      node: latest
     commands:
       - apt-get update
       - apt-get install -y jq
-      - npm install -g npm@6.4.1
 
   pre_build:
     commands:
