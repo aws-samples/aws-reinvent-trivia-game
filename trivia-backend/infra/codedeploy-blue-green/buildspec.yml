@@ -9,8 +9,7 @@ phases:
     runtime-versions:
       nodejs: latest
     commands:
-      - apt-get update
-      - apt-get install -y jq
+      - yum install -y jq
       - npm install -g npm@latest
 
   pre_build:
