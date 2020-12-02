@@ -36,7 +36,7 @@ Resources:
         S3Bucket: !Ref SourceBucket
         S3Key: !Sub "trivia-game-canary-code.zip"
       ArtifactS3Location: !Sub "s3://${CanaryResultsBucket}"
-      RuntimeVersion: syn-1.0
+      RuntimeVersion: syn-nodejs-2.2
       Schedule:
         Expression: 'rate(5 minutes)'
         DurationInSeconds: 0
