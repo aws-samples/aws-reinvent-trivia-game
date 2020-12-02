@@ -11,48 +11,45 @@ Create an SNS topic for notifications about the canary alarms.  An email address
 aws sns create-topic --name reinvent-trivia-notifications --region us-east-1
 ```
 
-## Test endpoint canary
+In the commands below, replace the reinvent-trivia.com endpoints with your own domain name.
 
-Update the endpoints in canary.js to your test endpoints, then package and upload the canary script:
+## Package the canary code
+
+Package and upload the canary script:
+
 ```
 npm install
 mkdir -p nodejs/
 cp -a node_modules/ nodejs/
 cp canary.js nodejs/node_modules/
-zip -r trivia-game-canary-test.zip nodejs/
-aws s3 cp trivia-game-canary-test.zip s3://$BUCKET_NAME/
+zip -r trivia-game-canary-code.zip nodejs/
+aws s3 cp trivia-game-canary-code.zip s3://$BUCKET_NAME/
 ```
 
-Deploy the canary resources:
+## Create the test endpoint canary
+
+Deploy the resources for running a continuous monitoring canary against the test endpoints:
+
 ```
 aws cloudformation deploy \
   --region us-east-1 \
   --template-file template.yaml \
   --stack-name TriviaGameCanariesTest \
   --capabilities CAPABILITY_NAMED_IAM \
-  --parameter-overrides Stage=test SourceBucket=$BUCKET_NAME \
+  --parameter-overrides Stage=test SourceBucket=$BUCKET_NAME WebpageUrl="https://test.reinvent-trivia.com" ApiEndpoint="https://api-test.reinvent-trivia.com/" \
   --tags project=reinvent-trivia
 ```
 
 ## Prod endpoint canary
 
-Update the endpoints in canary.js to your prod endpoints, then package and upload the canary script:
-```
-npm install
-mkdir -p nodejs/
-cp -a node_modules/ nodejs/
-cp canary.js nodejs/node_modules/
-zip -r trivia-game-canary-prod.zip nodejs/
-aws s3 cp trivia-game-canary-prod.zip s3://$BUCKET_NAME/
-```
+Deploy the resources for running a continuous monitoring canary against the production endpoints:
 
-Deploy the canary resources:
 ```
 aws cloudformation deploy \
   --region us-east-1 \
   --template-file template.yaml \
   --stack-name TriviaGameCanariesProd \
   --capabilities CAPABILITY_NAMED_IAM \
-  --parameter-overrides Stage=prod SourceBucket=$BUCKET_NAME \
+  --parameter-overrides Stage=prod SourceBucket=$BUCKET_NAME WebpageUrl="https://www.reinvent-trivia.com" ApiEndpoint="https://api.reinvent-trivia.com/" \
   --tags project=reinvent-trivia
 ```

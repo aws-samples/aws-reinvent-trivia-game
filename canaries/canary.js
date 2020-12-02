@@ -2,8 +2,8 @@ var synthetics = require('Synthetics');
 const log = require('SyntheticsLogger');
 const axios = require('axios');
 
-const PAGE_URL = "https://test.reinvent-trivia.com";
-const API_ENDPOINT = "https://api-test.reinvent-trivia.com/"
+const PAGE_URL = process.env['WEBPAGE_URL'];
+const API_ENDPOINT = process.env['API_ENDPOINT'];
 
 const loadPage = async function () {
     let page = await synthetics.getPage();

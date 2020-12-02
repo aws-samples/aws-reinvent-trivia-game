@@ -8,6 +8,12 @@ Parameters:
       - "test"
       - "prod"
 
+  WebpageUrl:
+    Type: String
+
+  ApiEndpoint:
+    Type: String
+
   SourceBucket:
     Type: String
 
@@ -28,7 +34,7 @@ Resources:
       Code:
         Handler: canary.handler
         S3Bucket: !Ref SourceBucket
-        S3Key: !Sub "trivia-game-canary-${Stage}.zip"
+        S3Key: !Sub "trivia-game-canary-code.zip"
       ArtifactS3Location: !Sub "s3://${CanaryResultsBucket}"
       RuntimeVersion: syn-1.0
       Schedule:
@@ -36,6 +42,9 @@ Resources:
         DurationInSeconds: 0
       RunConfig:
         TimeoutInSeconds: 60
+        EnvironmentVariables:
+          WEBPAGE_URL: !Ref WebpageUrl
+          API_ENDPOINT: !Ref ApiEndpoint
       FailureRetentionPeriod: 30
       SuccessRetentionPeriod: 30
       StartCanaryAfterCreation: true
