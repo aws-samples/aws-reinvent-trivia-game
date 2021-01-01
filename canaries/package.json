@@ -2,7 +2,7 @@
   "name": "aws-trivia-game-canary",
   "version": "1.0.0",
   "dependencies": {
-    "axios": "^0.21.0"
+    "axios": "^0.21.1"
   },
   "private": true
 }
