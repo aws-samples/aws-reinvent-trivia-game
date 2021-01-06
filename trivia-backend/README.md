@@ -38,11 +38,16 @@ docker build -t reinvent-trivia-backend:latest .
 
 ## Provision using infrastructure as code
 
-There are three options in the [infra](infra/) folder for provisioning and deploying the backend services.
+There are multiple options in the [infra](infra/) folder for provisioning and deploying the backend services.  See instructions below for how to set up each of these options.
+1. ECS on Fargate, deployed via CloudFormation using [ECS rolling update deployments](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html)
+1. ECS on Fargate, deployed via CloudFormation using [ECS task set deployments](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-external.html)
+1. ECS on Fargate, deployed via CloudFormation using [CodeDeploy blue-green deployments](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/blue-green.html)
+1. ECS on Fargate, deployed using [CodeDeploy blue-green deployments](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-bluegreen.html) outside of CloudFormation
+1. EKS on Fargate, deployed via CloudFormation using a [CloudFormation custom resource to run kubectl](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_aws-eks-legacy.KubernetesResource.html)
 
-### ECS on Fargate
+### ECS on Fargate (rolling update deployments)
 
-The [cdk](infra/cdk/) folder contains examples of how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and provision the service with AWS CloudFormation.  See the [pipelines](../pipelines/) folder for instructions on how to continously deploy this example.
+The [cdk](infra/cdk/) folder contains an example of how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and deploy the service with CloudFormation, using [ECS rolling update deployments](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html).
 
 To deploy the Typescript example, run the following.
 ```
@@ -59,11 +64,13 @@ cdk deploy --app ecs-service.js TriviaBackendTest
 cdk deploy --app ecs-service.js TriviaBackendProd
 ```
 
-### ECS on Fargate, using CodeDeploy blue-green deployments
+See the 'api-service-pipeline' example in the [pipelines](../pipelines/) folder for instructions on how to continuously deploy this example with CodePipeline's [CloudFormation deploy action](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-CloudFormation).
 
-The [codedeploy-blue-green](infra/codedeploy-blue-green/) folder contains examples of the configuration needed to setup and execute a blue-green deployment with CodeDeploy: CodeDeploy appspec file, ECS task definition file, ECS service, CodeDeploy application definition, and CodeDeploy deployment group.
+### ECS on Fargate (CodeDeploy blue-green deployments, outside of CloudFormation)
 
-The non-service infrastructure (load balancer, security groups, roles, etc) is modeled and provisioned with the AWS CDK.  A sample pre-traffic CodeDeploy hook is modeled and provisioned with CloudFormation.
+The [codedeploy-blue-green](infra/codedeploy-blue-green/) folder contains examples of the configuration needed to setup and execute a [blue-green deployment with CodeDeploy](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-bluegreen.html) directly: CodeDeploy appspec file, ECS task definition file, ECS service, CodeDeploy application definition, and CodeDeploy deployment group.
+
+The non-service infrastructure (load balancer, security groups, roles, etc) is modeled and provisioned with the AWS CDK and CloudFormation.  A sample pre-traffic CodeDeploy hook is modeled and provisioned with CloudFormation.  In this example, the ECS service is initially created outside of CloudFormation, and all future deployments are done directly with CodeDeploy outside of CloudFormation.
 
 To deploy this example, run the following in infra/codedeploy-blue-green.
 ```
@@ -72,11 +79,11 @@ npm install -g aws-cdk
 ./setup.sh <S3 bucket for storing temporary artifacts>
 ```
 
-See the [pipelines](../pipelines/) folder for instructions on how to continuously deploy this example.
+See the 'api-service-codedeploy-pipeline' example in the [pipelines](../pipelines/) folder for instructions on how to continuously deploy this example with CodePipeline's ["ECS (Blue/Green)" deploy action](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-ECS).
 
 ### EKS on Fargate
 
-The [cdk](infra/cdk/) folder contains examples of how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and deploy it to EKS on Fargate.  Note that this example does not currently have a continuous deployment pipeline example.
+The [cdk](infra/cdk/) folder contains examples of how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and deploy it to EKS on Fargate, using a [CloudFormation custom resource to run kubectl](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_aws-eks-legacy.KubernetesResource.html).  Note that this example does not currently have a continuous deployment pipeline example.
 
 First, install [kubectl](https://github.com/kubernetes/kubectl) and [eksctl](https://github.com/weaveworks/eksctl).
 

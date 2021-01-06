@@ -5,8 +5,8 @@ This package uses the [AWS Cloud Development Kit (AWS)](https://github.com/awsla
 In [src](src/) directory:
 * pipeline.ts: Generic pipeline class that defines an infrastructure-as-code pipeline
 * api-base-image-pipeline.ts: Builds and publishes the base Docker image for the backend API service
-* api-service-pipeline.ts: Builds and deploys the backend API service to Fargate
-* api-service-codedeploy-pipeline.ts: Builds and deploys the backend API service to Fargate with CodeDeploy
+* api-service-pipeline.ts: Builds and deploys the backend API service to Fargate using CodePipeline's [CloudFormation deploy action](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-CloudFormation)
+* api-service-codedeploy-pipeline.ts: Builds and deploys the backend API service to Fargate using CodePipeline's ["ECS (Blue/Green)" deploy action](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-ECS)
 * static-site-pipeline.ts: Provisions infrastructure for the static site, like a CloudFront distribution and an S3 bucket, plus bundles and uploads the static site pages to the site's S3 bucket
 * chat-bot-pipeline.ts: Builds and deploys the chat bot Lambda function and Lex model
 

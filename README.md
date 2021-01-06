@@ -10,6 +10,8 @@ Sample trivia game built with AWS Fargate, AWS Lambda, and Amazon Lex.  See [rei
 * **Continuous delivery** ([folder](pipelines/)): Pipelines that deploy code and infrastructure for each of the components.
 * **Canaries** ([folder](canaries/)): Monitoring canaries to continuously test the application and alarm in case of issues.
 
+The components above are almost entirely deployed with AWS CloudFormation, using either the [AWS Cloud Development Kit](https://aws.amazon.com/cdk/) or the [AWS Serverless Application Model](https://aws.amazon.com/serverless/sam/).
+
 ## License Summary
 
 This sample code is made available under the MIT license. See the LICENSE file.
