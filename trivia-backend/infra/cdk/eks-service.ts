@@ -3,7 +3,7 @@ import * as cdk from '@aws-cdk/core';
 import {Certificate} from '@aws-cdk/aws-certificatemanager';
 import {Vpc} from '@aws-cdk/aws-ec2';
 import {Repository} from '@aws-cdk/aws-ecr';
-import {FargateCluster, KubernetesResource, KubernetesVersion} from '@aws-cdk/aws-eks';
+import {FargateCluster, KubernetesManifest, KubernetesVersion} from '@aws-cdk/aws-eks';
 import {ContainerImage} from '@aws-cdk/aws-ecs';
 import {AccountRootPrincipal, Effect, FederatedPrincipal, ManagedPolicy, PolicyStatement, Role} from '@aws-cdk/aws-iam';
 import {StringParameter} from '@aws-cdk/aws-ssm';
@@ -64,7 +64,7 @@ class TriviaBackendStack extends cdk.Stack {
     });
     reinventTrivia.node.addDependency(fargateProfile);
 
-    const metricsServerChart = cluster.addChart('MetricsServer', {
+    const metricsServerChart = cluster.addHelmChart('MetricsServer', {
       chart: 'metrics-server',
       release: 'metrics-server-rt',
       repository: 'https://kubernetes-charts.storage.googleapis.com',
@@ -102,7 +102,7 @@ class TriviaBackendStack extends cdk.Stack {
             ]
           });
 
-          const albIngressChart = cluster.addChart('AlbIngress', {
+          const albIngressChart = cluster.addHelmChart('AlbIngress', {
             chart: 'aws-alb-ingress-controller',
             release: 'alb-ingress-controller-rt',
             repository: 'https://kubernetes-charts-incubator.storage.googleapis.com',
@@ -126,7 +126,7 @@ class TriviaBackendStack extends cdk.Stack {
           });
           albIngressChart.node.addDependency(metricsServerChart);
 
-          new KubernetesResource(this, 'HorizontalPodAutoscaler', {
+          new KubernetesManifest(this, 'HorizontalPodAutoscaler', {
             cluster,
             manifest: [{
               apiVersion: 'autoscaling/v1',
@@ -184,7 +184,7 @@ class TriviaBackendStack extends cdk.Stack {
                 })
               ]
             });
-            const externalDnsChart = cluster.addChart('ExternalDns', {
+            const externalDnsChart = cluster.addHelmChart('ExternalDns', {
               chart: 'external-dns',
               release: 'external-dns-rt',
               repository: 'https://kubernetes-charts.storage.googleapis.com',

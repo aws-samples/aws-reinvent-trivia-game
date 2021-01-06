@@ -1,5 +1,5 @@
 import {Construct} from '@aws-cdk/core';
-import {Cluster, KubernetesResource} from '@aws-cdk/aws-eks';
+import {Cluster, KubernetesManifest} from '@aws-cdk/aws-eks';
 import {ICertificate} from '@aws-cdk/aws-certificatemanager';
 import {EcrImage} from '@aws-cdk/aws-ecs';
 /**
@@ -26,7 +26,7 @@ export interface ReinventTriviaResourceProps {
   readonly image: EcrImage;
 }
 
-export class ReinventTriviaResource extends KubernetesResource {
+export class ReinventTriviaResource extends KubernetesManifest {
   constructor(parent: Construct, id: string, props: ReinventTriviaResourceProps) {
     const manifest = [
       {
