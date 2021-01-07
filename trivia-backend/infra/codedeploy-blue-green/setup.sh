@@ -10,9 +10,9 @@ npm run deploy-test-infra
 
 npm run deploy-prod-infra
 
-# Provision deployment hooks
+# Provision lifecycle event hooks
 
-cd hooks/
+cd ../codedeploy-lifecycle-event-hooks
 
 npm install
 
@@ -22,7 +22,7 @@ aws cloudformation deploy --region us-east-1 --template-file packaged-template.y
 
 aws cloudformation deploy --region us-east-1 --template-file packaged-template.yaml --stack-name TriviaBackendHooksProd --tags project=reinvent-trivia --capabilities CAPABILITY_IAM --tags project=reinvent-trivia --parameter-overrides TriviaBackendDomain=api.reinvent-trivia.com
 
-cd ..
+cd ../codedeploy-blue-green
 
 # Generate config files
 

@@ -63,6 +63,9 @@ jobs:
         npm ci
         npm run build
 
+        cd ../codedeploy-lifecycle-event-hooks
+        npm ci
+
   game-app:
     name: Game App
     runs-on: ubuntu-latest
