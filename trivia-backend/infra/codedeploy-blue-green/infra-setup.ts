@@ -2,7 +2,7 @@
 import { Alarm } from '@aws-cdk/aws-cloudwatch';
 import { Port, SecurityGroup, Vpc } from '@aws-cdk/aws-ec2';
 import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup, HttpCodeTarget, IApplicationLoadBalancerTarget, LoadBalancerTargetProps, TargetType } from '@aws-cdk/aws-elasticloadbalancingv2';
-import { AddressRecordTarget, ARecord, HostedZone } from '@aws-cdk/aws-route53';
+import { RecordTarget, ARecord, HostedZone } from '@aws-cdk/aws-route53';
 import { LoadBalancerTarget } from '@aws-cdk/aws-route53-targets';
 import { StringParameter } from '@aws-cdk/aws-ssm';
 import { ManagedPolicy, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
@@ -37,7 +37,7 @@ class TriviaBackendStack extends cdk.Stack {
     new ARecord(this, "DNS", {
       zone: domainZone,
       recordName: props.domainName,
-      target: AddressRecordTarget.fromAlias(new LoadBalancerTarget(loadBalancer)),
+      target: RecordTarget.fromAlias(new LoadBalancerTarget(loadBalancer)),
     });
 
     // Primary traffic listener

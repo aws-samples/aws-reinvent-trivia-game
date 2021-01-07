@@ -46,7 +46,7 @@ export class RootDomainSite extends cdk.Construct {
         // Route53 alias record for the CloudFront distribution
         new route53.ARecord(this, 'SiteAliasRecord', {
             recordName: props.domainName,
-            target: route53.AddressRecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
+            target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
             zone
         });
     }
