@@ -64,7 +64,7 @@ cdk deploy --app ecs-service.js TriviaBackendTest
 cdk deploy --app ecs-service.js TriviaBackendProd
 ```
 
-See the '[api-service-pipeline](../pipelines/src/api-service-pipeline.ts)' example in the [pipelines](../pipelines/) folder for instructions on how to continuously deploy this example with CodePipeline's [CloudFormation deploy action](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-CloudFormation).
+See the '[api-service-pipeline](../pipelines/src/api-service-pipeline.ts)' example in the [pipelines](../pipelines/) folder for an example of how to continuously deploy this backend service example with CodePipeline's [CloudFormation deploy action](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-CloudFormation), with the pipeline modeled using the AWS CDK.  Instructions are also in the [pipelines](../pipelines/) folder for how to provision the CodePipeline pipeline via CloudFormation.
 
 ### ECS on Fargate (task set deployments)
 
@@ -96,7 +96,7 @@ npm install -g aws-cdk
 ./setup.sh <S3 bucket for storing temporary artifacts>
 ```
 
-See the '[api-service-codedeploy-pipeline](../pipelines/src/api-service-codedeploy-pipeline.ts)' example in the [pipelines](../pipelines/) folder for instructions on how to continuously deploy this example with CodePipeline's ["ECS (Blue/Green)" deploy action](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-ECS).
+See the '[api-service-codedeploy-pipeline](../pipelines/src/api-service-codedeploy-pipeline.ts)' example in the [pipelines](../pipelines/) folder for an example of how to continuously deploy this backend service example with CodePipeline's ["ECS (Blue/Green)" deploy action](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-ECS), with the pipeline modeled using the AWS CDK.  Instructions are also in the [pipelines](../pipelines/) folder for how to provision the CodePipeline pipeline via CloudFormation.
 
 ### EKS on Fargate
 
