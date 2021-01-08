@@ -49,6 +49,7 @@ Resources:
   BotAliasErrorMetricGreaterThanZeroAlarm:
     Type: "AWS::CloudWatch::Alarm"
     Properties:
+      AlarmName: !Sub ${AWS::StackName}-BotAliasErrors
       AlarmDescription: Lambda Function Error > 0
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
@@ -66,6 +67,7 @@ Resources:
   BotLatestVersionErrorMetricGreaterThanZeroAlarm:
     Type: "AWS::CloudWatch::Alarm"
     Properties:
+      AlarmName: !Sub ${AWS::StackName}-BotLatestVersionErrors
       AlarmDescription: Lambda Function Error > 0
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
