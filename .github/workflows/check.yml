@@ -20,6 +20,7 @@ jobs:
         npm run build
         npm run synth-static-site-pipeline
         npm run synth-backend-pipeline
+        npm run synth-backend-blue-green-pipeline
         npm run synth-backend-codedeploy-pipeline
         npm run synth-backend-base-image-pipeline
         npm run synth-chat-bot-pipeline

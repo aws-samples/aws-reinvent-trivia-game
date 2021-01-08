@@ -18,9 +18,9 @@ npm install
 
 aws cloudformation package --template-file template.yaml --s3-bucket $1 --output-template-file packaged-template.yaml
 
-aws cloudformation deploy --region us-east-1 --template-file packaged-template.yaml --stack-name TriviaBackendHooksTest --tags project=reinvent-trivia --capabilities CAPABILITY_IAM --tags project=reinvent-trivia --parameter-overrides TriviaBackendDomain=api-test.reinvent-trivia.com
+aws cloudformation deploy --region us-east-1 --template-file packaged-template.yaml --stack-name TriviaBackendHooksTest --tags project=reinvent-trivia --capabilities CAPABILITY_NAMED_IAM --tags project=reinvent-trivia --parameter-overrides TriviaBackendDomain=api-test.reinvent-trivia.com
 
-aws cloudformation deploy --region us-east-1 --template-file packaged-template.yaml --stack-name TriviaBackendHooksProd --tags project=reinvent-trivia --capabilities CAPABILITY_IAM --tags project=reinvent-trivia --parameter-overrides TriviaBackendDomain=api.reinvent-trivia.com
+aws cloudformation deploy --region us-east-1 --template-file packaged-template.yaml --stack-name TriviaBackendHooksProd --tags project=reinvent-trivia --capabilities CAPABILITY_NAMED_IAM --tags project=reinvent-trivia --parameter-overrides TriviaBackendDomain=api.reinvent-trivia.com
 
 cd ../codedeploy-blue-green
 

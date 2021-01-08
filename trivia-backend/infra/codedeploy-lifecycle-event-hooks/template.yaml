@@ -44,3 +44,25 @@ Resources:
               - ':'
               - !Ref TriviaBackendTestPort
               - '/api/trivia/all'
+
+  CodeDeployHookRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'CodeDeployHookRole_${AWS::StackName}'
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - codedeploy.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: "Invoke-Hooks"
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+              - "lambda:InvokeFunction"
+            Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:CodeDeployHook_*'
