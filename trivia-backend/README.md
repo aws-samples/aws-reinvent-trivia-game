@@ -26,7 +26,7 @@ Replace all references to 'reinvent-trivia.com' with your own domain name.
 
 ## Build Docker images
 
-The base image Dockerfile can be found in the [base](base/) folder.  In the backend pipeline modeled in the "[pipelines](../pipelines/)" folder, the base image is built in one "base image" pipeline, which triggers another pipeline for the main application.  In the main application pipeline, the base image URI is replaced in the main Dockerfile with the latest base image that triggered the pipeline.
+The base image Dockerfile can be found in the [base](base/) folder.  In the example pipelines modeled in the "[pipelines](../pipelines/)" folder, the base image is built in one "base image" pipeline, which triggers another pipeline for the main application.  In the main application pipeline, the base image URI is replaced in the main Dockerfile with the latest base image that triggered the pipeline.
 
 Locally, it can be built with the following commands.  Follow the "push commands" instructions in the ECR console to push them into the ECR repository.
 
@@ -49,7 +49,9 @@ There are multiple options in the [infra](infra/) folder for provisioning and de
 
 The [cdk](infra/cdk/) folder contains the example '[ecs-service](infra/cdk/ecs-service.ts)' for how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and deploy the service with CloudFormation, using [ECS rolling update deployments](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-ecs.html).
 
-To deploy the Typescript example, run the following.
+See the '[api-service-pipeline](../pipelines/src/api-service-pipeline.ts)' example in the [pipelines](../pipelines/) folder for an example of how to continuously deploy this backend service example with CodePipeline's [CloudFormation deploy actions](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-CloudFormation), with the pipeline modeled using the AWS CDK.  Instructions are also in the [pipelines](../pipelines/) folder for how to provision the CodePipeline pipeline via CloudFormation.
+
+To deploy this example, run the following.
 ```
 npm install -g aws-cdk
 
@@ -64,13 +66,11 @@ cdk deploy --app ecs-service.js TriviaBackendTest
 cdk deploy --app ecs-service.js TriviaBackendProd
 ```
 
-See the '[api-service-pipeline](../pipelines/src/api-service-pipeline.ts)' example in the [pipelines](../pipelines/) folder for an example of how to continuously deploy this backend service example with CodePipeline's [CloudFormation deploy actions](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-CloudFormation), with the pipeline modeled using the AWS CDK.  Instructions are also in the [pipelines](../pipelines/) folder for how to provision the CodePipeline pipeline via CloudFormation.
-
 ### ECS on Fargate (task set deployments)
 
 The [cdk](infra/cdk/) folder contains the example '[ecs-task-sets](infra/cdk/ecs-service.ts)' for how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and deploy the service with CloudFormation, using [ECS task set deployments](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-external.html).  Note that this example does not currently have a continuous deployment pipeline example in this repo.
 
-To deploy the Typescript example, run the following.
+To deploy this example, run the following.
 ```
 npm install -g aws-cdk
 
@@ -87,7 +87,9 @@ cdk deploy --app ecs-task-sets.js TriviaBackendTaskSets
 
 The [cdk](infra/cdk/) folder contains the example '[ecs-service-blue-green](infra/cdk/ecs-service-blue-green.ts)' for how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and deploy the service with CloudFormation, using [CodeDeploy blue-green deployments](https://docs.aws.amazon.com/codedeploy/latest/userguide/deployments-create-ecs-cfn.html).  The [codedeploy-lifecycle-event-hooks](infra/codedeploy-lifecycle-event-hooks) folder contains an example of a pre-traffic CodeDeploy lifecycle event hook that is modeled and provisioned with CloudFormation and the [AWS Serverless Application Model](https://aws.amazon.com/serverless/sam/).
 
-First, deploy the CodeDeploy lifecycle event hook from the `infra/codedeploy-lifecycle-event-hooks` folder:
+See the '[api-service-blue-green-pipeline](../pipelines/src/api-service-blue-green-pipeline.ts)' example in the [pipelines](../pipelines/) folder for an example of how to continuously deploy this backend service example with CodePipeline's [CloudFormation deploy actions](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-CloudFormation), with the pipeline modeled using the AWS CDK.  Instructions are also in the [pipelines](../pipelines/) folder for how to provision the CodePipeline pipeline via CloudFormation.
+
+To deploy this example, first deploy the CodeDeploy lifecycle event hook from the `infra/codedeploy-lifecycle-event-hooks` folder:
 ```
 npm install
 
@@ -151,11 +153,11 @@ aws cloudformation update-stack \
    --rollback-configuration "RollbackTriggers=[{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:TriviaBackendProd-Unhealthy-Hosts-Blue,Type=AWS::CloudWatch::Alarm},{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:TriviaBackendProd-Http-500-Blue,Type=AWS::CloudWatch::Alarm},{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:TriviaBackendProd-Unhealthy-Hosts-Green,Type=AWS::CloudWatch::Alarm},{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:TriviaBackendProd-Http-500-Green,Type=AWS::CloudWatch::Alarm},{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:Synthetics-Alarm-trivia-game-prod,Type=AWS::CloudWatch::Alarm}]"
 ```
 
-See the '[api-service-blue-green-pipeline](../pipelines/src/api-service-blue-green-pipeline.ts)' example in the [pipelines](../pipelines/) folder for an example of how to continuously deploy this backend service example with CodePipeline's [CloudFormation deploy actions](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-CloudFormation), with the pipeline modeled using the AWS CDK.  Instructions are also in the [pipelines](../pipelines/) folder for how to provision the CodePipeline pipeline via CloudFormation.
-
 ### ECS on Fargate (CodeDeploy blue-green deployments, outside of CloudFormation)
 
 The [codedeploy-blue-green](infra/codedeploy-blue-green/) folder contains an example of the configuration needed to setup and execute a [blue-green deployment with CodeDeploy](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-bluegreen.html) directly: CodeDeploy appspec file, ECS task definition file, ECS service, CodeDeploy application definition, and CodeDeploy deployment group.  The non-service infrastructure (load balancer, security groups, roles, etc) is modeled and provisioned with the [AWS CDK](https://github.com/awslabs/aws-cdk) and CloudFormation.  In this example, the ECS service is initially created outside of CloudFormation, and all future deployments are done directly with CodeDeploy outside of CloudFormation.  The [codedeploy-lifecycle-event-hooks](infra/codedeploy-lifecycle-event-hooks) folder contains an example of a pre-traffic CodeDeploy lifecycle event hook that is modeled and provisioned with CloudFormation and the [AWS Serverless Application Model](https://aws.amazon.com/serverless/sam/).
+
+See the '[api-service-codedeploy-pipeline](../pipelines/src/api-service-codedeploy-pipeline.ts)' example in the [pipelines](../pipelines/) folder for an example of how to continuously deploy this backend service example with CodePipeline's ["ECS (Blue/Green)" deploy action](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-ECS), with the pipeline modeled using the AWS CDK.  Instructions are also in the [pipelines](../pipelines/) folder for how to provision the CodePipeline pipeline via CloudFormation.
 
 To deploy this example, run the following in infra/codedeploy-blue-green.
 ```
@@ -163,8 +165,6 @@ npm install -g aws-cdk
 
 ./setup.sh <S3 bucket for storing temporary artifacts>
 ```
-
-See the '[api-service-codedeploy-pipeline](../pipelines/src/api-service-codedeploy-pipeline.ts)' example in the [pipelines](../pipelines/) folder for an example of how to continuously deploy this backend service example with CodePipeline's ["ECS (Blue/Green)" deploy action](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-ECS), with the pipeline modeled using the AWS CDK.  Instructions are also in the [pipelines](../pipelines/) folder for how to provision the CodePipeline pipeline via CloudFormation.
 
 ### EKS on Fargate
 
