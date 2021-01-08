@@ -29,8 +29,9 @@ Resources:
           - Effect: "Allow"
             Action:
               - "codedeploy:PutLifecycleEventHookExecutionStatus"
+              - "codedeploy:CreateCloudFormationDeployment"
             Resource:
-              !Sub 'arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:AppECS-*/DgpECS-*'
+              !Sub 'arn:${AWS::Partition}:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:*/*'
       Runtime: nodejs10.x
       DeploymentPreference:
         Enabled: false
