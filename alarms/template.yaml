@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Composite alarm resources for trivia site
+
+Parameters:
+  Stage:
+    Type: String
+    AllowedValues:
+      - "Test"
+      - "Prod"
+
+  NotificationsTopic:
+    Type: String
+    Default: reinvent-trivia-notifications
+
+Mappings:
+  StageLowerCaseMap:
+    Test: { "Lower": "test" }
+    Prod: { "Lower": "prod" }
+
+Resources:
+  CompositeAlarm:
+    Type: AWS::CloudWatch::CompositeAlarm
+    Properties:
+      AlarmName: !Sub "TriviaGame-CompositeAlarm-${Stage}"
+      AlarmDescription: "Composite alarm that aggregates all individual component alarms"
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${NotificationsTopic}"
+      AlarmRule: !Sub
+        - |-
+          ALARM("TriviaBackend${Stage}-Unhealthy-Hosts-Blue") OR
+          ALARM("TriviaBackend${Stage}-Http-500-Blue") OR
+          ALARM("TriviaBackend${Stage}-Unhealthy-Hosts-Green") OR
+          ALARM("TriviaBackend${Stage}-Http-500-Green") OR
+          ALARM("TriviaGameChatBot${Stage}-BotLatestVersionErrors") OR
+          ALARM("TriviaGameChatBot${Stage}-BotAliasErrors") OR
+          ALARM("Synthetics-Alarm-trivia-game-${StageLowerCase}")
+        - { StageLowerCase: !FindInMap ["StageLowerCaseMap", !Ref Stage, "Lower"] }

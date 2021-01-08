@@ -9,6 +9,7 @@ Sample trivia game built with AWS Fargate, AWS Lambda, and Amazon Lex.  See [rei
 * **Chat Bot** ([folder](chat-bot/)): Conversational bot that asks trivia questions and validates answers, and can be integrated into Slack workspace.  Running on Amazon Lex and AWS Lambda.
 * **Continuous delivery** ([folder](pipelines/)): Pipelines that deploy code and infrastructure for each of the components.
 * **Canaries** ([folder](canaries/)): Monitoring canaries to continuously test the application and alarm in case of issues.
+* **Alarms** ([folder](alarms/)): E-mail and chat notifications for alarms in case of issues.
 
 The components above are almost entirely deployed with AWS CloudFormation, using either the [AWS Cloud Development Kit](https://aws.amazon.com/cdk/) or the [AWS Serverless Application Model](https://aws.amazon.com/serverless/sam/).
 
