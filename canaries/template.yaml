@@ -17,6 +17,9 @@ Parameters:
   SourceBucket:
     Type: String
 
+  SourceObjectKey:
+    Type: String
+
   NotificationsTopic:
     Type: String
     Default: reinvent-trivia-notifications
@@ -34,7 +37,7 @@ Resources:
       Code:
         Handler: canary.handler
         S3Bucket: !Ref SourceBucket
-        S3Key: !Sub "trivia-game-canary-code.zip"
+        S3Key: !Ref SourceObjectKey
       ArtifactS3Location: !Sub "s3://${CanaryResultsBucket}"
       RuntimeVersion: syn-nodejs-2.2
       Schedule:

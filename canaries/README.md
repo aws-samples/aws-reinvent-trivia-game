@@ -36,7 +36,7 @@ aws cloudformation deploy \
   --template-file template.yaml \
   --stack-name TriviaGameCanariesTest \
   --capabilities CAPABILITY_NAMED_IAM \
-  --parameter-overrides Stage=test SourceBucket=$BUCKET_NAME WebpageUrl="https://test.reinvent-trivia.com" ApiEndpoint="https://api-test.reinvent-trivia.com/" \
+  --parameter-overrides Stage=test SourceBucket=$BUCKET_NAME SourceObjectKey="trivia-game-canary-code.zip" WebpageUrl="https://test.reinvent-trivia.com" ApiEndpoint="https://api-test.reinvent-trivia.com/" \
   --tags project=reinvent-trivia
 ```
 
@@ -50,6 +50,6 @@ aws cloudformation deploy \
   --template-file template.yaml \
   --stack-name TriviaGameCanariesProd \
   --capabilities CAPABILITY_NAMED_IAM \
-  --parameter-overrides Stage=prod SourceBucket=$BUCKET_NAME WebpageUrl="https://www.reinvent-trivia.com" ApiEndpoint="https://api.reinvent-trivia.com/" \
+  --parameter-overrides Stage=prod SourceBucket=$BUCKET_NAME SourceObjectKey="trivia-game-canary-code.zip" WebpageUrl="https://www.reinvent-trivia.com" ApiEndpoint="https://api.reinvent-trivia.com/" \
   --tags project=reinvent-trivia
 ```
