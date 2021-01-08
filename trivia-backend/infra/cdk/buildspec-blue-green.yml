@@ -38,7 +38,7 @@ phases:
       - cd $CODEBUILD_SRC_DIR/trivia-backend/infra/cdk
       - npm ci
       - npm run build
-      - cdk synth -o build --app 'node ecs-service-blue-green.js'
+      - cdk --no-version-reporting synth -o build --app 'node ecs-service-blue-green.js'
       - cp StackConfig.json build/
 
 artifacts:

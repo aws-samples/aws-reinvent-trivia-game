@@ -123,11 +123,11 @@ npm install
 
 npm run build
 
-cdk synth -o build --app 'node ecs-service-blue-green.js'
+cdk --no-version-reporting synth -o build --app 'node ecs-service-blue-green.js'
 
-cdk deploy --app ecs-service-blue-green.js TriviaBackendTest
+cdk --no-version-reporting deploy --app ecs-service-blue-green.js TriviaBackendTest
 
-cdk deploy --app ecs-service-blue-green.js TriviaBackendProd
+cdk --no-version-reporting deploy --app ecs-service-blue-green.js TriviaBackendProd
 ```
 
 Follow the instructions in the [canaries](../canaries) folder to deploy synthetic traffic canaries and their associated alarms.  Lastly, configure rollback alarms on the CloudFormation stacks for the backend services.
