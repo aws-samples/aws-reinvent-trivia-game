@@ -8,6 +8,10 @@ import ecr = require('@aws-cdk/aws-ecr');
 import iam = require('@aws-cdk/aws-iam');
 import cdk = require('@aws-cdk/core');
 
+/**
+ * Pipeline that builds a container image and deploys it to ECS using CodeDeploy blue-green deployments (no CloudFormation deployments).
+ * [Sources: GitHub source, ECR base image] -> [CodeBuild build] -> [ECS (Blue/Green) Deploy Action to 'test' ECS service] -> [ECS (Blue/Green) Deploy Action to 'prod' ECS service]
+ */
 class TriviaGameBackendCodeDeployPipelineStack extends cdk.Stack {
     constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
         super(parent, name, props);

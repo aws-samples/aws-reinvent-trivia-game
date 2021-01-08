@@ -12,6 +12,10 @@ export interface TriviaGameCfnPipelineProps {
     directory: string;
 }
 
+/**
+ * A common class for a pipeline that deploys a CloudFormation template.
+ * [GitHub source] -> [CodeBuild build] -> [Deploy CFN 'test' stack] -> [Deploy CFN 'prod' stack]
+ */
 export class TriviaGameCfnPipeline extends cdk.Construct {
     public readonly pipeline: codepipeline.Pipeline;
 

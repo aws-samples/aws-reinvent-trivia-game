@@ -3,7 +3,7 @@ import cdk = require('@aws-cdk/core');
 import codebuild = require('@aws-cdk/aws-codebuild');
 import actions = require('@aws-cdk/aws-codepipeline-actions');
 import iam = require('@aws-cdk/aws-iam');
-import { TriviaGameCfnPipeline } from './pipeline';
+import { TriviaGameCfnPipeline } from './common/cfn-pipeline';
 
 class TriviaGameChatBotPipelineStack extends cdk.Stack {
     constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {

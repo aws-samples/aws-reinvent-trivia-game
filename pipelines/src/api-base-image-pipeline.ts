@@ -6,6 +6,10 @@ import actions = require('@aws-cdk/aws-codepipeline-actions');
 import iam = require('@aws-cdk/aws-iam');
 import cdk = require('@aws-cdk/core');
 
+/**
+ * Simple two-stage pipeline to build the base image for the trivia game backend service.
+ * [GitHub source] -> [CodeBuild build, pushes image to ECR]
+ */
 class TriviaGameBackendBaseImagePipeline extends cdk.Stack {
     constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
         super(parent, name, props);
