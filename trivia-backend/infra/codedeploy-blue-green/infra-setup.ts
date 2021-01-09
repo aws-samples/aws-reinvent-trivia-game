@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { Alarm } from '@aws-cdk/aws-cloudwatch';
+import { Alarm, AlarmRule, AlarmState, CompositeAlarm } from '@aws-cdk/aws-cloudwatch';
 import { Port, SecurityGroup, Vpc } from '@aws-cdk/aws-ec2';
 import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup, HttpCodeTarget, IApplicationLoadBalancerTarget, LoadBalancerTargetProps, TargetType } from '@aws-cdk/aws-elasticloadbalancingv2';
 import { RecordTarget, ARecord, HostedZone } from '@aws-cdk/aws-route53';
@@ -96,30 +96,48 @@ class TriviaBackendStack extends cdk.Stack {
     });
 
     // Alarms: monitor 500s and unhealthy hosts on target groups
-    new Alarm(this, 'TargetGroupUnhealthyHosts', {
+    const tg1UnhealthyHosts = new Alarm(this, 'TargetGroupUnhealthyHosts', {
+      alarmName: this.stackName + '-Unhealthy-Hosts-Blue',
       metric: tg1.metricUnhealthyHostCount(),
       threshold: 1,
       evaluationPeriods: 2,
     });
 
-    new Alarm(this, 'TargetGroup5xx', {
+    const tg1ApiFailure = new Alarm(this, 'TargetGroup5xx', {
+      alarmName: this.stackName + '-Http-500-Blue',
       metric: tg1.metricHttpCodeTarget(HttpCodeTarget.TARGET_5XX_COUNT),
       threshold: 1,
       evaluationPeriods: 1,
       period: cdk.Duration.minutes(1)
     });
 
-    new Alarm(this, 'TargetGroup2UnhealthyHosts', {
+    const tg2UnhealthyHosts = new Alarm(this, 'TargetGroup2UnhealthyHosts', {
+      alarmName: this.stackName + '-Unhealthy-Hosts-Green',
       metric: tg2.metricUnhealthyHostCount(),
       threshold: 1,
       evaluationPeriods: 2,
     });
 
-    new Alarm(this, 'TargetGroup25xx', {
+    const tg2ApiFailure = new Alarm(this, 'TargetGroup25xx', {
+      alarmName: this.stackName + '-Http-500-Green',
       metric: tg2.metricHttpCodeTarget(HttpCodeTarget.TARGET_5XX_COUNT),
       threshold: 1,
       evaluationPeriods: 1,
       period: cdk.Duration.minutes(1)
+    });
+
+    new CompositeAlarm(this, 'CompositeUnhealthyHosts', {
+      compositeAlarmName: this.stackName + '-Unhealthy-Hosts',
+      alarmRule: AlarmRule.anyOf(
+        AlarmRule.fromAlarm(tg1UnhealthyHosts, AlarmState.ALARM),
+        AlarmRule.fromAlarm(tg2UnhealthyHosts, AlarmState.ALARM))
+    });
+
+    new CompositeAlarm(this, 'Composite5xx', {
+      compositeAlarmName: this.stackName + '-Http-500',
+      alarmRule: AlarmRule.anyOf(
+        AlarmRule.fromAlarm(tg1ApiFailure, AlarmState.ALARM),
+        AlarmRule.fromAlarm(tg2ApiFailure, AlarmState.ALARM))
     });
 
     // Roles

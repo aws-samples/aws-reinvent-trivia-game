@@ -28,10 +28,8 @@ Resources:
         - !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${NotificationsTopic}"
       AlarmRule: !Sub
         - |-
-          ALARM("TriviaBackend${Stage}-Unhealthy-Hosts-Blue") OR
-          ALARM("TriviaBackend${Stage}-Http-500-Blue") OR
-          ALARM("TriviaBackend${Stage}-Unhealthy-Hosts-Green") OR
-          ALARM("TriviaBackend${Stage}-Http-500-Green") OR
+          ALARM("TriviaBackend${Stage}-Unhealthy-Hosts") OR
+          ALARM("TriviaBackend${Stage}-Http-500") OR
           ALARM("TriviaGameChatBot${Stage}-BotLatestVersionErrors") OR
           ALARM("TriviaGameChatBot${Stage}-BotAliasErrors") OR
           ALARM("Synthetics-Alarm-trivia-game-${StageLowerCase}")

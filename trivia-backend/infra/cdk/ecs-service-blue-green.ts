@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { Alarm, Metric } from '@aws-cdk/aws-cloudwatch';
+import { Alarm, AlarmRule, AlarmState, CompositeAlarm, Metric } from '@aws-cdk/aws-cloudwatch';
 import { Port, SecurityGroup, SubnetType, Vpc } from '@aws-cdk/aws-ec2';
 import { Repository } from '@aws-cdk/aws-ecr';
 import { AwsLogDriver, CfnPrimaryTaskSet, CfnService, CfnTaskDefinition, CfnTaskSet, Cluster, ContainerImage, DeploymentControllerType, FargateTaskDefinition, LaunchType, PropagatedTagSource } from '@aws-cdk/aws-ecs';
@@ -228,7 +228,7 @@ class TriviaBackendStack extends cdk.Stack {
     // In order to have stack updates automatically rollback based on these alarms,
     // the alarms need to manually be configured as rollback triggers on the stack
     // after the stack is created.
-    new Alarm(this, 'TargetGroupBlueUnhealthyHosts', {
+    const tg1UnhealthyHosts = new Alarm(this, 'TargetGroupBlueUnhealthyHosts', {
       alarmName: this.stackName + '-Unhealthy-Hosts-Blue',
       metric: new Metric({
         namespace: 'AWS/ApplicationELB',
@@ -243,7 +243,7 @@ class TriviaBackendStack extends cdk.Stack {
       evaluationPeriods: 2,
     });
 
-    new Alarm(this, 'TargetGroupBlue5xx', {
+    const tg1ApiFailure = new Alarm(this, 'TargetGroupBlue5xx', {
       alarmName: this.stackName + '-Http-500-Blue',
       metric: new Metric({
         namespace: 'AWS/ApplicationELB',
@@ -259,7 +259,7 @@ class TriviaBackendStack extends cdk.Stack {
       period: cdk.Duration.minutes(1)
     });
 
-    new Alarm(this, 'TargetGroupGreenUnhealthyHosts', {
+    const tg2UnhealthyHosts = new Alarm(this, 'TargetGroupGreenUnhealthyHosts', {
       alarmName: this.stackName + '-Unhealthy-Hosts-Green',
       metric: new Metric({
         namespace: 'AWS/ApplicationELB',
@@ -274,7 +274,7 @@ class TriviaBackendStack extends cdk.Stack {
       evaluationPeriods: 2,
     });
 
-    new Alarm(this, 'TargetGroupGreen5xx', {
+    const tg2ApiFailure = new Alarm(this, 'TargetGroupGreen5xx', {
       alarmName: this.stackName + '-Http-500-Green',
       metric: new Metric({
         namespace: 'AWS/ApplicationELB',
@@ -288,6 +288,20 @@ class TriviaBackendStack extends cdk.Stack {
       threshold: 1,
       evaluationPeriods: 1,
       period: cdk.Duration.minutes(1)
+    });
+
+    new CompositeAlarm(this, 'CompositeUnhealthyHosts', {
+      compositeAlarmName: this.stackName + '-Unhealthy-Hosts',
+      alarmRule: AlarmRule.anyOf(
+        AlarmRule.fromAlarm(tg1UnhealthyHosts, AlarmState.ALARM),
+        AlarmRule.fromAlarm(tg2UnhealthyHosts, AlarmState.ALARM))
+    });
+
+    new CompositeAlarm(this, 'Composite5xx', {
+      compositeAlarmName: this.stackName + '-Http-500',
+      alarmRule: AlarmRule.anyOf(
+        AlarmRule.fromAlarm(tg1ApiFailure, AlarmState.ALARM),
+        AlarmRule.fromAlarm(tg2ApiFailure, AlarmState.ALARM))
     });
   }
 }

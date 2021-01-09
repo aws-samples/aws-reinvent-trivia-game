@@ -66,6 +66,27 @@ cdk deploy --app ecs-service.js TriviaBackendTest
 cdk deploy --app ecs-service.js TriviaBackendProd
 ```
 
+Follow the instructions in the [canaries](../canaries) folder to deploy synthetic traffic canaries and their associated alarms.  Lastly, configure rollback alarms on the CloudFormation stacks for the backend services.
+```
+AWS_ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text`
+
+aws cloudformation update-stack \
+   --region us-east-1 \
+   --stack-name TriviaBackendTest \
+   --use-previous-template \
+   --parameters ParameterKey=CertArnParameterParameter,UsePreviousValue=true \
+   --capabilities CAPABILITY_IAM \
+   --rollback-configuration "RollbackTriggers=[{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:TriviaBackendTest-Unhealthy-Hosts,Type=AWS::CloudWatch::Alarm},{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:TriviaBackendTest-Http-500,Type=AWS::CloudWatch::Alarm},{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:Synthetics-Alarm-trivia-game-test,Type=AWS::CloudWatch::Alarm}]"
+
+aws cloudformation update-stack \
+   --region us-east-1 \
+   --stack-name TriviaBackendProd \
+   --use-previous-template \
+   --parameters ParameterKey=CertArnParameterParameter,UsePreviousValue=true \
+   --capabilities CAPABILITY_IAM \
+   --rollback-configuration "RollbackTriggers=[{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:TriviaBackendProd-Unhealthy-Hosts,Type=AWS::CloudWatch::Alarm},{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:TriviaBackendProd-Http-500,Type=AWS::CloudWatch::Alarm},{Arn=arn:aws:cloudwatch:us-east-1:$AWS_ACCOUNT_ID:alarm:Synthetics-Alarm-trivia-game-prod,Type=AWS::CloudWatch::Alarm}]"
+```
+
 ### ECS on Fargate (task set deployments)
 
 The [cdk](infra/cdk/) folder contains the example '[ecs-task-sets](infra/cdk/ecs-service.ts)' for how to model this service with the [AWS Cloud Development Kit (AWS)](https://github.com/awslabs/aws-cdk) and deploy the service with CloudFormation, using [ECS task set deployments](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-external.html).  Note that this example does not currently have a continuous deployment pipeline example in this repo.

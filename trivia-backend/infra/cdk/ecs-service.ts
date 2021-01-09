@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import { Certificate } from '@aws-cdk/aws-certificatemanager';
+import { Alarm } from '@aws-cdk/aws-cloudwatch';
 import { Vpc } from '@aws-cdk/aws-ec2';
 import { Repository } from '@aws-cdk/aws-ecr';
 import { Cluster, ContainerImage, PropagatedTagSource } from '@aws-cdk/aws-ecs';
 import { ApplicationLoadBalancedFargateService } from '@aws-cdk/aws-ecs-patterns';
+import { HttpCodeTarget } from '@aws-cdk/aws-elasticloadbalancingv2';
 import { HostedZone } from '@aws-cdk/aws-route53';
 import { StringParameter } from '@aws-cdk/aws-ssm';
 import cdk = require('@aws-cdk/core');
@@ -38,7 +40,7 @@ class TriviaBackendStack extends cdk.Stack {
     const certificate = Certificate.fromCertificateArn(this, 'Cert', certificateArn);
 
     // Fargate service + load balancer
-    new ApplicationLoadBalancedFargateService(this, 'Service', {
+    const service = new ApplicationLoadBalancedFargateService(this, 'Service', {
       cluster,
       taskImageOptions: { image },
       desiredCount: 3,
@@ -46,6 +48,22 @@ class TriviaBackendStack extends cdk.Stack {
       domainZone,
       certificate,
       propagateTags: PropagatedTagSource.SERVICE,
+    });
+
+    // Alarms: monitor 500s and unhealthy hosts on target groups
+    new Alarm(this, 'TargetGroupUnhealthyHosts', {
+      alarmName: this.stackName + '-Unhealthy-Hosts',
+      metric: service.targetGroup.metricUnhealthyHostCount(),
+      threshold: 1,
+      evaluationPeriods: 2,
+    });
+
+    new Alarm(this, 'TargetGroup5xx', {
+      alarmName: this.stackName + '-Http-500',
+      metric: service.targetGroup.metricHttpCodeTarget(HttpCodeTarget.TARGET_5XX_COUNT),
+      threshold: 1,
+      evaluationPeriods: 1,
+      period: cdk.Duration.minutes(1)
     });
   }
 }
