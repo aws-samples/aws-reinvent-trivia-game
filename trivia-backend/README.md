@@ -152,6 +152,7 @@ cdk --no-version-reporting deploy --app ecs-service-blue-green.js TriviaBackendT
 
 cdk --no-version-reporting deploy --app ecs-service-blue-green.js TriviaBackendProd
 ```
+> Note: Using the `--no-version-reporting` option with the CDK CLI is important for CodeDeploy blue-green templates.  The CodeDeploy template hook prevents changes to the ECS resources and changes to non-ECS resources from occurring in the same stack update, because the stack update cannot be done in a safe blue-green fashion.  By default, the CDK inserts a `AWS::CDK::Metadata` resource into the template it generates.  If not using the `--no-version-reporting` option and the CDK libraries are upgraded, the `AWS::CDK::Metadata` resource will change and can result in a validation error from the CodeDeploy hook about non-ECS resource changes.
 
 Follow the instructions in the [canaries](../canaries) folder to deploy synthetic traffic canaries and their associated alarms.  Lastly, configure rollback alarms on the CloudFormation stacks for the backend services.
 ```
@@ -176,7 +177,11 @@ aws cloudformation update-stack \
 
 ### ECS on Fargate (CodeDeploy blue-green deployments, outside of CloudFormation)
 
-The [codedeploy-blue-green](infra/codedeploy-blue-green/) folder contains an example of the configuration needed to setup and execute a [blue-green deployment with CodeDeploy](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-bluegreen.html) directly: CodeDeploy appspec file, ECS task definition file, ECS service, CodeDeploy application definition, and CodeDeploy deployment group.  The non-service infrastructure (load balancer, security groups, roles, etc) is modeled and provisioned with the [AWS CDK](https://github.com/awslabs/aws-cdk) and CloudFormation.  In this example, the ECS service is initially created outside of CloudFormation, and all future deployments are done directly with CodeDeploy outside of CloudFormation.  The [codedeploy-lifecycle-event-hooks](infra/codedeploy-lifecycle-event-hooks) folder contains an example of a pre-traffic CodeDeploy lifecycle event hook that is modeled and provisioned with CloudFormation and the [AWS Serverless Application Model](https://aws.amazon.com/serverless/sam/).
+The [codedeploy-blue-green](infra/codedeploy-blue-green/) folder contains an example of the configuration needed to setup and execute a [blue-green deployment with CodeDeploy](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-bluegreen.html) directly: CodeDeploy appspec file, ECS task definition file, ECS service, CodeDeploy application definition, and CodeDeploy deployment group.
+
+In this example, the infrastructure resources (load balancer, security groups, roles, etc) are modeled and provisioned with the [AWS CDK](https://github.com/awslabs/aws-cdk) and CloudFormation.  The ECS service and CodeDeploy resources are created outside of CloudFormation using a script, and all future deployments to the ECS service are done directly with CodeDeploy outside of CloudFormation.  Note that the setup of resources for this example cannot currently be done entirely with CloudFormation, unless custom CFN resources are used (see [this issue for details](https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/483)).
+
+The [codedeploy-lifecycle-event-hooks](infra/codedeploy-lifecycle-event-hooks) folder contains an example of a pre-traffic CodeDeploy lifecycle event hook that is modeled and provisioned with CloudFormation and the [AWS Serverless Application Model](https://aws.amazon.com/serverless/sam/).
 
 See the '[api-service-codedeploy-pipeline](../pipelines/src/api-service-codedeploy-pipeline.ts)' example in the [pipelines](../pipelines/) folder for an example of how to continuously deploy this backend service example with CodePipeline's ["ECS (Blue/Green)" deploy action](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-ECS), with the pipeline modeled using the AWS CDK.  Instructions are also in the [pipelines](../pipelines/) folder for how to provision the CodePipeline pipeline via CloudFormation.
 

@@ -15,6 +15,15 @@ interface TriviaBackendStackProps extends cdk.StackProps {
   deploymentHooksStack: string;
 }
 
+/**
+ * Always use the "cdk --no-version-reporting" flag with this example.
+ * The CodeDeploy template hook prevents changes to the ECS resources and changes to non-ECS resources
+ * from occurring in the same stack update, because the stack update cannot be done in a safe blue-green
+ * fashion.  By default, the CDK inserts a `AWS::CDK::Metadata` resource into the template it generates.
+ * If not using the `--no-version-reporting` option and the CDK libraries are upgraded, the
+ * `AWS::CDK::Metadata` resource will change and can result in a validation error from the CodeDeploy hook
+ * about non-ECS resource changes.
+ */
 class TriviaBackendStack extends cdk.Stack {
   constructor(parent: cdk.App, name: string, props: TriviaBackendStackProps) {
     super(parent, name, props);
@@ -28,6 +37,14 @@ class TriviaBackendStack extends cdk.Stack {
     const image = ContainerImage.fromEcrRepository(imageRepo, tag)
 
     // Network infrastructure
+    //
+    // Note: Generally, the best practice is to minimize the number of resources in the template that
+    // are not involved in the CodeDeploy blue-green deployment (i.e. that are not referenced by the
+    // CodeDeploy blue-green hook). As mentioned above, the CodeDeploy hook prevents stack updates
+    // that combine 'infrastructure' resource changes and 'blue-green' resource changes. Separating
+    // infrastructure resources like VPC, security groups, clusters, etc into a different stack and
+    // then referencing them in this stack would minimize the likelihood of that happening. But, for
+    // the simplicity of this example, these resources are all created in the same stack.
     const vpc = new Vpc(this, 'VPC', { maxAzs: 2 });
     const cluster = new Cluster(this, 'Cluster', {
       clusterName: props.domainName.replace(/\./g, '-'),
@@ -176,6 +193,20 @@ class TriviaBackendStack extends cdk.Stack {
     });
 
     // CodeDeploy hook and transform to configure the blue-green deployments.
+    //
+    // Note: Stack updates that contain changes in the template to both ECS resources and non-ECS resources
+    // will result in the following error from the CodeDeploy hook:
+    //   "Additional resource diff other than ECS application related resource update is detected,
+    //    CodeDeploy can't perform BlueGreen style update properly."
+    // In this case, you can either:
+    // 1) Separate the resources into multiple, separate stack updates: First, deploy the changes to the
+    //    non-ECS resources only, using the same container image tag during the template synthesis that is
+    //    currently deployed to the ECS service.  Then, deploy the changes to the ECS service, for example
+    //    deploying a new container image tag.  This is the best practice.
+    // 2) Temporarily disable the CodeDeploy blue-green hook: Comment out the CodeDeploy transform and hook
+    //    code below.  The next stack update will *not* deploy the ECS service changes in a blue-green fashion.
+    //    Once the stack update is completed, uncomment the CodeDeploy transform and hook code to re-enable
+    //    blue-green deployments.
     this.addTransform('AWS::CodeDeployBlueGreen');
     const taskDefLogicalId = this.getLogicalId(taskDefinition.node.defaultChild as CfnTaskDefinition)
     const taskSetLogicalId = this.getLogicalId(taskSet)
