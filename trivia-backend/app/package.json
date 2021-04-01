@@ -7,7 +7,7 @@
     "test": "./node_modules/nyc/bin/nyc.js --reporter=lcov ./node_modules/mocha/bin/mocha"
   },
   "dependencies": {
-    "@godaddy/terminus": "^4.6.0",
+    "@godaddy/terminus": "^4.7.1",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "mocha": "^8.2.1",
-    "chai": "^4.3.0",
+    "chai": "^4.3.4",
     "chai-http": "^4.3.0",
     "nyc": "^15.1.0"
   },
