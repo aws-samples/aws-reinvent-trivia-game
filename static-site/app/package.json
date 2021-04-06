@@ -12,7 +12,7 @@
   "devDependencies": {
     "@babel/core": "^7.13.14",
     "@babel/preset-env": "^7.12.11",
-    "@babel/preset-react": "^7.12.13",
+    "@babel/preset-react": "^7.13.13",
     "babel-loader": "^8.2.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
