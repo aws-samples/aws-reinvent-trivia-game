@@ -13,7 +13,7 @@ Resources:
     Properties:
       CodeUri: ./bot
       Handler: bot.handler
-      Runtime: nodejs10.x
+      Runtime: nodejs14.x
       Timeout: 60
       Environment:
         Variables:
@@ -109,7 +109,7 @@ Resources:
             Action:
               - "lambda:InvokeFunction"
             Resource: !Sub "${BotFunction.Arn}:*"
-      Runtime: nodejs10.x
+      Runtime: nodejs14.x
       DeploymentPreference:
         Enabled: false
         Role: ""
