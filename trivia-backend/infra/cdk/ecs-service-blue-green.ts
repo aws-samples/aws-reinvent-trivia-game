@@ -2,8 +2,8 @@
 import { Alarm, AlarmRule, AlarmState, CompositeAlarm, Metric } from '@aws-cdk/aws-cloudwatch';
 import { Port, SecurityGroup, SubnetType, Vpc } from '@aws-cdk/aws-ec2';
 import { Repository } from '@aws-cdk/aws-ecr';
-import { AwsLogDriver, CfnPrimaryTaskSet, CfnService, CfnTaskSet, Cluster, ContainerImage, DeploymentControllerType, FargateTaskDefinition, LaunchType, PropagatedTagSource } from '@aws-cdk/aws-ecs';
-import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup, HttpCodeTarget, ListenerAction, Protocol, TargetType } from '@aws-cdk/aws-elasticloadbalancingv2';
+import { AwsLogDriver, CfnPrimaryTaskSet, CfnService, CfnTaskDefinition, CfnTaskSet, Cluster, ContainerImage, DeploymentControllerType, FargateTaskDefinition, LaunchType, PropagatedTagSource } from '@aws-cdk/aws-ecs';
+import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup, CfnListener, CfnTargetGroup, HttpCodeTarget, ListenerAction, Protocol, TargetType } from '@aws-cdk/aws-elasticloadbalancingv2';
 import { RecordTarget, ARecord, HostedZone } from '@aws-cdk/aws-route53';
 import { LoadBalancerTarget } from '@aws-cdk/aws-route53-targets';
 import { StringParameter } from '@aws-cdk/aws-ssm';
@@ -207,7 +207,6 @@ class TriviaBackendStack extends cdk.Stack {
     //    code below.  The next stack update will *not* deploy the ECS service changes in a blue-green fashion.
     //    Once the stack update is completed, uncomment the CodeDeploy transform and hook code to re-enable
     //    blue-green deployments.
-    /*
     this.addTransform('AWS::CodeDeployBlueGreen');
     const taskDefLogicalId = this.getLogicalId(taskDefinition.node.defaultChild as CfnTaskDefinition)
     const taskSetLogicalId = this.getLogicalId(taskSet)
@@ -254,7 +253,6 @@ class TriviaBackendStack extends cdk.Stack {
         }
       }]
     });
-    */
 
     // Alarms:
     // These resources alarm on unhealthy hosts and HTTP 500s at the target group level.
