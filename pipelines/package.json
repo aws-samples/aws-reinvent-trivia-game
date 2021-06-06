@@ -17,7 +17,9 @@
     "synth-chat-bot-pipeline": "cdk synth -o build --app 'node src/chat-bot-pipeline.js'",
     "deploy-chat-bot-pipeline": "cdk deploy --app 'node src/chat-bot-pipeline.js'",
     "synth-canaries-pipeline": "cdk synth -o build --app 'node src/canaries-pipeline.js'",
-    "deploy-canaries-pipeline": "cdk deploy --app 'node src/canaries-pipeline.js'"
+    "deploy-canaries-pipeline": "cdk deploy --app 'node src/canaries-pipeline.js'",
+    "synth-lifecycle-hooks-pipeline": "cdk synth -o build --app 'node src/api-service-codedeploy-lifecycle-event-hooks-pipeline.js'",
+    "deploy-lifecycle-hooks-pipeline": "cdk deploy --app 'node src/api-service-codedeploy-lifecycle-event-hooks-pipeline.js'"
   },
   "devDependencies": {
     "@types/node": "^15.6.1",

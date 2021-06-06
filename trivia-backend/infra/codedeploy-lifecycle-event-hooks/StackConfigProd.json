@@ -1,0 +1,8 @@
+{
+  "Tags" : {
+    "project" : "reinvent-trivia"
+  },
+  "Parameters" : {
+    "TriviaBackendDomain": "api.reinvent-trivia.com"
+  }
+}

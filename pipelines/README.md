@@ -8,6 +8,7 @@ In [src](src/) directory:
 * api-service-pipeline.ts: Builds and deploys the backend API service to Fargate using CodePipeline's [CloudFormation deploy actions](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-CloudFormation)
 * api-service-blue-green-pipeline.ts: Builds and deploys the backend API service to Fargate using CodePipeline's [CloudFormation deploy actions](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-CloudFormation) and CloudFormation's integration with CodeDeploy blue-green deployments
 * api-service-codedeploy-pipeline.ts: Builds and deploys the backend API service to Fargate using CodePipeline's ["ECS (Blue/Green)" deploy action](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-ECS)
+* api-service-codedeploy-lifecycle-event-hooks-pipeline.ts: Builds and deploys the CodeDeploy lifecycle event hooks that test the backend API service during a CodeDeploy deployment
 * static-site-pipeline.ts: Provisions infrastructure for the static site, like a CloudFront distribution and an S3 bucket, plus bundles and uploads the static site pages to the site's S3 bucket
 * chat-bot-pipeline.ts: Builds and deploys the chat bot Lambda function and Lex model
 * canaries-pipeline.ts: Builds and deploys the monitoring canaries
@@ -49,6 +50,8 @@ OR
 cdk deploy --app 'node src/api-service-blue-green-pipeline.js'
 OR
 cdk deploy --app 'node src/api-service-codedeploy-pipeline.js'
+
+cdk deploy --app 'node src/api-service-codedeploy-lifecycle-event-hooks-pipeline.js'
 
 cdk deploy --app 'node src/chat-bot-pipeline.js'
 
