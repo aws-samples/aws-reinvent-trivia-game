@@ -2,18 +2,24 @@
 
 The trivia game application can use Amazon CloudWatch Synthetics to continuously load the webpage and APIs, and alarm when the page does not load or does not render correctly.
 
-## Pre-requisite resources
-
-These instructions require an S3 bucket to store the canary source code, marked as `$BUCKET_NAME` below.
+## Prep
 
 Create an SNS topic for notifications about the canary alarms.  An email address or to a [chat bot](https://docs.aws.amazon.com/chatbot/latest/adminguide/setting-up.html) can then be subscribed to the topic to receive notifications about canary alarms.
 ```
 aws sns create-topic --name reinvent-trivia-notifications --region us-east-1
 ```
 
-In the commands below, replace the reinvent-trivia.com endpoints with your own domain name.
+## Customize
 
-## Package the canary code
+Replace all references to 'reinvent-trivia.com' with your own domain name.
+
+## Deploy
+
+Ideally, use the pipelines in the "[pipelines](../pipelines/)" folder to deploy the canaries.  Alternatively, you can use the AWS CLI to deploy.
+
+These instructions require an S3 bucket to store the canary source code, marked as `$BUCKET_NAME` below.
+
+### Package the canary code
 
 Package and upload the canary script:
 
@@ -26,7 +32,7 @@ zip -r trivia-game-canary-code.zip nodejs/
 aws s3 cp trivia-game-canary-code.zip s3://$BUCKET_NAME/
 ```
 
-## Create the test endpoint canary
+### Create the test endpoint canary
 
 Deploy the resources for running a continuous monitoring canary against the test endpoints:
 
@@ -40,7 +46,7 @@ aws cloudformation deploy \
   --tags project=reinvent-trivia
 ```
 
-## Prod endpoint canary
+### Create the production endpoint canary
 
 Deploy the resources for running a continuous monitoring canary against the production endpoints:
 

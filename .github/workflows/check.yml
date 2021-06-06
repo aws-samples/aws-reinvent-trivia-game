@@ -24,6 +24,7 @@ jobs:
         npm run synth-backend-codedeploy-pipeline
         npm run synth-backend-base-image-pipeline
         npm run synth-chat-bot-pipeline
+        npm run synth-canaries-pipeline
 
   static-site:
     name: Static Site

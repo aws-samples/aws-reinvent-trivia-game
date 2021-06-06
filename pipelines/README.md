@@ -10,6 +10,7 @@ In [src](src/) directory:
 * api-service-codedeploy-pipeline.ts: Builds and deploys the backend API service to Fargate using CodePipeline's ["ECS (Blue/Green)" deploy action](https://docs.aws.amazon.com/codepipeline/latest/userguide/integrations-action-type.html#integrations-deploy-ECS)
 * static-site-pipeline.ts: Provisions infrastructure for the static site, like a CloudFront distribution and an S3 bucket, plus bundles and uploads the static site pages to the site's S3 bucket
 * chat-bot-pipeline.ts: Builds and deploys the chat bot Lambda function and Lex model
+* canaries-pipeline.ts: Builds and deploys the monitoring canaries
 
 ## Prep
 
@@ -50,6 +51,8 @@ OR
 cdk deploy --app 'node src/api-service-codedeploy-pipeline.js'
 
 cdk deploy --app 'node src/chat-bot-pipeline.js'
+
+cdk deploy --app 'node src/canaries-pipeline.js'
 ```
 
 See the pipelines in the CodePipeline console.

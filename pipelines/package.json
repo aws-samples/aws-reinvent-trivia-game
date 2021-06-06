@@ -15,7 +15,9 @@
     "synth-backend-base-image-pipeline": "cdk synth -o build --app 'node src/api-base-image-pipeline.js'",
     "deploy-backend-base-image-pipeline": "cdk deploy --app 'node src/api-base-image-pipeline.js'",
     "synth-chat-bot-pipeline": "cdk synth -o build --app 'node src/chat-bot-pipeline.js'",
-    "deploy-chat-bot-pipeline": "cdk deploy --app 'node src/chat-bot-pipeline.js'"
+    "deploy-chat-bot-pipeline": "cdk deploy --app 'node src/chat-bot-pipeline.js'",
+    "synth-canaries-pipeline": "cdk synth -o build --app 'node src/canaries-pipeline.js'",
+    "deploy-canaries-pipeline": "cdk deploy --app 'node src/canaries-pipeline.js'"
   },
   "devDependencies": {
     "@types/node": "^15.6.1",

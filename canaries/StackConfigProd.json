@@ -1,0 +1,12 @@
+{
+  "Tags" : {
+    "project" : "reinvent-trivia"
+  },
+  "Parameters" : {
+    "Stage" : "prod",
+    "SourceBucket": "SOURCE_BUCKET",
+    "SourceObjectKey": "SOURCE_OBJECT_KEY",
+    "WebpageUrl": "https://www.reinvent-trivia.com",
+    "ApiEndpoint": "https://api.reinvent-trivia.com/"
+  }
+}

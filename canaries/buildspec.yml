@@ -1,0 +1,32 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: latest
+    commands:
+      - cd canaries
+      - npm install -g npm@latest
+      - npm ci
+      - export CANARY_CODE_FILENAME=trivia-game-canary-code-`echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}'`.zip
+  build:
+    commands:
+      - mkdir -p nodejs/
+      - cp -a node_modules/ nodejs/
+      - cp canary.js nodejs/node_modules/
+      - zip -r $CANARY_CODE_FILENAME nodejs/
+      - aws s3 cp $CANARY_CODE_FILENAME s3://$ARTIFACTS_BUCKET/
+
+      - cp template.yaml TriviaGameCanariesTest.template.yaml
+      - cp template.yaml TriviaGameCanariesProd.template.yaml
+
+      - sed -i "s/SOURCE_BUCKET/$ARTIFACTS_BUCKET/g" StackConfigTest.json StackConfigProd.json
+      - sed -i "s/SOURCE_OBJECT_KEY/$CANARY_CODE_FILENAME/g" StackConfigTest.json StackConfigProd.json
+
+artifacts:
+  files:
+    - canaries/TriviaGameCanariesTest.template.yaml
+    - canaries/TriviaGameCanariesProd.template.yaml
+    - canaries/StackConfigTest.json
+    - canaries/StackConfigProd.json
+  discard-paths: yes

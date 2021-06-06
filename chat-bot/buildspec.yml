@@ -13,10 +13,13 @@ phases:
     commands:
       - aws cloudformation package --template-file template.yaml --s3-bucket $ARTIFACTS_BUCKET --output-template-file TriviaGameChatBotProd.template.yaml
       - sed 's/api.reinvent-trivia.com/api-test.reinvent-trivia.com/g' TriviaGameChatBotProd.template.yaml > TriviaGameChatBotTest.template.yaml
+      - cp StackConfig.json StackConfigTest.json
+      - cp StackConfig.json StackConfigProd.json
 
 artifacts:
   files:
     - chat-bot/TriviaGameChatBotTest.template.yaml
     - chat-bot/TriviaGameChatBotProd.template.yaml
-    - chat-bot/StackConfig.json
+    - chat-bot/StackConfigTest.json
+    - chat-bot/StackConfigProd.json
   discard-paths: yes
