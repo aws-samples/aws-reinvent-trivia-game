@@ -16,8 +16,8 @@ phases:
 
 artifacts:
   files:
-    - trivia-backend/infra/codedeploy-lifecycle-event-hooks/TriviaGameCanariesTest.template.yaml
-    - trivia-backend/infra/codedeploy-lifecycle-event-hooks/TriviaGameCanariesProd.template.yaml
+    - trivia-backend/infra/codedeploy-lifecycle-event-hooks/TriviaGameHooksTest.template.yaml
+    - trivia-backend/infra/codedeploy-lifecycle-event-hooks/TriviaGameHooksProd.template.yaml
     - trivia-backend/infra/codedeploy-lifecycle-event-hooks/StackConfigTest.json
     - trivia-backend/infra/codedeploy-lifecycle-event-hooks/StackConfigProd.json
   discard-paths: yes
