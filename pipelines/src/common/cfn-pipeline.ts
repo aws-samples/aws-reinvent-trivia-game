@@ -6,6 +6,7 @@ import actions = require('@aws-cdk/aws-codepipeline-actions');
 import cdk = require('@aws-cdk/core');
 
 export interface TriviaGameCfnPipelineProps {
+    stackNamePrefix?: string;
     stackName: string;
     templateName: string;
     pipelineName: string;
@@ -90,7 +91,8 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
 
         // Test
         const templatePrefix =  'TriviaGame' + props.templateName;
-        const testStackName = 'TriviaGame' + props.stackName + 'Test';
+        const stackPrefix = props.stackNamePrefix ? props.stackNamePrefix : 'TriviaGame';
+        const testStackName = stackPrefix + props.stackName + 'Test';
         const changeSetName = 'StagedChangeSet';
 
         pipeline.addStage({
@@ -115,7 +117,7 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
         });
 
         // Prod
-        const prodStackName = 'TriviaGame' + props.stackName + 'Prod';
+        const prodStackName = stackPrefix + props.stackName + 'Prod';
 
         pipeline.addStage({
             stageName: 'Prod',

@@ -9,6 +9,7 @@ class TriviaGameLifecycleHooksPipelineStack extends cdk.Stack {
         new TriviaGameCfnPipeline(this, 'Pipeline', {
             pipelineName: 'codedeploy-lifecycle-event-hooks',
             stackName: 'Hooks',
+            stackNamePrefix: 'TriviaBackend',
             templateName: 'Hooks',
             directory: 'trivia-backend/infra/codedeploy-lifecycle-event-hooks'
         });
