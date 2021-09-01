@@ -12,16 +12,11 @@ In [src](src/) directory:
 * static-site-pipeline.ts: Provisions infrastructure for the static site, like a CloudFront distribution and an S3 bucket, plus bundles and uploads the static site pages to the site's S3 bucket
 * chat-bot-pipeline.ts: Builds and deploys the chat bot Lambda function and Lex model
 * canaries-pipeline.ts: Builds and deploys the monitoring canaries
+* pipelines-bootstrap.ts: Creates resources used by all the pipelines, like a CodeStar Connections connection.
 
 ## Prep
 
-Create a GitHub [personal access token](https://github.com/settings/tokens) with access to your fork of the repo, including "admin:repo_hook" and "repo" permissions.  Then store the token in Secrets Manager:
-
-```
-aws secretsmanager create-secret --region us-east-1 --name TriviaGitHubToken --tags Key=project,Value=reinvent-trivia --secret-string <my-github-personal-access-token>
-```
-
-Create an SNS topic for notifications about pipeline execution failures.  An email address or to a [chat bot](https://docs.aws.amazon.com/chatbot/latest/adminguide/setting-up.html) can be subscribed to the topic to receive notifications about pipeline failures.
+Create an SNS topic for notifications about pipeline execution failures.  An email address or a [chat bot](https://docs.aws.amazon.com/chatbot/latest/adminguide/setting-up.html) can be subscribed to the topic to receive notifications about pipeline failures.
 ```
 aws sns create-topic --name reinvent-trivia-notifications --tags Key=project,Value=reinvent-trivia --region us-east-1
 ```
@@ -38,7 +33,15 @@ Install the AWS CDK CLI: `npm i -g aws-cdk`
 
 Install and build everything: `npm install && npm run build`
 
-Then deploy the stacks:
+Deploy common resources used by all the pipelines:
+
+```
+cdk deploy --app 'node src/pipelines-bootstrap.js'
+```
+
+Activate the CodeStar Connections connection created by the previous step.  Go to the [CodeStar Connections console](https://console.aws.amazon.com/codesuite/settings/connections?region=us-east-1), select the `reinvent-trivia-repo` connection, and click "Update pending connection".  Then follow the prompts to connect your GitHub account and repos to AWS.  When finished, the `reinvent-trivia-repo` connection should have the "Available" status.
+
+Then, deploy the individual pipeline stacks:
 
 ```
 cdk deploy --app 'node src/static-site-pipeline.js'

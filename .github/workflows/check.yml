@@ -26,6 +26,7 @@ jobs:
         npm run synth-chat-bot-pipeline
         npm run synth-canaries-pipeline
         npm run synth-lifecycle-hooks-pipeline
+        npm run synth-pipelines-bootstrap
 
   static-site:
     name: Static Site

@@ -19,7 +19,9 @@
     "synth-canaries-pipeline": "cdk synth -o build --app 'node src/canaries-pipeline.js'",
     "deploy-canaries-pipeline": "cdk deploy --app 'node src/canaries-pipeline.js'",
     "synth-lifecycle-hooks-pipeline": "cdk synth -o build --app 'node src/api-service-codedeploy-lifecycle-event-hooks-pipeline.js'",
-    "deploy-lifecycle-hooks-pipeline": "cdk deploy --app 'node src/api-service-codedeploy-lifecycle-event-hooks-pipeline.js'"
+    "deploy-lifecycle-hooks-pipeline": "cdk deploy --app 'node src/api-service-codedeploy-lifecycle-event-hooks-pipeline.js'",
+    "synth-pipelines-bootstrap": "cdk synth -o build --app 'node src/pipelines-bootstrap.js'",
+    "deploy-pipelines-bootstrap": "cdk deploy --app 'node src/pipelines-bootstrap.js'"
   },
   "devDependencies": {
     "@types/node": "^16.7.10",
@@ -31,6 +33,7 @@
     "@aws-cdk/aws-codecommit": "^1.121.0",
     "@aws-cdk/aws-codepipeline": "^1.121.0",
     "@aws-cdk/aws-codepipeline-actions": "^1.121.0",
+    "@aws-cdk/aws-codestarconnections": "^1.121.0",
     "@aws-cdk/aws-codestarnotifications": "^1.121.0",
     "@aws-cdk/aws-ecr": "^1.121.0",
     "@aws-cdk/aws-iam": "^1.121.0",

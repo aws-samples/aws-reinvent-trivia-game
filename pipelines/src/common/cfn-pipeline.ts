@@ -47,13 +47,13 @@ export class TriviaGameCfnPipeline extends cdk.Construct {
         });
 
         // Source
-        const githubAccessToken = cdk.SecretValue.secretsManager('TriviaGitHubToken');
+        const githubConnection = cdk.Fn.importValue('TriviaGamePipelinesCodeStarConnection');
         const sourceOutput = new codepipeline.Artifact('SourceArtifact');
-        const sourceAction = new actions.GitHubSourceAction({
+        const sourceAction = new actions.CodeStarConnectionsSourceAction({
             actionName: 'GitHubSource',
             owner: 'aws-samples',
             repo: 'aws-reinvent-2019-trivia-game',
-            oauthToken: githubAccessToken,
+            connectionArn: githubConnection,
             output: sourceOutput
         });
         pipeline.addStage({
