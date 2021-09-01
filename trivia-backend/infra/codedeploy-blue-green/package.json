@@ -13,14 +13,14 @@
     "aws-cdk": "^1.121.0"
   },
   "dependencies": {
-    "@aws-cdk/aws-certificatemanager": "^1.107.0",
-    "@aws-cdk/aws-cloudwatch": "^1.107.0",
-    "@aws-cdk/aws-ec2": "^1.107.0",
-    "@aws-cdk/aws-elasticloadbalancingv2": "^1.107.0",
-    "@aws-cdk/aws-iam": "^1.107.0",
-    "@aws-cdk/aws-route53": "^1.107.0",
-    "@aws-cdk/aws-route53-targets": "^1.107.0",
-    "@aws-cdk/core": "^1.107.0",
+    "@aws-cdk/aws-certificatemanager": "^1.121.0",
+    "@aws-cdk/aws-cloudwatch": "^1.121.0",
+    "@aws-cdk/aws-ec2": "^1.121.0",
+    "@aws-cdk/aws-elasticloadbalancingv2": "^1.121.0",
+    "@aws-cdk/aws-iam": "^1.121.0",
+    "@aws-cdk/aws-route53": "^1.121.0",
+    "@aws-cdk/aws-route53-targets": "^1.121.0",
+    "@aws-cdk/core": "^1.121.0",
     "aws-sdk": "^2.981.0",
     "yargs": "^17.1.1"
   }

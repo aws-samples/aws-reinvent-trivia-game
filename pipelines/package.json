@@ -27,13 +27,13 @@
     "aws-cdk": "^1.121.0"
   },
   "dependencies": {
-    "@aws-cdk/aws-codebuild": "^1.107.0",
-    "@aws-cdk/aws-codecommit": "^1.107.0",
-    "@aws-cdk/aws-codepipeline": "^1.107.0",
-    "@aws-cdk/aws-codepipeline-actions": "^1.107.0",
-    "@aws-cdk/aws-codestarnotifications": "^1.107.0",
-    "@aws-cdk/aws-ecr": "^1.107.0",
-    "@aws-cdk/aws-iam": "^1.107.0",
-    "@aws-cdk/core": "^1.107.0"
+    "@aws-cdk/aws-codebuild": "^1.121.0",
+    "@aws-cdk/aws-codecommit": "^1.121.0",
+    "@aws-cdk/aws-codepipeline": "^1.121.0",
+    "@aws-cdk/aws-codepipeline-actions": "^1.121.0",
+    "@aws-cdk/aws-codestarnotifications": "^1.121.0",
+    "@aws-cdk/aws-ecr": "^1.121.0",
+    "@aws-cdk/aws-iam": "^1.121.0",
+    "@aws-cdk/core": "^1.121.0"
   }
 }
