@@ -21,7 +21,7 @@
     "@aws-cdk/aws-route53": "^1.107.0",
     "@aws-cdk/aws-route53-targets": "^1.107.0",
     "@aws-cdk/core": "^1.107.0",
-    "aws-sdk": "^2.958.0",
+    "aws-sdk": "^2.981.0",
     "yargs": "^17.1.1"
   }
 }
