@@ -9,6 +9,6 @@
   "dependencies": {
     "async": "^3.2.1",
     "number-to-words": "^1.2.4",
-    "yargs": "^17.1.1"
+    "yargs": "^17.2.1"
   }
 }
