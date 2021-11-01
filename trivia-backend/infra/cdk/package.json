@@ -11,7 +11,7 @@
         "deploy-service": "cdk deploy --app 'node ecs-service.js'"
     },
     "devDependencies": {
-        "@types/node": "^16.10.2",
+        "@types/node": "^16.11.6",
         "typescript": "^4.4.3",
         "aws-cdk": "^1.125.0"
     },
