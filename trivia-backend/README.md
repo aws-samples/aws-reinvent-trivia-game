@@ -22,7 +22,7 @@ aws ssm put-parameter --region us-east-1 --tags Key=project,Value=reinvent-trivi
 
 ## Customize
 
-Replace all references to 'reinvent-trivia.com' with your own domain name.
+Replace all references to 'reinvent-trivia.com' with your own domain name. This sample assumes that you already registered your domain name and created a [Route53 hosted zone](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/AboutHZWorkingWith.html) for the domain name in your AWS account.
 
 ## Build Docker images
 
