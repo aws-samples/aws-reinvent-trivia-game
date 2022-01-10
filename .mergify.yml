@@ -1,3 +1,8 @@
+queue_rules:
+  - name: default
+    conditions:
+      - status-success=Check
+
 pull_request_rules:
   - name: Automatically merge Dependabot PRs
     conditions:
