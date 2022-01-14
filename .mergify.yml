@@ -1,7 +1,10 @@
 queue_rules:
   - name: default
     conditions:
-      - status-success=Check
+      - status-success=Game App
+      - status-success=Game Infra
+      - status-success=Pipelines
+      - status-success=Static Site
 
 pull_request_rules:
   - name: Automatically merge Dependabot PRs
