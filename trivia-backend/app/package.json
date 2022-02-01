@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "mocha": "^9.2.0",
-    "chai": "^4.3.4",
+    "chai": "^4.3.6",
     "chai-http": "^4.3.0",
     "nyc": "^15.1.0"
   },
