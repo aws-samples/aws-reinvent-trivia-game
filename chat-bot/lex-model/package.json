@@ -7,7 +7,7 @@
     "convert-model": "convert-model.js"
   },
   "dependencies": {
-    "async": "^3.2.2",
+    "async": "^3.2.3",
     "number-to-words": "^1.2.4",
     "yargs": "^17.3.1"
   }
