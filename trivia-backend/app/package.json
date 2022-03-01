@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@godaddy/terminus": "^4.10.2",
-    "body-parser": "^1.19.1",
+    "body-parser": "^1.19.2",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "express": "^4.17.3",
@@ -16,7 +16,7 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "mocha": "^9.2.0",
+    "mocha": "^9.2.1",
     "chai": "^4.3.6",
     "chai-http": "^4.3.0",
     "nyc": "^15.1.0"
