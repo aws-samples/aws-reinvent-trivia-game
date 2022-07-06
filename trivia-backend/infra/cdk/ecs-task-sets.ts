@@ -1,21 +1,24 @@
 #!/usr/bin/env node
-import { Port, SecurityGroup, Vpc } from '@aws-cdk/aws-ec2';
-import { Repository } from '@aws-cdk/aws-ecr';
-import * as ecs from '@aws-cdk/aws-ecs';
-import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup, IApplicationLoadBalancerTarget, LoadBalancerTargetProps, TargetType, Protocol } from '@aws-cdk/aws-elasticloadbalancingv2';
-import cdk = require('@aws-cdk/core');
+import { App, CfnOutput, Duration, Stack, StackProps } from 'aws-cdk-lib';
+import {
+  aws_ec2 as ec2,
+  aws_ecr as ecr,
+  aws_ecs as ecs,
+  aws_elasticloadbalancingv2 as elb,
+} from 'aws-cdk-lib';
 
-class TriviaBackendStack extends cdk.Stack {
-  constructor(parent: cdk.App, name: string, props: cdk.StackProps) {
+
+class TriviaBackendStack extends Stack {
+  constructor(parent: App, name: string, props: StackProps) {
     super(parent, name, props);
 
     // Configuration parameters
-    const imageRepo = Repository.fromRepositoryName(this, 'Repo', 'reinvent-trivia-backend');
+    const imageRepo = ecr.Repository.fromRepositoryName(this, 'Repo', 'reinvent-trivia-backend');
     const tag = (process.env.IMAGE_TAG) ? process.env.IMAGE_TAG : 'latest';
     const image = ecs.ContainerImage.fromEcrRepository(imageRepo, tag)
 
     // Look up existing network infrastructure (default VPC)
-    const vpc = Vpc.fromLookup(this, 'Vpc', {
+    const vpc = ec2.Vpc.fromLookup(this, 'Vpc', {
       isDefault: true,
     });
     const subnets = vpc.publicSubnets;
@@ -26,35 +29,35 @@ class TriviaBackendStack extends cdk.Stack {
     });
 
     // Create load balancer and security group resources
-    const serviceSG = new SecurityGroup(this, 'ServiceSecurityGroup', { vpc });
+    const serviceSG = new ec2.SecurityGroup(this, 'ServiceSecurityGroup', { vpc });
 
-    const loadBalancer = new ApplicationLoadBalancer(this, 'LB', {
+    const loadBalancer = new elb.ApplicationLoadBalancer(this, 'LB', {
       vpc,
       internetFacing: true,
     });
-    serviceSG.connections.allowFrom(loadBalancer, Port.tcp(80));
-    new cdk.CfnOutput(this, 'ServiceURL', { value: 'http://' + loadBalancer.loadBalancerDnsName });
+    serviceSG.connections.allowFrom(loadBalancer, ec2.Port.tcp(80));
+    new CfnOutput(this, 'ServiceURL', { value: 'http://' + loadBalancer.loadBalancerDnsName });
 
     const listener = loadBalancer.addListener('PublicListener', {
-      protocol: ApplicationProtocol.HTTP,
+      protocol: elb.ApplicationProtocol.HTTP,
       port: 80,
       open: true,
     });
     const targetGroup = listener.addTargets('ECS', {
-      protocol: ApplicationProtocol.HTTP,
-      deregistrationDelay: cdk.Duration.seconds(5),
+      protocol: elb.ApplicationProtocol.HTTP,
+      deregistrationDelay: Duration.seconds(5),
       healthCheck: {
-        interval: cdk.Duration.seconds(5),
+        interval: Duration.seconds(5),
         path: '/',
-        protocol: Protocol.HTTP,
+        protocol: elb.Protocol.HTTP,
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 3,
-        timeout: cdk.Duration.seconds(4)
+        timeout: Duration.seconds(4)
       },
       targets: [ // empty to begin with, set the target type to be 'IP'
-        new (class EmptyIpTarget implements IApplicationLoadBalancerTarget {
-          attachToApplicationTargetGroup(_: ApplicationTargetGroup): LoadBalancerTargetProps {
-            return { targetType: TargetType.IP };
+        new (class EmptyIpTarget implements elb.IApplicationLoadBalancerTarget {
+          attachToApplicationTargetGroup(_: elb.ApplicationTargetGroup): elb.LoadBalancerTargetProps {
+            return { targetType: elb.TargetType.IP };
           }
         })()
       ],
@@ -107,7 +110,7 @@ class TriviaBackendStack extends cdk.Stack {
   }
 }
 
-const app = new cdk.App();
+const app = new App();
 new TriviaBackendStack(app, 'TriviaBackendTaskSets', {
   env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' }
 });

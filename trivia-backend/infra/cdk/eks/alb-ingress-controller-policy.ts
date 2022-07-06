@@ -1,24 +1,24 @@
-import {Construct} from '@aws-cdk/core';
-import {Effect, ManagedPolicy, PolicyStatement} from '@aws-cdk/aws-iam';
+import { Construct } from 'constructs';
+import { aws_iam as iam } from 'aws-cdk-lib';
 
 /**
  * From: https://raw.githubusercontent.com/kubernetes-sigs/aws-alb-ingress-controller/v1.1.4/docs/examples/iam-policy.json
  */
-export class AlbIngressControllerPolicy extends ManagedPolicy {
+export class AlbIngressControllerPolicy extends iam.ManagedPolicy {
   constructor(parent: Construct, id: string) {
     super(parent, id, {
       managedPolicyName: 'AlbIngressControllerPolicy',
       description: 'Used by the ALB Ingress Controller pod to make AWS API calls',
       statements: [
-        new PolicyStatement({
-          resources: ['*'], effect: Effect.ALLOW, actions: [
+        new iam.PolicyStatement({
+          resources: ['*'], effect: iam.Effect.ALLOW, actions: [
             "acm:DescribeCertificate",
             "acm:ListCertificates",
             "acm:GetCertificate"
           ]
         }),
-        new PolicyStatement({
-          resources: ['*'], effect: Effect.ALLOW, actions: [
+        new iam.PolicyStatement({
+          resources: ['*'], effect: iam.Effect.ALLOW, actions: [
             "ec2:AuthorizeSecurityGroupIngress",
             "ec2:CreateSecurityGroup",
             "ec2:CreateTags",
@@ -39,8 +39,8 @@ export class AlbIngressControllerPolicy extends ManagedPolicy {
             "ec2:RevokeSecurityGroupIngress"
           ]
         }),
-        new PolicyStatement({
-          resources: ['*'], effect: Effect.ALLOW, actions: [
+        new iam.PolicyStatement({
+          resources: ['*'], effect: iam.Effect.ALLOW, actions: [
             "elasticloadbalancing:AddListenerCertificates",
             "elasticloadbalancing:AddTags",
             "elasticloadbalancing:CreateListener",
@@ -76,34 +76,34 @@ export class AlbIngressControllerPolicy extends ManagedPolicy {
             "elasticloadbalancing:SetWebACL"
           ]
         }),
-        new PolicyStatement({
-          resources: ['*'], effect: Effect.ALLOW, actions: [
+        new iam.PolicyStatement({
+          resources: ['*'], effect: iam.Effect.ALLOW, actions: [
             "iam:CreateServiceLinkedRole",
             "iam:GetServerCertificate",
             "iam:ListServerCertificates"
           ]
         }),
-        new PolicyStatement({
-          resources: ['*'], effect: Effect.ALLOW, actions: [
+        new iam.PolicyStatement({
+          resources: ['*'], effect: iam.Effect.ALLOW, actions: [
             "cognito-idp:DescribeUserPoolClient"
           ]
         }),
-        new PolicyStatement({
-          resources: ['*'], effect: Effect.ALLOW, actions: [
+        new iam.PolicyStatement({
+          resources: ['*'], effect: iam.Effect.ALLOW, actions: [
             "waf-regional:GetWebACLForResource",
             "waf-regional:GetWebACL",
             "waf-regional:AssociateWebACL",
             "waf-regional:DisassociateWebACL"
           ]
         }),
-        new PolicyStatement({
-          resources: ['*'], effect: Effect.ALLOW, actions: [
+        new iam.PolicyStatement({
+          resources: ['*'], effect: iam.Effect.ALLOW, actions: [
             "tag:GetResources",
             "tag:TagResources"
           ]
         }),
-        new PolicyStatement({
-          resources: ['*'], effect: Effect.ALLOW, actions: [
+        new iam.PolicyStatement({
+          resources: ['*'], effect: iam.Effect.ALLOW, actions: [
             "waf:GetWebACL"
           ]
         })

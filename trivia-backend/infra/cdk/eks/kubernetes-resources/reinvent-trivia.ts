@@ -1,7 +1,10 @@
-import {Construct} from '@aws-cdk/core';
-import {Cluster, KubernetesManifest} from '@aws-cdk/aws-eks';
-import {ICertificate} from '@aws-cdk/aws-certificatemanager';
-import {EcrImage} from '@aws-cdk/aws-ecs';
+import { Construct } from 'constructs';
+import {
+  aws_certificatemanager as acm,
+  aws_ecs as ecs,
+  aws_eks as eks,
+} from 'aws-cdk-lib';
+
 /**
  * Properties for ReinventTriviaResources
  */
@@ -9,11 +12,11 @@ export interface ReinventTriviaResourceProps {
   /**
    * Reference to the ACM certificate
    */
-  readonly certificate: ICertificate;
+  readonly certificate: acm.ICertificate;
   /**
    * The EKS cluster to apply this configuration to.
    */
-  readonly cluster: Cluster;
+  readonly cluster: eks.Cluster;
 
   /**
    * The domain name to use for the API.
@@ -23,10 +26,10 @@ export interface ReinventTriviaResourceProps {
   /**
    * Reference to the existing container image from ECR.
    */
-  readonly image: EcrImage;
+  readonly image: ecs.EcrImage;
 }
 
-export class ReinventTriviaResource extends KubernetesManifest {
+export class ReinventTriviaResource extends eks.KubernetesManifest {
   constructor(parent: Construct, id: string, props: ReinventTriviaResourceProps) {
     const manifest = [
       {

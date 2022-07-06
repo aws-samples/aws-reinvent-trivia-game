@@ -1,19 +1,21 @@
 #!/usr/bin/env node
-import codebuild = require('@aws-cdk/aws-codebuild');
-import codedeploy = require('@aws-cdk/aws-codedeploy');
-import codepipeline = require('@aws-cdk/aws-codepipeline');
-import notifications = require('@aws-cdk/aws-codestarnotifications');
-import actions = require('@aws-cdk/aws-codepipeline-actions');
-import ecr = require('@aws-cdk/aws-ecr');
-import iam = require('@aws-cdk/aws-iam');
-import cdk = require('@aws-cdk/core');
+import { App, Fn, Stack, StackProps } from 'aws-cdk-lib';
+import {
+    aws_codebuild as codebuild,
+    aws_codedeploy as codedeploy,
+    aws_codepipeline as codepipeline,
+    aws_codestarnotifications as notifications,
+    aws_codepipeline_actions as actions,
+    aws_ecr as ecr,
+    aws_iam as iam,
+} from 'aws-cdk-lib';
 
 /**
  * Pipeline that builds a container image and deploys it to ECS using CodeDeploy blue-green deployments (no CloudFormation deployments).
  * [Sources: GitHub source, ECR base image] -> [CodeBuild build] -> [ECS (Blue/Green) Deploy Action to 'test' ECS service] -> [ECS (Blue/Green) Deploy Action to 'prod' ECS service]
  */
-class TriviaGameBackendCodeDeployPipelineStack extends cdk.Stack {
-    constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
+class TriviaGameBackendCodeDeployPipelineStack extends Stack {
+    constructor(parent: App, name: string, props?: StackProps) {
         super(parent, name, props);
 
         const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
@@ -28,7 +30,7 @@ class TriviaGameBackendCodeDeployPipelineStack extends cdk.Stack {
             targets: [
                 {
                     targetType: 'SNS',
-                    targetAddress: cdk.Stack.of(this).formatArn({
+                    targetAddress: Stack.of(this).formatArn({
                         service: 'sns',
                         resource: 'reinvent-trivia-notifications'
                     }),
@@ -37,7 +39,7 @@ class TriviaGameBackendCodeDeployPipelineStack extends cdk.Stack {
         });
 
         // Source
-        const githubConnection = cdk.Fn.importValue('TriviaGamePipelinesCodeStarConnection');
+        const githubConnection = Fn.importValue('TriviaGamePipelinesCodeStarConnection');
         const sourceOutput = new codepipeline.Artifact('SourceArtifact');
         const sourceAction = new actions.CodeStarConnectionsSourceAction({
             actionName: 'GitHubSource',
@@ -65,7 +67,7 @@ class TriviaGameBackendCodeDeployPipelineStack extends cdk.Stack {
         const buildProject = new codebuild.PipelineProject(this, 'BuildProject', {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('trivia-backend/infra/codedeploy-blue-green/buildspec.yml'),
             environment: {
-              buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_3,
+              buildImage: codebuild.LinuxBuildImage.fromCodeBuildImageId('aws/codebuild/amazonlinux2-x86_64-standard:4.0'),
               privileged: true
             }
         });
@@ -153,7 +155,7 @@ class TriviaGameBackendCodeDeployPipelineStack extends cdk.Stack {
     }
 }
 
-const app = new cdk.App();
+const app = new App();
 new TriviaGameBackendCodeDeployPipelineStack(app, 'TriviaGameBackendCodeDeployPipeline', {
     env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
     tags: {

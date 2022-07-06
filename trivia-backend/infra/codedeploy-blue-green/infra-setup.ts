@@ -1,77 +1,80 @@
-#!/usr/bin/env node
-import { Alarm, AlarmRule, AlarmState, CompositeAlarm } from '@aws-cdk/aws-cloudwatch';
-import { Port, SecurityGroup, Vpc } from '@aws-cdk/aws-ec2';
-import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup, HttpCodeTarget, IApplicationLoadBalancerTarget, LoadBalancerTargetProps, TargetType } from '@aws-cdk/aws-elasticloadbalancingv2';
-import { RecordTarget, ARecord, HostedZone } from '@aws-cdk/aws-route53';
-import { LoadBalancerTarget } from '@aws-cdk/aws-route53-targets';
-import { StringParameter } from '@aws-cdk/aws-ssm';
-import { ManagedPolicy, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
-import cdk = require('@aws-cdk/core');
+import { App, Duration, Stack, StackProps } from 'aws-cdk-lib';
+import {
+  aws_certificatemanager as acm,
+  aws_cloudwatch as cloudwatch,
+  aws_ec2 as ec2,
+  aws_iam as iam,
+  aws_elasticloadbalancingv2 as elb,
+  aws_route53 as route53,
+  aws_route53_targets as targets,
+  aws_ssm as ssm,
+} from 'aws-cdk-lib';
 
-interface TriviaBackendStackProps extends cdk.StackProps {
+interface TriviaBackendStackProps extends StackProps {
   domainName: string;
   domainZone: string;
 }
 
-class TriviaBackendStack extends cdk.Stack {
-  constructor(parent: cdk.App, name: string, props: TriviaBackendStackProps) {
+class TriviaBackendStack extends Stack {
+  constructor(parent: App, name: string, props: TriviaBackendStackProps) {
     super(parent, name, props);
 
     // Network infrastructure
-    const vpc = new Vpc(this, 'VPC', { maxAzs: 2 });
-    const serviceSG = new SecurityGroup(this, 'ServiceSecurityGroup', { vpc });
+    const vpc = new ec2.Vpc(this, 'VPC', { maxAzs: 2 });
+    const serviceSG = new ec2.SecurityGroup(this, 'ServiceSecurityGroup', { vpc });
 
     // Lookup pre-existing TLS certificate
-    const certificateArn = StringParameter.fromStringParameterAttributes(this, 'CertArnParameter', {
+    const certificateArn = ssm.StringParameter.fromStringParameterAttributes(this, 'CertArnParameter', {
       parameterName: 'CertificateArn-' + props.domainName
     }).stringValue;
+    const certificate = acm.Certificate.fromCertificateArn(this, 'Certificate', certificateArn);
 
     // Load balancer
-    const loadBalancer = new ApplicationLoadBalancer(this, 'ServiceLB', {
+    const loadBalancer = new elb.ApplicationLoadBalancer(this, 'ServiceLB', {
       vpc,
       internetFacing: true
     });
-    serviceSG.connections.allowFrom(loadBalancer, Port.tcp(80));
+    serviceSG.connections.allowFrom(loadBalancer, ec2.Port.tcp(80));
 
-    const domainZone = HostedZone.fromLookup(this, 'Zone', { domainName: props.domainZone });
-    new ARecord(this, "DNS", {
+    const domainZone = route53.HostedZone.fromLookup(this, 'Zone', { domainName: props.domainZone });
+    new route53.ARecord(this, "DNS", {
       zone: domainZone,
       recordName: props.domainName,
-      target: RecordTarget.fromAlias(new LoadBalancerTarget(loadBalancer)),
+      target: route53.RecordTarget.fromAlias(new targets.LoadBalancerTarget(loadBalancer)),
     });
 
     // Primary traffic listener
     const listener = loadBalancer.addListener('PublicListener', {
       port: 443,
       open: true,
-      certificateArns: [certificateArn]
+      certificates: [certificate]
     });
 
     // Second listener for test traffic
     let testListener = loadBalancer.addListener('TestListener', {
       port: 9002, // port for testing
-      protocol: ApplicationProtocol.HTTPS,
+      protocol: elb.ApplicationProtocol.HTTPS,
       open: true,
-      certificateArns: [certificateArn]
+      certificates: [certificate]
     });
 
     // First target group for blue fleet
     const tg1 = listener.addTargets('ECS', {
       port: 80,
       targets: [ // empty to begin with
-        new (class EmptyIpTarget implements IApplicationLoadBalancerTarget {
-          attachToApplicationTargetGroup(_: ApplicationTargetGroup): LoadBalancerTargetProps {
-            return { targetType: TargetType.IP };
+        new (class EmptyIpTarget implements elb.IApplicationLoadBalancerTarget {
+          attachToApplicationTargetGroup(_: elb.ApplicationTargetGroup): elb.LoadBalancerTargetProps {
+            return { targetType: elb.TargetType.IP };
           }
         })()
       ],
-      deregistrationDelay: cdk.Duration.seconds(30),
+      deregistrationDelay: Duration.seconds(30),
       healthCheck: {
-        interval: cdk.Duration.seconds(5),
+        interval: Duration.seconds(5),
         healthyHttpCodes: '200',
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 3,
-        timeout: cdk.Duration.seconds(4)
+        timeout: Duration.seconds(4)
       }
     });
 
@@ -79,85 +82,89 @@ class TriviaBackendStack extends cdk.Stack {
     const tg2 = testListener.addTargets('ECS2', {
       port: 80,
       targets: [ // empty to begin with
-        new (class EmptyIpTarget implements IApplicationLoadBalancerTarget {
-          attachToApplicationTargetGroup(_: ApplicationTargetGroup): LoadBalancerTargetProps {
-            return { targetType: TargetType.IP };
+        new (class EmptyIpTarget implements elb.IApplicationLoadBalancerTarget {
+          attachToApplicationTargetGroup(_: elb.ApplicationTargetGroup): elb.LoadBalancerTargetProps {
+            return { targetType: elb.TargetType.IP };
           }
         })()
       ],
-      deregistrationDelay: cdk.Duration.seconds(30),
+      deregistrationDelay: Duration.seconds(30),
       healthCheck: {
-        interval: cdk.Duration.seconds(5),
+        interval: Duration.seconds(5),
         healthyHttpCodes: '200',
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 3,
-        timeout: cdk.Duration.seconds(4)
+        timeout: Duration.seconds(4)
       }
     });
 
     // Alarms: monitor 500s and unhealthy hosts on target groups
-    const tg1UnhealthyHosts = new Alarm(this, 'TargetGroupUnhealthyHosts', {
+    const tg1UnhealthyHosts = new cloudwatch.Alarm(this, 'TargetGroupUnhealthyHosts', {
       alarmName: this.stackName + '-Unhealthy-Hosts-Blue',
       metric: tg1.metricUnhealthyHostCount(),
       threshold: 1,
       evaluationPeriods: 2,
     });
 
-    const tg1ApiFailure = new Alarm(this, 'TargetGroup5xx', {
+    const tg1ApiFailure = new cloudwatch.Alarm(this, 'TargetGroup5xx', {
       alarmName: this.stackName + '-Http-500-Blue',
-      metric: tg1.metricHttpCodeTarget(HttpCodeTarget.TARGET_5XX_COUNT),
+      metric: tg1.metricHttpCodeTarget(
+        elb.HttpCodeTarget.TARGET_5XX_COUNT,
+        { period: Duration.minutes(1) },
+      ),
       threshold: 1,
       evaluationPeriods: 1,
-      period: cdk.Duration.minutes(1)
     });
 
-    const tg2UnhealthyHosts = new Alarm(this, 'TargetGroup2UnhealthyHosts', {
+    const tg2UnhealthyHosts = new cloudwatch.Alarm(this, 'TargetGroup2UnhealthyHosts', {
       alarmName: this.stackName + '-Unhealthy-Hosts-Green',
       metric: tg2.metricUnhealthyHostCount(),
       threshold: 1,
       evaluationPeriods: 2,
     });
 
-    const tg2ApiFailure = new Alarm(this, 'TargetGroup25xx', {
+    const tg2ApiFailure = new cloudwatch.Alarm(this, 'TargetGroup25xx', {
       alarmName: this.stackName + '-Http-500-Green',
-      metric: tg2.metricHttpCodeTarget(HttpCodeTarget.TARGET_5XX_COUNT),
+      metric: tg1.metricHttpCodeTarget(
+        elb.HttpCodeTarget.TARGET_5XX_COUNT,
+        { period: Duration.minutes(1) },
+      ),
       threshold: 1,
       evaluationPeriods: 1,
-      period: cdk.Duration.minutes(1)
     });
 
-    new CompositeAlarm(this, 'CompositeUnhealthyHosts', {
+    new cloudwatch.CompositeAlarm(this, 'CompositeUnhealthyHosts', {
       compositeAlarmName: this.stackName + '-Unhealthy-Hosts',
-      alarmRule: AlarmRule.anyOf(
-        AlarmRule.fromAlarm(tg1UnhealthyHosts, AlarmState.ALARM),
-        AlarmRule.fromAlarm(tg2UnhealthyHosts, AlarmState.ALARM))
+      alarmRule: cloudwatch.AlarmRule.anyOf(
+        cloudwatch.AlarmRule.fromAlarm(tg1UnhealthyHosts, cloudwatch.AlarmState.ALARM),
+        cloudwatch.AlarmRule.fromAlarm(tg2UnhealthyHosts, cloudwatch.AlarmState.ALARM))
     });
 
-    new CompositeAlarm(this, 'Composite5xx', {
+    new cloudwatch.CompositeAlarm(this, 'Composite5xx', {
       compositeAlarmName: this.stackName + '-Http-500',
-      alarmRule: AlarmRule.anyOf(
-        AlarmRule.fromAlarm(tg1ApiFailure, AlarmState.ALARM),
-        AlarmRule.fromAlarm(tg2ApiFailure, AlarmState.ALARM))
+      alarmRule: cloudwatch.AlarmRule.anyOf(
+        cloudwatch.AlarmRule.fromAlarm(tg1ApiFailure, cloudwatch.AlarmState.ALARM),
+        cloudwatch.AlarmRule.fromAlarm(tg2ApiFailure, cloudwatch.AlarmState.ALARM))
     });
 
     // Roles
-    new Role(this, 'ServiceTaskDefExecutionRole', {
-      assumedBy: new ServicePrincipal('ecs-tasks.amazonaws.com'),
-      managedPolicies: [ ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy') ]
+    new iam.Role(this, 'ServiceTaskDefExecutionRole', {
+      assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+      managedPolicies: [ iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy') ]
     });
 
-    new Role(this, 'ServiceTaskDefTaskRole', {
-      assumedBy: new ServicePrincipal('ecs-tasks.amazonaws.com'),
+    new iam.Role(this, 'ServiceTaskDefTaskRole', {
+      assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
     });
 
-    new Role(this, 'CodeDeployRole', {
-      assumedBy: new ServicePrincipal('codedeploy.amazonaws.com'),
-      managedPolicies: [ ManagedPolicy.fromAwsManagedPolicyName('AWSCodeDeployRoleForECS') ]
+    new iam.Role(this, 'CodeDeployRole', {
+      assumedBy: new iam.ServicePrincipal('codedeploy.amazonaws.com'),
+      managedPolicies: [ iam.ManagedPolicy.fromAwsManagedPolicyName('AWSCodeDeployRoleForECS') ]
     });
   }
 }
 
-const app = new cdk.App();
+const app = new App();
 new TriviaBackendStack(app, 'TriviaBackendTest', {
   domainName: 'api-test.reinvent-trivia.com',
   domainZone: 'reinvent-trivia.com',

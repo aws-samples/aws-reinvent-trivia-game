@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import connections = require('@aws-cdk/aws-codestarconnections');
-import cdk = require('@aws-cdk/core');
+import { App,  CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
+import { aws_codestarconnections as connections } from 'aws-cdk-lib';
 
-class TriviaGamePipelinesBootstrap extends cdk.Stack {
-    constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
+class TriviaGamePipelinesBootstrap extends Stack {
+    constructor(parent: App, name: string, props?: StackProps) {
         super(parent, name, props);
 
         // Create resources used by all the trivia game pipelines
@@ -12,14 +12,14 @@ class TriviaGamePipelinesBootstrap extends cdk.Stack {
             providerType: 'GitHub',
         });
 
-        new cdk.CfnOutput(this, 'CodeStarConnection', {
+        new CfnOutput(this, 'CodeStarConnection', {
             value: codeStarConnection.attrConnectionArn,
             exportName: 'TriviaGamePipelinesCodeStarConnection'
         });
     }
 }
 
-const app = new cdk.App();
+const app = new App();
 new TriviaGamePipelinesBootstrap(app, 'TriviaGamePipelines', {
     env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
     tags: {

@@ -1,13 +1,15 @@
 #!/usr/bin/env node
-import codebuild = require('@aws-cdk/aws-codebuild');
-import codepipeline = require('@aws-cdk/aws-codepipeline');
-import notifications = require('@aws-cdk/aws-codestarnotifications');
-import actions = require('@aws-cdk/aws-codepipeline-actions');
-import iam = require('@aws-cdk/aws-iam');
-import cdk = require('@aws-cdk/core');
+import { App, Fn, Stack, StackProps } from 'aws-cdk-lib';
+import {
+    aws_codebuild as codebuild,
+    aws_codepipeline as codepipeline,
+    aws_codestarnotifications as notifications,
+    aws_codepipeline_actions as actions,
+    aws_iam as iam,
+} from 'aws-cdk-lib';
 
-class TriviaGameStaticSitePipeline extends cdk.Stack {
-    constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
+class TriviaGameStaticSitePipeline extends Stack {
+    constructor(parent: App, name: string, props?: StackProps) {
         super(parent, name, props);
 
         const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
@@ -22,7 +24,7 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
             targets: [
                 {
                     targetType: 'SNS',
-                    targetAddress: cdk.Stack.of(this).formatArn({
+                    targetAddress: Stack.of(this).formatArn({
                         service: 'sns',
                         resource: 'reinvent-trivia-notifications'
                     }),
@@ -31,7 +33,7 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
         });
 
         // Source
-        const githubConnection = cdk.Fn.importValue('TriviaGamePipelinesCodeStarConnection');
+        const githubConnection = Fn.importValue('TriviaGamePipelinesCodeStarConnection');
         const sourceOutput = new codepipeline.Artifact('SourceArtifact');
         const sourceAction = new actions.CodeStarConnectionsSourceAction({
             actionName: 'GitHubSource',
@@ -62,7 +64,7 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
         const project = new codebuild.PipelineProject(this, stageName + 'Project', {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('static-site/buildspec.yml'),
             environment: {
-                buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_3,
+                buildImage: codebuild.LinuxBuildImage.fromCodeBuildImageId('aws/codebuild/amazonlinux2-x86_64-standard:4.0'),
                 environmentVariables: {
                     'STAGE': {
                         value: stageName.toLowerCase()
@@ -85,7 +87,7 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
     }
 }
 
-const app = new cdk.App();
+const app = new App();
 new TriviaGameStaticSitePipeline(app, 'TriviaGameStaticSitePipeline', {
     env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
     tags: {

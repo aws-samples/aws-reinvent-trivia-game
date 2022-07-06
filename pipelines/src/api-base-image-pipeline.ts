@@ -1,17 +1,19 @@
 #!/usr/bin/env node
-import codebuild = require('@aws-cdk/aws-codebuild');
-import codepipeline = require('@aws-cdk/aws-codepipeline');
-import notifications = require('@aws-cdk/aws-codestarnotifications');
-import actions = require('@aws-cdk/aws-codepipeline-actions');
-import iam = require('@aws-cdk/aws-iam');
-import cdk = require('@aws-cdk/core');
+import { App, Fn, Stack, StackProps } from 'aws-cdk-lib';
+import {
+    aws_codebuild as codebuild,
+    aws_codepipeline as codepipeline,
+    aws_codestarnotifications as notifications,
+    aws_codepipeline_actions as actions,
+    aws_iam as iam,
+} from 'aws-cdk-lib';
 
 /**
  * Simple two-stage pipeline to build the base image for the trivia game backend service.
  * [GitHub source] -> [CodeBuild build, pushes image to ECR]
  */
-class TriviaGameBackendBaseImagePipeline extends cdk.Stack {
-    constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
+class TriviaGameBackendBaseImagePipeline extends Stack {
+    constructor(parent: App, name: string, props?: StackProps) {
         super(parent, name, props);
 
         const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
@@ -26,7 +28,7 @@ class TriviaGameBackendBaseImagePipeline extends cdk.Stack {
             targets: [
                 {
                     targetType: 'SNS',
-                    targetAddress: cdk.Stack.of(this).formatArn({
+                    targetAddress: Stack.of(this).formatArn({
                         service: 'sns',
                         resource: 'reinvent-trivia-notifications'
                     }),
@@ -35,7 +37,7 @@ class TriviaGameBackendBaseImagePipeline extends cdk.Stack {
         });
 
         // Source
-        const githubConnection = cdk.Fn.importValue('TriviaGamePipelinesCodeStarConnection');
+        const githubConnection = Fn.importValue('TriviaGamePipelinesCodeStarConnection');
         const sourceOutput = new codepipeline.Artifact('SourceArtifact');
         const sourceAction = new actions.CodeStarConnectionsSourceAction({
             actionName: 'GitHubSource',
@@ -53,7 +55,7 @@ class TriviaGameBackendBaseImagePipeline extends cdk.Stack {
         const project = new codebuild.PipelineProject(this, 'BuildBaseImage', {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('trivia-backend/base/buildspec.yml'),
             environment: {
-                buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_3,
+                buildImage: codebuild.LinuxBuildImage.fromCodeBuildImageId('aws/codebuild/amazonlinux2-x86_64-standard:4.0'),
                 privileged: true
             }
         });
@@ -87,7 +89,7 @@ class TriviaGameBackendBaseImagePipeline extends cdk.Stack {
     }
 }
 
-const app = new cdk.App();
+const app = new App();
 new TriviaGameBackendBaseImagePipeline(app, 'TriviaGameBackendBaseImagePipeline', {
     env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
     tags: {

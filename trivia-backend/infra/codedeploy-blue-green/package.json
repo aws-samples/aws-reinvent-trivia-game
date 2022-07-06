@@ -10,18 +10,12 @@
   "devDependencies": {
     "@types/node": "^18.0.3",
     "typescript": "^4.7.4",
-    "aws-cdk": "^2.30.0"
+    "aws-cdk": "^2.31.0"
   },
   "dependencies": {
-    "@aws-cdk/aws-certificatemanager": "^1.121.0",
-    "@aws-cdk/aws-cloudwatch": "^1.121.0",
-    "@aws-cdk/aws-ec2": "^1.121.0",
-    "@aws-cdk/aws-elasticloadbalancingv2": "^1.121.0",
-    "@aws-cdk/aws-iam": "^1.121.0",
-    "@aws-cdk/aws-route53": "^1.121.0",
-    "@aws-cdk/aws-route53-targets": "^1.121.0",
-    "@aws-cdk/core": "^1.121.0",
+    "aws-cdk-lib": "^2.31.0",
     "aws-sdk": "^2.1166.0",
+    "constructs": "^10.0.0",
     "yargs": "^17.5.1"
   }
 }

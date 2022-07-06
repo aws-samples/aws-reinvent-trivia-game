@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import cdk = require('@aws-cdk/core');
+import { App, Stack, StackProps } from 'aws-cdk-lib';
 import { TriviaGameCfnPipeline } from './common/cfn-pipeline';
 
-class TriviaGameLifecycleHooksPipelineStack extends cdk.Stack {
-    constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
+class TriviaGameLifecycleHooksPipelineStack extends Stack {
+    constructor(parent: App, name: string, props?: StackProps) {
         super(parent, name, props);
 
         new TriviaGameCfnPipeline(this, 'Pipeline', {
@@ -16,7 +16,7 @@ class TriviaGameLifecycleHooksPipelineStack extends cdk.Stack {
     }
 }
 
-const app = new cdk.App();
+const app = new App();
 new TriviaGameLifecycleHooksPipelineStack(app, 'TriviaGameLifecycleHooksPipeline', {
     env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
     tags: {

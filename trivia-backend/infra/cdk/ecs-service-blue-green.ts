@@ -1,15 +1,18 @@
 #!/usr/bin/env node
-import { Alarm, AlarmRule, AlarmState, CompositeAlarm, Metric } from '@aws-cdk/aws-cloudwatch';
-import { Port, SecurityGroup, SubnetType, Vpc } from '@aws-cdk/aws-ec2';
-import { Repository } from '@aws-cdk/aws-ecr';
-import { AwsLogDriver, CfnPrimaryTaskSet, CfnService, CfnTaskDefinition, CfnTaskSet, Cluster, ContainerImage, DeploymentControllerType, FargateTaskDefinition, LaunchType, PropagatedTagSource } from '@aws-cdk/aws-ecs';
-import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup, CfnListener, CfnTargetGroup, HttpCodeTarget, ListenerAction, Protocol, TargetType } from '@aws-cdk/aws-elasticloadbalancingv2';
-import { RecordTarget, ARecord, HostedZone } from '@aws-cdk/aws-route53';
-import { LoadBalancerTarget } from '@aws-cdk/aws-route53-targets';
-import { StringParameter } from '@aws-cdk/aws-ssm';
-import cdk = require('@aws-cdk/core');
+import { App, CfnCodeDeployBlueGreenHook, CfnOutput, CfnTrafficRoutingType, Duration, Stack, StackProps } from 'aws-cdk-lib';
+import {
+  aws_certificatemanager as acm,
+  aws_cloudwatch as cloudwatch,
+  aws_ec2 as ec2,
+  aws_ecr as ecr,
+  aws_ecs as ecs,
+  aws_elasticloadbalancingv2 as elb,
+  aws_route53 as route53,
+  aws_route53_targets as targets,
+  aws_ssm as ssm,
+} from 'aws-cdk-lib';
 
-interface TriviaBackendStackProps extends cdk.StackProps {
+interface TriviaBackendStackProps extends StackProps {
   domainName: string;
   domainZone: string;
   deploymentHooksStack: string;
@@ -24,17 +27,17 @@ interface TriviaBackendStackProps extends cdk.StackProps {
  * `AWS::CDK::Metadata` resource will change and can result in a validation error from the CodeDeploy hook
  * about non-ECS resource changes.
  */
-class TriviaBackendStack extends cdk.Stack {
-  constructor(parent: cdk.App, name: string, props: TriviaBackendStackProps) {
+class TriviaBackendStack extends Stack {
+  constructor(parent: App, name: string, props: TriviaBackendStackProps) {
     super(parent, name, props);
 
     // Look up container image to deploy.
     // Note that the image tag MUST be static in the generated CloudFormation template
     // (for example, the tag value cannot come from a CFN stack parameter), or else CodeDeploy
     // will not recognize when the tag changes and will not orchestrate any blue-green deployments.
-    const imageRepo = Repository.fromRepositoryName(this, 'Repo', 'reinvent-trivia-backend');
+    const imageRepo = ecr.Repository.fromRepositoryName(this, 'Repo', 'reinvent-trivia-backend');
     const tag = (process.env.IMAGE_TAG) ? process.env.IMAGE_TAG : 'latest';
-    const image = ContainerImage.fromEcrRepository(imageRepo, tag)
+    const image = ecs.ContainerImage.fromEcrRepository(imageRepo, tag)
 
     // Network infrastructure
     //
@@ -45,69 +48,70 @@ class TriviaBackendStack extends cdk.Stack {
     // infrastructure resources like VPC, security groups, clusters, etc into a different stack and
     // then referencing them in this stack would minimize the likelihood of that happening. But, for
     // the simplicity of this example, these resources are all created in the same stack.
-    const vpc = new Vpc(this, 'VPC', { maxAzs: 2 });
-    const cluster = new Cluster(this, 'Cluster', {
+    const vpc = new ec2.Vpc(this, 'VPC', { maxAzs: 2 });
+    const cluster = new ecs.Cluster(this, 'Cluster', {
       clusterName: props.domainName.replace(/\./g, '-'),
       vpc,
       containerInsights: true
     });
-    const serviceSG = new SecurityGroup(this, 'ServiceSecurityGroup', { vpc });
+    const serviceSG = new ec2.SecurityGroup(this, 'ServiceSecurityGroup', { vpc });
 
     // Lookup pre-existing TLS certificate
-    const certificateArn = StringParameter.fromStringParameterAttributes(this, 'CertArnParameter', {
+    const certificateArn = ssm.StringParameter.fromStringParameterAttributes(this, 'CertArnParameter', {
       parameterName: 'CertificateArn-' + props.domainName
     }).stringValue;
+    const certificate = acm.Certificate.fromCertificateArn(this, 'Certificate', certificateArn);
 
     // Public load balancer
-    const loadBalancer = new ApplicationLoadBalancer(this, 'LoadBalancer', {
+    const loadBalancer = new elb.ApplicationLoadBalancer(this, 'LoadBalancer', {
       vpc,
       internetFacing: true
     });
-    serviceSG.connections.allowFrom(loadBalancer, Port.tcp(80));
-    new cdk.CfnOutput(this, 'ServiceURL', { value: 'https://' + props.domainName + '/api/docs/'});
-    new cdk.CfnOutput(this, 'LoadBalancerDnsName', { value: loadBalancer.loadBalancerDnsName });
+    serviceSG.connections.allowFrom(loadBalancer, ec2.Port.tcp(80));
+    new CfnOutput(this, 'ServiceURL', { value: 'https://' + props.domainName + '/api/docs/'});
+    new CfnOutput(this, 'LoadBalancerDnsName', { value: loadBalancer.loadBalancerDnsName });
 
-    const domainZone = HostedZone.fromLookup(this, 'Zone', { domainName: props.domainZone });
-    new ARecord(this, 'DNS', {
+    const domainZone = route53.HostedZone.fromLookup(this, 'Zone', { domainName: props.domainZone });
+    new route53.ARecord(this, 'DNS', {
       zone: domainZone,
       recordName: props.domainName,
-      target: RecordTarget.fromAlias(new LoadBalancerTarget(loadBalancer)),
+      target: route53.RecordTarget.fromAlias(new targets.LoadBalancerTarget(loadBalancer)),
     });
 
     // Target groups:
     // We need two target groups that the ECS containers can be registered to.
     // CodeDeploy will shift traffic between these two target groups.
-    const tg1 = new ApplicationTargetGroup(this, 'ServiceTargetGroupBlue', {
+    const tg1 = new elb.ApplicationTargetGroup(this, 'ServiceTargetGroupBlue', {
       port: 80,
-      protocol: ApplicationProtocol.HTTP,
-      targetType: TargetType.IP,
+      protocol: elb.ApplicationProtocol.HTTP,
+      targetType: elb.TargetType.IP,
       vpc,
-      deregistrationDelay: cdk.Duration.seconds(5),
+      deregistrationDelay: Duration.seconds(5),
       healthCheck: {
-        interval: cdk.Duration.seconds(5),
+        interval: Duration.seconds(5),
         path: '/',
-        protocol: Protocol.HTTP,
+        protocol: elb.Protocol.HTTP,
         healthyHttpCodes: '200',
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 3,
-        timeout: cdk.Duration.seconds(4)
+        timeout: Duration.seconds(4)
       }
     });
 
-    const tg2 = new ApplicationTargetGroup(this, 'ServiceTargetGroupGreen', {
+    const tg2 = new elb.ApplicationTargetGroup(this, 'ServiceTargetGroupGreen', {
       port: 80,
-      protocol: ApplicationProtocol.HTTP,
-      targetType: TargetType.IP,
+      protocol: elb.ApplicationProtocol.HTTP,
+      targetType: elb.TargetType.IP,
       vpc,
-      deregistrationDelay: cdk.Duration.seconds(5),
+      deregistrationDelay: Duration.seconds(5),
       healthCheck: {
-        interval: cdk.Duration.seconds(5),
+        interval: Duration.seconds(5),
         path: '/',
-        protocol: Protocol.HTTP,
+        protocol: elb.Protocol.HTTP,
         healthyHttpCodes: '200',
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 3,
-        timeout: cdk.Duration.seconds(4)
+        timeout: Duration.seconds(4)
       }
     });
 
@@ -121,10 +125,10 @@ class TriviaBackendStack extends cdk.Stack {
     // Both listeners initially point towards the blue target group.
     const listener = loadBalancer.addListener('ProductionListener', {
       port: 443,
-      protocol: ApplicationProtocol.HTTPS,
+      protocol: elb.ApplicationProtocol.HTTPS,
       open: true,
-      certificateArns: [certificateArn],
-      defaultAction: ListenerAction.weightedForward([{
+      certificates: [certificate],
+      defaultAction: elb.ListenerAction.weightedForward([{
         targetGroup: tg1,
         weight: 100
       }])
@@ -132,10 +136,10 @@ class TriviaBackendStack extends cdk.Stack {
 
     let testListener = loadBalancer.addListener('TestListener', {
       port: 9002, // test traffic port
-      protocol: ApplicationProtocol.HTTPS,
+      protocol: elb.ApplicationProtocol.HTTPS,
       open: true,
-      certificateArns: [certificateArn],
-      defaultAction: ListenerAction.weightedForward([{
+      certificates: [certificate],
+      defaultAction: elb.ListenerAction.weightedForward([{
         targetGroup: tg1,
         weight: 100
       }])
@@ -146,30 +150,30 @@ class TriviaBackendStack extends cdk.Stack {
     // that CloudFormation takes during the deployment: the creation of the 'green' task set,
     // shifting traffic to the new task set, and draining/deleting the 'blue' task set.
     // The 'blue' task set is initially provisioned, pointing to the 'blue' target group.
-    const taskDefinition = new FargateTaskDefinition(this, 'TaskDefinition', {});
+    const taskDefinition = new ecs.FargateTaskDefinition(this, 'TaskDefinition', {});
     const container = taskDefinition.addContainer('web', {
       image,
-      logging: new AwsLogDriver({ streamPrefix: 'Service' }),
+      logging: new ecs.AwsLogDriver({ streamPrefix: 'Service' }),
     });
     container.addPortMappings({ containerPort: 80 });
 
-    const service = new CfnService(this, 'Service', {
+    const service = new ecs.CfnService(this, 'Service', {
       cluster: cluster.clusterName,
       desiredCount: 3,
-      deploymentController: { type: DeploymentControllerType.EXTERNAL },
-      propagateTags: PropagatedTagSource.SERVICE,
+      deploymentController: { type: ecs.DeploymentControllerType.EXTERNAL },
+      propagateTags: ecs.PropagatedTagSource.SERVICE,
     });
     service.node.addDependency(tg1);
     service.node.addDependency(tg2);
     service.node.addDependency(listener);
     service.node.addDependency(testListener);
 
-    const taskSet = new CfnTaskSet(this, 'TaskSet', {
+    const taskSet = new ecs.CfnTaskSet(this, 'TaskSet', {
       cluster: cluster.clusterName,
       service: service.attrName,
       scale: { unit: 'PERCENT', value: 100 },
       taskDefinition: taskDefinition.taskDefinitionArn,
-      launchType: LaunchType.FARGATE,
+      launchType: ecs.LaunchType.FARGATE,
       loadBalancers: [
         {
           containerName: 'web',
@@ -181,12 +185,12 @@ class TriviaBackendStack extends cdk.Stack {
         awsVpcConfiguration: {
           assignPublicIp: 'DISABLED',
           securityGroups: [ serviceSG.securityGroupId ],
-          subnets: vpc.selectSubnets({ subnetType: SubnetType.PRIVATE }).subnetIds,
+          subnets: vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_WITH_NAT }).subnetIds,
         }
       },
     });
 
-    new CfnPrimaryTaskSet(this, 'PrimaryTaskSet', {
+    new ecs.CfnPrimaryTaskSet(this, 'PrimaryTaskSet', {
       cluster: cluster.clusterName,
       service: service.attrName,
       taskSetId: taskSet.attrId,
@@ -208,11 +212,11 @@ class TriviaBackendStack extends cdk.Stack {
     //    Once the stack update is completed, uncomment the CodeDeploy transform and hook code to re-enable
     //    blue-green deployments.
     this.addTransform('AWS::CodeDeployBlueGreen');
-    const taskDefLogicalId = this.getLogicalId(taskDefinition.node.defaultChild as CfnTaskDefinition)
+    const taskDefLogicalId = this.getLogicalId(taskDefinition.node.defaultChild as ecs.CfnTaskDefinition)
     const taskSetLogicalId = this.getLogicalId(taskSet)
-    new cdk.CfnCodeDeployBlueGreenHook(this, 'CodeDeployBlueGreenHook', {
+    new CfnCodeDeployBlueGreenHook(this, 'CodeDeployBlueGreenHook', {
       trafficRoutingConfig: {
-        type: cdk.CfnTrafficRoutingType.TIME_BASED_CANARY,
+        type: CfnTrafficRoutingType.TIME_BASED_CANARY,
         timeBasedCanary: {
           // Shift 20% of prod traffic, then wait 15 minutes
           stepPercentage: 20,
@@ -238,16 +242,16 @@ class TriviaBackendStack extends cdk.Stack {
           taskSets: [ taskSetLogicalId, taskSetLogicalId + 'Green' ],
           trafficRouting: {
             prodTrafficRoute: {
-              type: CfnListener.CFN_RESOURCE_TYPE_NAME,
-              logicalId: this.getLogicalId(listener.node.defaultChild as CfnListener)
+              type: elb.CfnListener.CFN_RESOURCE_TYPE_NAME,
+              logicalId: this.getLogicalId(listener.node.defaultChild as elb.CfnListener)
             },
             testTrafficRoute: {
-              type: CfnListener.CFN_RESOURCE_TYPE_NAME,
-              logicalId: this.getLogicalId(testListener.node.defaultChild as CfnListener)
+              type: elb.CfnListener.CFN_RESOURCE_TYPE_NAME,
+              logicalId: this.getLogicalId(testListener.node.defaultChild as elb.CfnListener)
             },
             targetGroups: [
-              this.getLogicalId(tg1.node.defaultChild as CfnTargetGroup),
-              this.getLogicalId(tg2.node.defaultChild as CfnTargetGroup)
+              this.getLogicalId(tg1.node.defaultChild as elb.CfnTargetGroup),
+              this.getLogicalId(tg2.node.defaultChild as elb.CfnTargetGroup)
             ]
           }
         }
@@ -259,13 +263,13 @@ class TriviaBackendStack extends cdk.Stack {
     // In order to have stack updates automatically rollback based on these alarms,
     // the alarms need to manually be configured as rollback triggers on the stack
     // after the stack is created.
-    const tg1UnhealthyHosts = new Alarm(this, 'TargetGroupBlueUnhealthyHosts', {
+    const tg1UnhealthyHosts = new cloudwatch.Alarm(this, 'TargetGroupBlueUnhealthyHosts', {
       alarmName: this.stackName + '-Unhealthy-Hosts-Blue',
-      metric: new Metric({
+      metric: new cloudwatch.Metric({
         namespace: 'AWS/ApplicationELB',
         metricName: 'UnHealthyHostCount',
         statistic: 'Average',
-        dimensions: {
+        dimensionsMap: {
           TargetGroup: tg1.targetGroupFullName,
           LoadBalancer: loadBalancer.loadBalancerFullName,
         },
@@ -274,29 +278,29 @@ class TriviaBackendStack extends cdk.Stack {
       evaluationPeriods: 2,
     });
 
-    const tg1ApiFailure = new Alarm(this, 'TargetGroupBlue5xx', {
+    const tg1ApiFailure = new cloudwatch.Alarm(this, 'TargetGroupBlue5xx', {
       alarmName: this.stackName + '-Http-500-Blue',
-      metric: new Metric({
+      metric: new cloudwatch.Metric({
         namespace: 'AWS/ApplicationELB',
-        metricName: HttpCodeTarget.TARGET_5XX_COUNT,
+        metricName: elb.HttpCodeTarget.TARGET_5XX_COUNT,
         statistic: 'Sum',
-        dimensions: {
+        dimensionsMap: {
           TargetGroup: tg1.targetGroupFullName,
           LoadBalancer: loadBalancer.loadBalancerFullName,
         },
+        period: Duration.minutes(1),
       }),
       threshold: 1,
       evaluationPeriods: 1,
-      period: cdk.Duration.minutes(1)
     });
 
-    const tg2UnhealthyHosts = new Alarm(this, 'TargetGroupGreenUnhealthyHosts', {
+    const tg2UnhealthyHosts = new cloudwatch.Alarm(this, 'TargetGroupGreenUnhealthyHosts', {
       alarmName: this.stackName + '-Unhealthy-Hosts-Green',
-      metric: new Metric({
+      metric: new cloudwatch.Metric({
         namespace: 'AWS/ApplicationELB',
         metricName: 'UnHealthyHostCount',
         statistic: 'Average',
-        dimensions: {
+        dimensionsMap: {
           TargetGroup: tg2.targetGroupFullName,
           LoadBalancer: loadBalancer.loadBalancerFullName,
         },
@@ -305,39 +309,39 @@ class TriviaBackendStack extends cdk.Stack {
       evaluationPeriods: 2,
     });
 
-    const tg2ApiFailure = new Alarm(this, 'TargetGroupGreen5xx', {
+    const tg2ApiFailure = new cloudwatch.Alarm(this, 'TargetGroupGreen5xx', {
       alarmName: this.stackName + '-Http-500-Green',
-      metric: new Metric({
+      metric: new cloudwatch.Metric({
         namespace: 'AWS/ApplicationELB',
-        metricName: HttpCodeTarget.TARGET_5XX_COUNT,
+        metricName: elb.HttpCodeTarget.TARGET_5XX_COUNT,
         statistic: 'Sum',
-        dimensions: {
+        dimensionsMap: {
           TargetGroup: tg2.targetGroupFullName,
           LoadBalancer: loadBalancer.loadBalancerFullName,
         },
+        period: Duration.minutes(1)
       }),
       threshold: 1,
       evaluationPeriods: 1,
-      period: cdk.Duration.minutes(1)
     });
 
-    new CompositeAlarm(this, 'CompositeUnhealthyHosts', {
+    new cloudwatch.CompositeAlarm(this, 'CompositeUnhealthyHosts', {
       compositeAlarmName: this.stackName + '-Unhealthy-Hosts',
-      alarmRule: AlarmRule.anyOf(
-        AlarmRule.fromAlarm(tg1UnhealthyHosts, AlarmState.ALARM),
-        AlarmRule.fromAlarm(tg2UnhealthyHosts, AlarmState.ALARM))
+      alarmRule: cloudwatch.AlarmRule.anyOf(
+        cloudwatch.AlarmRule.fromAlarm(tg1UnhealthyHosts, cloudwatch.AlarmState.ALARM),
+        cloudwatch.AlarmRule.fromAlarm(tg2UnhealthyHosts, cloudwatch.AlarmState.ALARM))
     });
 
-    new CompositeAlarm(this, 'Composite5xx', {
+    new cloudwatch.CompositeAlarm(this, 'Composite5xx', {
       compositeAlarmName: this.stackName + '-Http-500',
-      alarmRule: AlarmRule.anyOf(
-        AlarmRule.fromAlarm(tg1ApiFailure, AlarmState.ALARM),
-        AlarmRule.fromAlarm(tg2ApiFailure, AlarmState.ALARM))
+      alarmRule: cloudwatch.AlarmRule.anyOf(
+        cloudwatch.AlarmRule.fromAlarm(tg1ApiFailure, cloudwatch.AlarmState.ALARM),
+        cloudwatch.AlarmRule.fromAlarm(tg2ApiFailure, cloudwatch.AlarmState.ALARM))
     });
   }
 }
 
-const app = new cdk.App();
+const app = new App();
 new TriviaBackendStack(app, 'TriviaBackendTest', {
   domainName: 'api-test.reinvent-trivia.com',
   domainZone: 'reinvent-trivia.com',

@@ -8,8 +8,10 @@ jobs:
     name: Pipelines
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
     - name: Test
       run: |
         cd pipelines
@@ -32,8 +34,10 @@ jobs:
     name: Static Site
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
     - name: Test
       run: |
         npm install -g aws-cdk
@@ -53,8 +57,10 @@ jobs:
     name: Game Infra
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
     - name: Test
       run: |
         npm install -g aws-cdk
@@ -74,8 +80,10 @@ jobs:
     name: Game App
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
     - name: Test
       run: |
         cd trivia-backend/base

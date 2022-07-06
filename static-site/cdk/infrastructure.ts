@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-import cdk = require('@aws-cdk/core');
+import { App, Stack, StackProps } from 'aws-cdk-lib';
 import { StaticSite } from './static-site';
 import { RootDomainSite } from './root-domain-site';
 
-interface TriviaGameInfrastructureStackProps extends cdk.StackProps {
+interface TriviaGameInfrastructureStackProps extends StackProps {
     domainName: string;
     siteSubDomain: string;
 }
 
-class TriviaGameInfrastructureStack extends cdk.Stack {
-    constructor(parent: cdk.App, name: string, props: TriviaGameInfrastructureStackProps) {
+class TriviaGameInfrastructureStack extends Stack {
+    constructor(parent: App, name: string, props: TriviaGameInfrastructureStackProps) {
         super(parent, name, props);
 
         new StaticSite(this, 'StaticSite', {
@@ -19,12 +19,12 @@ class TriviaGameInfrastructureStack extends cdk.Stack {
    }
 }
 
-interface TriviaGameRootDomainStackProps extends cdk.StackProps {
+interface TriviaGameRootDomainStackProps extends StackProps {
     domainName: string;
 }
 
-class TriviaGameRootDomainStack extends cdk.Stack {
-    constructor(parent: cdk.App, name: string, props: TriviaGameRootDomainStackProps) {
+class TriviaGameRootDomainStack extends Stack {
+    constructor(parent: App, name: string, props: TriviaGameRootDomainStackProps) {
         super(parent, name, props);
 
         new RootDomainSite(this, 'StaticSite', {
@@ -34,7 +34,7 @@ class TriviaGameRootDomainStack extends cdk.Stack {
    }
 }
 
-const app = new cdk.App();
+const app = new App();
 new TriviaGameInfrastructureStack(app, 'TriviaGameStaticSiteInfraTest', {
     domainName: 'reinvent-trivia.com',
     siteSubDomain: 'test',

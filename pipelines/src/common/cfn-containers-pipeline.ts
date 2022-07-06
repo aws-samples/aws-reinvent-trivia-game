@@ -1,11 +1,14 @@
 #!/usr/bin/env node
-import codebuild = require('@aws-cdk/aws-codebuild');
-import codepipeline = require('@aws-cdk/aws-codepipeline');
-import notifications = require('@aws-cdk/aws-codestarnotifications');
-import ecr = require('@aws-cdk/aws-ecr');
-import iam = require('@aws-cdk/aws-iam');
-import actions = require('@aws-cdk/aws-codepipeline-actions');
-import cdk = require('@aws-cdk/core');
+import { Construct } from 'constructs';
+import { Fn, Stack } from 'aws-cdk-lib';
+import {
+    aws_codebuild as codebuild,
+    aws_codepipeline as codepipeline,
+    aws_codestarnotifications as notifications,
+    aws_codepipeline_actions as actions,
+    aws_ecr as ecr,
+    aws_iam as iam,
+} from 'aws-cdk-lib';
 
 export interface TriviaGameCfnPipelineProps {
     stackNamePrefix: string;
@@ -18,8 +21,8 @@ export interface TriviaGameCfnPipelineProps {
  * A common class for a pipeline that builds a container image and deploys it using a CloudFormation template.
  * [Sources: GitHub source, ECR base image] -> [CodeBuild build] -> [CloudFormation Deploy Actions to 'test' stack] -> [CloudFormation Deploy Actions to 'prod' stack]
  */
-export class TriviaGameContainersCfnPipeline extends cdk.Construct {
-    constructor(parent: cdk.Construct, name: string, props: TriviaGameCfnPipelineProps) {
+export class TriviaGameContainersCfnPipeline extends Construct {
+    constructor(parent: Construct, name: string, props: TriviaGameCfnPipelineProps) {
         super(parent, name);
 
         const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
@@ -34,7 +37,7 @@ export class TriviaGameContainersCfnPipeline extends cdk.Construct {
             targets: [
                 {
                     targetType: 'SNS',
-                    targetAddress: cdk.Stack.of(this).formatArn({
+                    targetAddress: Stack.of(this).formatArn({
                         service: 'sns',
                         resource: 'reinvent-trivia-notifications'
                     }),
@@ -47,7 +50,7 @@ export class TriviaGameContainersCfnPipeline extends cdk.Construct {
         const changeSetName = 'StagedChangeSet';
 
         // Source
-        const githubConnection = cdk.Fn.importValue('TriviaGamePipelinesCodeStarConnection');
+        const githubConnection = Fn.importValue('TriviaGamePipelinesCodeStarConnection');
         const sourceOutput = new codepipeline.Artifact('SourceArtifact');
         const sourceAction = new actions.CodeStarConnectionsSourceAction({
             actionName: 'GitHubSource',
@@ -75,7 +78,7 @@ export class TriviaGameContainersCfnPipeline extends cdk.Construct {
         const buildProject = new codebuild.PipelineProject(this, 'BuildProject', {
             buildSpec: codebuild.BuildSpec.fromSourceFilename(props.buildspecLocation),
             environment: {
-              buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_3,
+              buildImage: codebuild.LinuxBuildImage.fromCodeBuildImageId('aws/codebuild/amazonlinux2-x86_64-standard:4.0'),
               environmentVariables: {
                 'ARTIFACTS_BUCKET': {
                     value: pipeline.artifactBucket.bucketName
@@ -95,7 +98,7 @@ export class TriviaGameContainersCfnPipeline extends cdk.Construct {
 
         buildProject.addToRolePolicy(new iam.PolicyStatement({
             actions: ['ssm:GetParameter'],
-            resources: [cdk.Stack.of(this).formatArn({
+            resources: [Stack.of(this).formatArn({
                 service: 'ssm',
                 resource: 'parameter',
                 resourceName: 'CertificateArn-*'

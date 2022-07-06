@@ -1,12 +1,15 @@
 #!/usr/bin/env node
-import cdk = require('@aws-cdk/core');
-import codebuild = require('@aws-cdk/aws-codebuild');
-import actions = require('@aws-cdk/aws-codepipeline-actions');
-import iam = require('@aws-cdk/aws-iam');
+import { App,  Stack, StackProps } from 'aws-cdk-lib';
+import {
+    aws_codebuild as codebuild,
+    aws_codepipeline_actions as actions,
+    aws_iam as iam,
+} from 'aws-cdk-lib';
+
 import { TriviaGameCfnPipeline } from './common/cfn-pipeline';
 
-class TriviaGameChatBotPipelineStack extends cdk.Stack {
-    constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
+class TriviaGameChatBotPipelineStack extends Stack {
+    constructor(parent: App, name: string, props?: StackProps) {
         super(parent, name, props);
 
         const pipelineConstruct = new TriviaGameCfnPipeline(this, 'Pipeline', {
@@ -21,7 +24,7 @@ class TriviaGameChatBotPipelineStack extends cdk.Stack {
         const lexProject = new codebuild.PipelineProject(this, 'LexProject', {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('chat-bot/lex-model/buildspec.yml'),
             environment: {
-                buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_3
+                buildImage: codebuild.LinuxBuildImage.fromCodeBuildImageId('aws/codebuild/amazonlinux2-x86_64-standard:4.0')
             }
         });
 
@@ -36,7 +39,7 @@ class TriviaGameChatBotPipelineStack extends cdk.Stack {
         }));
         lexProject.addToRolePolicy(new iam.PolicyStatement({
             actions: ['cloudformation:DescribeStackResource'],
-            resources: [cdk.Stack.of(this).formatArn({
+            resources: [Stack.of(this).formatArn({
                 service: 'cloudformation',
                 resource: 'stack',
                 resourceName: 'TriviaGameChatBot*'
@@ -56,7 +59,7 @@ class TriviaGameChatBotPipelineStack extends cdk.Stack {
     }
 }
 
-const app = new cdk.App();
+const app = new App();
 new TriviaGameChatBotPipelineStack(app, 'TriviaGameChatBotPipeline', {
     env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
     tags: {

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-import cdk = require('@aws-cdk/core');
+import { App, Stack, StackProps } from 'aws-cdk-lib';
 import { TriviaGameContainersCfnPipeline } from './common/cfn-containers-pipeline';
 
 /**
  * Pipeline that builds a container image and deploys it to ECS using CloudFormation and CodeDeploy blue-green deployments.
  * [Sources: GitHub source, ECR base image] -> [CodeBuild build] -> [CloudFormation Deploy Actions to 'test' stack] -> [CloudFormation Deploy Actions to 'prod' stack]
  */
-class TriviaGameBackendBlueGreenPipelineStack extends cdk.Stack {
-    constructor(parent: cdk.App, name: string, props?: cdk.StackProps) {
+class TriviaGameBackendBlueGreenPipelineStack extends Stack {
+    constructor(parent: App, name: string, props?: StackProps) {
         super(parent, name, props);
 
         new TriviaGameContainersCfnPipeline(this, 'Pipeline', {
@@ -19,7 +19,7 @@ class TriviaGameBackendBlueGreenPipelineStack extends cdk.Stack {
     }
 }
 
-const app = new cdk.App();
+const app = new App();
 new TriviaGameBackendBlueGreenPipelineStack(app, 'TriviaGameBackendBlueGreenPipeline', {
     env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
     tags: {

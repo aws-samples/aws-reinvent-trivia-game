@@ -1,74 +1,78 @@
 #!/usr/bin/env node
-import { Certificate } from '@aws-cdk/aws-certificatemanager';
-import { Alarm } from '@aws-cdk/aws-cloudwatch';
-import { Vpc } from '@aws-cdk/aws-ec2';
-import { Repository } from '@aws-cdk/aws-ecr';
-import { Cluster, ContainerImage, PropagatedTagSource } from '@aws-cdk/aws-ecs';
-import { ApplicationLoadBalancedFargateService } from '@aws-cdk/aws-ecs-patterns';
-import { HttpCodeTarget } from '@aws-cdk/aws-elasticloadbalancingv2';
-import { HostedZone } from '@aws-cdk/aws-route53';
-import { StringParameter } from '@aws-cdk/aws-ssm';
-import cdk = require('@aws-cdk/core');
+import { App, Duration, Stack, StackProps } from 'aws-cdk-lib';
+import {
+  aws_certificatemanager as acm,
+  aws_cloudwatch as cloudwatch,
+  aws_ec2 as ec2,
+  aws_ecr as ecr,
+  aws_ecs as ecs,
+  aws_ecs_patterns as patterns,
+  aws_elasticloadbalancingv2 as elb,
+  aws_route53 as route53,
+  aws_ssm as ssm,
+} from 'aws-cdk-lib';
 
-interface TriviaBackendStackProps extends cdk.StackProps {
+interface TriviaBackendStackProps extends StackProps {
   domainName: string;
   domainZone: string;
 }
 
-class TriviaBackendStack extends cdk.Stack {
-  constructor(parent: cdk.App, name: string, props: TriviaBackendStackProps) {
+class TriviaBackendStack extends Stack {
+  constructor(parent: App, name: string, props: TriviaBackendStackProps) {
     super(parent, name, props);
 
     // Network infrastructure
-    const vpc = new Vpc(this, 'VPC', { maxAzs: 2 });
-    const cluster = new Cluster(this, 'Cluster', {
+    const vpc = new ec2.Vpc(this, 'VPC', { maxAzs: 2 });
+    const cluster = new ecs.Cluster(this, 'Cluster', {
       clusterName: props.domainName.replace(/\./g, '-'),
       vpc,
       containerInsights: true
     });
 
     // Configuration parameters
-    const domainZone = HostedZone.fromLookup(this, 'Zone', { domainName: props.domainZone });
-    const imageRepo = Repository.fromRepositoryName(this, 'Repo', 'reinvent-trivia-backend');
+    const domainZone = route53.HostedZone.fromLookup(this, 'Zone', { domainName: props.domainZone });
+    const imageRepo = ecr.Repository.fromRepositoryName(this, 'Repo', 'reinvent-trivia-backend');
     const tag = (process.env.IMAGE_TAG) ? process.env.IMAGE_TAG : 'latest';
-    const image = ContainerImage.fromEcrRepository(imageRepo, tag)
+    const image = ecs.ContainerImage.fromEcrRepository(imageRepo, tag)
 
     // Lookup pre-existing TLS certificate
-    const certificateArn = StringParameter.fromStringParameterAttributes(this, 'CertArnParameter', {
+    const certificateArn = ssm.StringParameter.fromStringParameterAttributes(this, 'CertArnParameter', {
       parameterName: 'CertificateArn-' + props.domainName
     }).stringValue;
-    const certificate = Certificate.fromCertificateArn(this, 'Cert', certificateArn);
+    const certificate = acm.Certificate.fromCertificateArn(this, 'Cert', certificateArn);
 
     // Fargate service + load balancer
-    const service = new ApplicationLoadBalancedFargateService(this, 'Service', {
+    const service = new patterns.ApplicationLoadBalancedFargateService(this, 'Service', {
       cluster,
       taskImageOptions: { image },
       desiredCount: 3,
       domainName: props.domainName,
       domainZone,
       certificate,
-      propagateTags: PropagatedTagSource.SERVICE,
+      propagateTags: ecs.PropagatedTagSource.SERVICE,
     });
 
     // Alarms: monitor 500s and unhealthy hosts on target groups
-    new Alarm(this, 'TargetGroupUnhealthyHosts', {
+    new cloudwatch.Alarm(this, 'TargetGroupUnhealthyHosts', {
       alarmName: this.stackName + '-Unhealthy-Hosts',
       metric: service.targetGroup.metricUnhealthyHostCount(),
       threshold: 1,
       evaluationPeriods: 2,
     });
 
-    new Alarm(this, 'TargetGroup5xx', {
+    new cloudwatch.Alarm(this, 'TargetGroup5xx', {
       alarmName: this.stackName + '-Http-500',
-      metric: service.targetGroup.metricHttpCodeTarget(HttpCodeTarget.TARGET_5XX_COUNT),
+      metric: service.targetGroup.metricHttpCodeTarget(
+        elb.HttpCodeTarget.TARGET_5XX_COUNT,
+        { period: Duration.minutes(1) }
+      ),
       threshold: 1,
       evaluationPeriods: 1,
-      period: cdk.Duration.minutes(1)
     });
   }
 }
 
-const app = new cdk.App();
+const app = new App();
 new TriviaBackendStack(app, 'TriviaBackendTest', {
   domainName: 'api-test.reinvent-trivia.com',
   domainZone: 'reinvent-trivia.com',

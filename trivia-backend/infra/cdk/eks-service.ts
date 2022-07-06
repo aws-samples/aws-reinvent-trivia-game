@@ -1,31 +1,34 @@
 #!/usr/bin/env node
-import * as cdk from '@aws-cdk/core';
-import {Certificate} from '@aws-cdk/aws-certificatemanager';
-import {Vpc} from '@aws-cdk/aws-ec2';
-import {Repository} from '@aws-cdk/aws-ecr';
-import {FargateCluster, KubernetesManifest, KubernetesVersion} from '@aws-cdk/aws-eks';
-import {ContainerImage} from '@aws-cdk/aws-ecs';
-import {AccountRootPrincipal, Effect, FederatedPrincipal, ManagedPolicy, PolicyStatement, Role} from '@aws-cdk/aws-iam';
-import {StringParameter} from '@aws-cdk/aws-ssm';
+import { Construct } from 'constructs';
+import { App, Stack, StackProps } from 'aws-cdk-lib';
+import {
+  aws_certificatemanager as acm,
+  aws_ec2 as ec2,
+  aws_ecr as ecr,
+  aws_ecs as ecs,
+  aws_eks as eks,
+  aws_iam as iam,
+  aws_route53 as route53,
+  aws_ssm as ssm,
+} from 'aws-cdk-lib';
 import {ReinventTriviaResource} from './eks/kubernetes-resources/reinvent-trivia';
 import {AlbIngressControllerPolicy} from './eks/alb-ingress-controller-policy';
-import {HostedZone} from '@aws-cdk/aws-route53';
 
-interface TriviaBackendStackProps extends cdk.StackProps {
+interface TriviaBackendStackProps extends StackProps {
   domainName: string;
   domainZone: string;
   oidcProvider?: string;
 }
 
-class TriviaBackendStack extends cdk.Stack {
-  constructor(parent: cdk.App, name: string, props: TriviaBackendStackProps) {
+class TriviaBackendStack extends Stack {
+  constructor(parent: App, name: string, props: TriviaBackendStackProps) {
     super(parent, name, props);
 
     // Network infrastructure
-    const vpc = new Vpc(this, 'VPC', {maxAzs: 2});
+    const vpc = new ec2.Vpc(this, 'VPC', {maxAzs: 2});
 
     // Initial creation of the cluster
-    const cluster = new FargateCluster(this, 'FargateCluster', {
+    const cluster = new eks.FargateCluster(this, 'FargateCluster', {
       clusterName: props.domainName.replace(/\./g, '-'),
       defaultProfile: {
         fargateProfileName: 'reinvent-trivia',
@@ -36,27 +39,27 @@ class TriviaBackendStack extends cdk.Stack {
         ],
         subnetSelection: {subnets: vpc.privateSubnets},
       },
-      mastersRole: new Role(this, 'ClusterAdminRole', {
-        assumedBy: new AccountRootPrincipal(),
+      mastersRole: new iam.Role(this, 'ClusterAdminRole', {
+        assumedBy: new iam.AccountRootPrincipal(),
       }),
       outputClusterName: true,
       outputConfigCommand: true,
       outputMastersRoleArn: true,
       vpc,
-      version: KubernetesVersion.V1_17,
+      version: eks.KubernetesVersion.V1_17,
     });
     const fargateProfile = cluster.node.findChild('fargate-profile-reinvent-trivia');
 
     // Configuration parameters
-    const imageRepo = Repository.fromRepositoryName(this, 'Repo', 'reinvent-trivia-backend');
+    const imageRepo = ecr.Repository.fromRepositoryName(this, 'Repo', 'reinvent-trivia-backend');
     const tag = (process.env.IMAGE_TAG) ? process.env.IMAGE_TAG : 'latest';
-    const image = ContainerImage.fromEcrRepository(imageRepo, tag)
+    const image = ecs.ContainerImage.fromEcrRepository(imageRepo, tag)
 
     // Lookup pre-existing TLS certificate
-    const certificateArn = StringParameter.fromStringParameterAttributes(this, 'CertArnParameter', {
+    const certificateArn = ssm.StringParameter.fromStringParameterAttributes(this, 'CertArnParameter', {
       parameterName: 'CertificateArn-' + props.domainName
     }).stringValue;
-    const certificate = Certificate.fromCertificateArn(this, 'Cert', certificateArn);
+    const certificate = acm.Certificate.fromCertificateArn(this, 'Cert', certificateArn);
 
     // Kubernetes resources for the ReinventTrivia namespace, deployment, service, etc.
     const reinventTrivia = new ReinventTriviaResource(this, 'ReinventTrivia', {
@@ -73,12 +76,12 @@ class TriviaBackendStack extends cdk.Stack {
     });
     metricsServerChart.node.addDependency(fargateProfile);
 
-    // This "new class extends cdk.Construct {" convention wraps the resources created within and allows
+    // This "new class extends Construct {" convention wraps the resources created within and allows
     // us make all of them dependent on the EKS Cluster's Fargate Profile resource in one fell swoop. This
     // will prevent pods from being stuck in a "Pending" state forever after initial creation if Kubernetes
     // attempts to schedule them before the Fargate Profile is ready.
-    new class extends cdk.Construct {
-      constructor(parent: cdk.Construct, name: string) {
+    new class extends Construct {
+      constructor(parent: Construct, name: string) {
         super(parent, name)
 
         // This block creates the ALB Ingress Controller resources, but requires an OIDC provider in order
@@ -87,9 +90,9 @@ class TriviaBackendStack extends cdk.Stack {
         // and complete the initial setup.
         if (props.oidcProvider) {
           const OIDC_PROVIDER = props.oidcProvider;
-          const albIngressControllerRole = new Role(this, 'AlbIngressControllerRole', {
-            assumedBy: new FederatedPrincipal(
-              'arn:aws:iam::' + cdk.Stack.of(this).account + ':oidc-provider/' + props.oidcProvider, {
+          const albIngressControllerRole = new iam.Role(this, 'AlbIngressControllerRole', {
+            assumedBy: new iam.FederatedPrincipal(
+              'arn:aws:iam::' + Stack.of(this).account + ':oidc-provider/' + props.oidcProvider, {
               'StringEquals': {
                 [`${OIDC_PROVIDER + ':sub'}`]: 'system:serviceaccount:kube-system:aws-alb-ingress-controller'
               }
@@ -109,7 +112,7 @@ class TriviaBackendStack extends cdk.Stack {
             version: '0.1.13',
             namespace: 'kube-system',
             values: {
-              awsRegion: cdk.Stack.of(cluster).region,
+              awsRegion: Stack.of(cluster).region,
               awsVpcID: cluster.vpc.vpcId,
               clusterName: cluster.clusterName,
               fullnameOverride: 'aws-alb-ingress-controller',
@@ -126,7 +129,7 @@ class TriviaBackendStack extends cdk.Stack {
           });
           albIngressChart.node.addDependency(metricsServerChart);
 
-          new KubernetesManifest(this, 'HorizontalPodAutoscaler', {
+          new eks.KubernetesManifest(this, 'HorizontalPodAutoscaler', {
             cluster,
             manifest: [{
               apiVersion: 'autoscaling/v1',
@@ -149,10 +152,10 @@ class TriviaBackendStack extends cdk.Stack {
           });
 
           if (props.domainZone) {
-            const hostedZoneId = HostedZone.fromLookup(this, 'ApiDomainHostedZone', {domainName: props.domainZone}).hostedZoneId;
-            const externalDnsRole = new Role(this, 'ExternalDnsRole', {
-              assumedBy: new FederatedPrincipal(
-                'arn:aws:iam::' + cdk.Stack.of(this).account + ':oidc-provider/' + props.oidcProvider, {
+            const hostedZoneId = route53.HostedZone.fromLookup(this, 'ApiDomainHostedZone', {domainName: props.domainZone}).hostedZoneId;
+            const externalDnsRole = new iam.Role(this, 'ExternalDnsRole', {
+              assumedBy: new iam.FederatedPrincipal(
+                'arn:aws:iam::' + Stack.of(this).account + ':oidc-provider/' + props.oidcProvider, {
                 'StringEquals': {
                   [`${OIDC_PROVIDER + ':sub'}`]: 'system:serviceaccount:kube-system:external-dns-rt'
                 }
@@ -161,20 +164,20 @@ class TriviaBackendStack extends cdk.Stack {
               ),
               roleName: 'ReinventTriviaExternalDnsRole',
               managedPolicies: [
-                new ManagedPolicy(this, 'ExternalDnsPolicy', {
+                new iam.ManagedPolicy(this, 'ExternalDnsPolicy', {
                   managedPolicyName: 'ExternalDnsPolicy',
                   description: 'Used by the ExternalDNS pod to make AWS API calls for updating DNS',
                   statements: [
-                    new PolicyStatement({
+                    new iam.PolicyStatement({
                       resources: ['arn:aws:route53:::hostedzone/' + hostedZoneId],
-                      effect: Effect.ALLOW,
+                      effect: iam.Effect.ALLOW,
                       actions: [
                         "route53:ChangeResourceRecordSets"
                       ]
                     }),
-                    new PolicyStatement({
+                    new iam.PolicyStatement({
                       resources: ['*'],
-                      effect: Effect.ALLOW,
+                      effect: iam.Effect.ALLOW,
                       actions: [
                         'route53:ListHostedZones',
                         'route53:ListResourceRecordSets',
@@ -210,7 +213,7 @@ class TriviaBackendStack extends cdk.Stack {
   }
 }
 
-const app = new cdk.App();
+const app = new App();
 new TriviaBackendStack(app, 'TriviaBackendProd', {
   domainName: 'api.reinvent-trivia.com',
   // NOTE: `domainZone` must already exist in Route 53.
