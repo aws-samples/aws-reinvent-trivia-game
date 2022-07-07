@@ -36,7 +36,7 @@ class TriviaGameStaticSitePipeline extends cdk.Stack {
         const sourceAction = new actions.CodeStarConnectionsSourceAction({
             actionName: 'GitHubSource',
             owner: 'aws-samples',
-            repo: 'aws-reinvent-2019-trivia-game',
+            repo: 'aws-reinvent-trivia-game',
             connectionArn: githubConnection,
             output: sourceOutput
         });
