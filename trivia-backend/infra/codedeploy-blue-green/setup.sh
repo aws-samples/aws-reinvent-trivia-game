@@ -2,7 +2,7 @@
 
 set -ex
 
-# Provision infrastructure
+# Provision infrastructure stack
 
 npm install
 
@@ -24,48 +24,32 @@ aws cloudformation deploy --region us-east-1 --template-file packaged-template.y
 
 cd ../codedeploy-blue-green
 
-# Generate config files
-
-mkdir -p build
-
-export AWS_REGION=us-east-1
-
-node produce-config.js -g test -s TriviaBackendTest -h TriviaBackendHooksTest
-
-node produce-config.js -g prod -s TriviaBackendProd -h TriviaBackendHooksProd
-
-# Create ECS resources
-
-ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text --region us-east-1`
-
-sed -i "s|<PLACEHOLDER>|$ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/reinvent-trivia-backend:latest|g" build/task-definition-test.json build/task-definition-prod.json
+# Provision ECS and CodeDeploy resources
 
 aws ecs create-cluster --region us-east-1 --cluster-name default --tags key=project,value=reinvent-trivia
 
 aws ecs update-cluster-settings --region us-east-1 --cluster default --settings name=containerInsights,value=enabled
 
-aws ecs register-task-definition --region us-east-1 --cli-input-json file://build/task-definition-test.json
+npm run deploy-test-deployment-resources
 
-aws ecs create-service --region us-east-1 --service-name trivia-backend-test --cli-input-json file://build/service-definition-test.json
+npm run deploy-prod-deployment-resources
 
-aws ecs register-task-definition --region us-east-1 --cli-input-json file://build/task-definition-prod.json
+# Generate task definition and appsec files
 
-aws ecs create-service --region us-east-1 --service-name trivia-backend-prod --cli-input-json file://build/service-definition-prod.json
+mkdir -p build
 
-# Create CodeDeploy resources
+export AWS_REGION=us-east-1
 
-aws deploy create-deployment-config --region us-east-1 --cli-input-json file://deployment-config.json
+node produce-config.js -g test -s TriviaBackendTest -d TriviaDeploymentResourcesTest -h TriviaBackendHooksTest
 
-aws deploy create-application --region us-east-1 --application-name AppECS-default-trivia-backend-test --compute-platform ECS --tags Key=project,Value=reinvent-trivia
+node produce-config.js -g prod -s TriviaBackendProd -d TriviaDeploymentResourcesProd -h TriviaBackendHooksProd
 
-aws deploy create-application --region us-east-1 --application-name AppECS-default-trivia-backend-prod --compute-platform ECS --tags Key=project,Value=reinvent-trivia
+ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text --region us-east-1`
 
-aws deploy create-deployment-group --region us-east-1 --deployment-group-name DgpECS-default-trivia-backend-test --cli-input-json file://build/deployment-group-test.json
-
-aws deploy create-deployment-group --region us-east-1 --deployment-group-name DgpECS-default-trivia-backend-prod --cli-input-json file://build/deployment-group-prod.json
+sed -i "s|<PLACEHOLDER>|$ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/reinvent-trivia-backend:latest|g" build/task-definition-test.json build/task-definition-prod.json
 
 # Start deployment
 
-aws ecs deploy --region us-east-1 --service trivia-backend-test --task-definition build/task-definition-test.json --codedeploy-appspec build/appspec-test.json
+aws ecs deploy --region us-east-1 --service TriviaBackendTest --codedeploy-application AppECS-TriviaBackendTest --codedeploy-deployment-group DgpECS-TriviaBackendTest --task-definition build/task-definition-test.json --codedeploy-appspec build/appspec-test.json
 
-aws ecs deploy --region us-east-1 --service trivia-backend-prod --task-definition build/task-definition-prod.json --codedeploy-appspec build/appspec-prod.json
+aws ecs deploy --region us-east-1 --service TriviaBackendTest --codedeploy-application AppECS-TriviaBackendProd --codedeploy-deployment-group Dgp-TriviaBackendProd --task-definition build/task-definition-prod.json --codedeploy-appspec build/appspec-prod.json

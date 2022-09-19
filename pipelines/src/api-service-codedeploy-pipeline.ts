@@ -125,13 +125,13 @@ class TriviaGameBackendCodeDeployPipelineStack extends Stack {
                 application: codedeploy.EcsApplication.fromEcsApplicationName(
                     pipeline,
                     'CodeDeployApplication' + stageName,
-                    'AppECS-default-trivia-backend-' + stageName.toLowerCase()
+                    'AppECS-TriviaBackend' + stageName
                 ),
-                deploymentGroupName: 'DgpECS-default-trivia-backend-' + stageName.toLowerCase(),
+                deploymentGroupName: 'DgpECS-TriviaBackend' + stageName,
                 deploymentConfig: codedeploy.EcsDeploymentConfig.fromEcsDeploymentConfigName(
                     pipeline,
                     'CodeDeployDeploymentConfig',
-                    'trivia-backend-canary'
+                    'CodeDeployDefault.ECSCanary10Percent15Minutes'
                 )
             });
 

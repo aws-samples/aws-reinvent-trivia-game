@@ -1,9 +1,9 @@
-import { App, Duration, Stack, StackProps } from 'aws-cdk-lib';
+import { App, CfnOutput, Duration, Fn, Stack, StackProps } from 'aws-cdk-lib';
 import {
   aws_certificatemanager as acm,
   aws_cloudwatch as cloudwatch,
+  aws_codedeploy as codedeploy,
   aws_ec2 as ec2,
-  aws_iam as iam,
   aws_elasticloadbalancingv2 as elb,
   aws_route53 as route53,
   aws_route53_targets as targets,
@@ -11,10 +11,13 @@ import {
 } from 'aws-cdk-lib';
 
 interface TriviaBackendStackProps extends StackProps {
-  domainName: string;
-  domainZone: string;
+  domainName?: string;
+  domainZone?: string;
 }
 
+/**
+ * Set up the infrastructure for the trivia backend, including VPC, load balancer, etc.
+ */
 class TriviaBackendStack extends Stack {
   constructor(parent: App, name: string, props: TriviaBackendStackProps) {
     super(parent, name, props);
@@ -23,12 +26,6 @@ class TriviaBackendStack extends Stack {
     const vpc = new ec2.Vpc(this, 'VPC', { maxAzs: 2 });
     const serviceSG = new ec2.SecurityGroup(this, 'ServiceSecurityGroup', { vpc });
 
-    // Lookup pre-existing TLS certificate
-    const certificateArn = ssm.StringParameter.fromStringParameterAttributes(this, 'CertArnParameter', {
-      parameterName: 'CertificateArn-' + props.domainName
-    }).stringValue;
-    const certificate = acm.Certificate.fromCertificateArn(this, 'Certificate', certificateArn);
-
     // Load balancer
     const loadBalancer = new elb.ApplicationLoadBalancer(this, 'ServiceLB', {
       vpc,
@@ -36,67 +33,90 @@ class TriviaBackendStack extends Stack {
     });
     serviceSG.connections.allowFrom(loadBalancer, ec2.Port.tcp(80));
 
-    const domainZone = route53.HostedZone.fromLookup(this, 'Zone', { domainName: props.domainZone });
-    new route53.ARecord(this, "DNS", {
-      zone: domainZone,
-      recordName: props.domainName,
-      target: route53.RecordTarget.fromAlias(new targets.LoadBalancerTarget(loadBalancer)),
-    });
-
-    // Primary traffic listener
-    const listener = loadBalancer.addListener('PublicListener', {
-      port: 443,
-      open: true,
-      certificates: [certificate]
-    });
-
-    // Second listener for test traffic
-    let testListener = loadBalancer.addListener('TestListener', {
-      port: 9002, // port for testing
-      protocol: elb.ApplicationProtocol.HTTPS,
-      open: true,
-      certificates: [certificate]
-    });
-
     // First target group for blue fleet
-    const tg1 = listener.addTargets('ECS', {
+    const tg1 = new elb.ApplicationTargetGroup(this, 'BlueTargetGroup', {
+      vpc,
+      protocol: elb.ApplicationProtocol.HTTP,
+      targetType: elb.TargetType.IP,
       port: 80,
-      targets: [ // empty to begin with
-        new (class EmptyIpTarget implements elb.IApplicationLoadBalancerTarget {
-          attachToApplicationTargetGroup(_: elb.ApplicationTargetGroup): elb.LoadBalancerTargetProps {
-            return { targetType: elb.TargetType.IP };
-          }
-        })()
-      ],
       deregistrationDelay: Duration.seconds(30),
       healthCheck: {
         interval: Duration.seconds(5),
         healthyHttpCodes: '200',
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 3,
-        timeout: Duration.seconds(4)
-      }
+        timeout: Duration.seconds(4),
+      },
     });
 
     // Second target group for green fleet
-    const tg2 = testListener.addTargets('ECS2', {
+    const tg2 = new elb.ApplicationTargetGroup(this, 'GreenTargetGroup', {
+      vpc,
+      protocol: elb.ApplicationProtocol.HTTP,
+      targetType: elb.TargetType.IP,
       port: 80,
-      targets: [ // empty to begin with
-        new (class EmptyIpTarget implements elb.IApplicationLoadBalancerTarget {
-          attachToApplicationTargetGroup(_: elb.ApplicationTargetGroup): elb.LoadBalancerTargetProps {
-            return { targetType: elb.TargetType.IP };
-          }
-        })()
-      ],
       deregistrationDelay: Duration.seconds(30),
       healthCheck: {
         interval: Duration.seconds(5),
         healthyHttpCodes: '200',
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 3,
-        timeout: Duration.seconds(4)
-      }
+        timeout: Duration.seconds(4),
+      },
     });
+
+    let listener, testListener: elb.ApplicationListener;
+    if (props.domainName && props.domainZone) {
+      const domainZone = route53.HostedZone.fromLookup(this, 'Zone', { domainName: props.domainZone });
+      new route53.ARecord(this, "DNS", {
+        zone: domainZone,
+        recordName: props.domainName,
+        target: route53.RecordTarget.fromAlias(new targets.LoadBalancerTarget(loadBalancer)),
+      });
+
+      // Lookup pre-existing TLS certificate
+      const certificateArn = ssm.StringParameter.fromStringParameterAttributes(this, 'CertArnParameter', {
+        parameterName: 'CertificateArn-' + props.domainName
+      }).stringValue;
+      const certificate = acm.Certificate.fromCertificateArn(this, 'Certificate', certificateArn);
+
+      // Primary traffic listener
+      listener = loadBalancer.addListener('PublicListener', {
+        port: 443,
+        protocol: elb.ApplicationProtocol.HTTPS,
+        open: true,
+        certificates: [certificate],
+        defaultTargetGroups: [tg1],
+      });
+
+      // Second listener for test traffic
+      testListener = loadBalancer.addListener('TestListener', {
+        port: 9002, // port for testing
+        protocol: elb.ApplicationProtocol.HTTPS,
+        open: true,
+        certificates: [certificate],
+        defaultTargetGroups: [tg2],
+      });
+    } else {
+      // Primary traffic listener
+      listener = loadBalancer.addListener('PublicListener', {
+        port: 80,
+        protocol: elb.ApplicationProtocol.HTTP,
+        open: true,
+        defaultTargetGroups: [tg1],
+      });
+
+      // Second listener for test traffic
+      testListener = loadBalancer.addListener('TestListener', {
+        port: 9002, // port for testing
+        protocol: elb.ApplicationProtocol.HTTP,
+        open: true,
+        defaultTargetGroups: [tg2],
+      });
+    }
+
+    listener.node.addDependency(tg2);
+    testListener.node.addDependency(tg1);
 
     // Alarms: monitor 500s and unhealthy hosts on target groups
     const tg1UnhealthyHosts = new cloudwatch.Alarm(this, 'TargetGroupUnhealthyHosts', {
@@ -147,19 +167,71 @@ class TriviaBackendStack extends Stack {
         cloudwatch.AlarmRule.fromAlarm(tg2ApiFailure, cloudwatch.AlarmState.ALARM))
     });
 
-    // Roles
-    new iam.Role(this, 'ServiceTaskDefExecutionRole', {
-      assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
-      managedPolicies: [ iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy') ]
+    // CodeDeploy Resources
+    const ecsApp = new codedeploy.EcsApplication(this, 'CodeDeployApplication', {
+      applicationName: 'AppECS-' + this.stackName
     });
 
-    new iam.Role(this, 'ServiceTaskDefTaskRole', {
-      assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+    // Export values to use in other stacks
+    new CfnOutput(this, 'VPCOutput', {
+      value: vpc.vpcId,
+      exportName: this.stackName + 'Vpc',
+    });
+    new CfnOutput(this, 'LoadBalancerEndpoint', {
+      value: loadBalancer.loadBalancerDnsName,
+    })
+    new CfnOutput(this, 'ServiceSecurityGroupOutput', {
+      value: serviceSG.securityGroupId,
+      exportName: this.stackName + 'ServiceSecurityGroup',
+    });
+    new CfnOutput(this, 'LoadBalancerSecurityGroupOutput', {
+      value: Fn.select(0, loadBalancer.loadBalancerSecurityGroups),
+      exportName: this.stackName + 'LoadBalancerSecurityGroup',
+    });
+    new CfnOutput(this, 'BlueTargetGroupOutput', {
+      value: tg1.targetGroupArn,
+      exportName: this.stackName + 'BlueTargetGroup',
+    });
+    new CfnOutput(this, 'GreenTargetGroupOutput', {
+      value: tg2.targetGroupArn,
+      exportName: this.stackName + 'GreenTargetGroup',
+    });
+    new CfnOutput(this, 'ProdTrafficListenerOutput', {
+      value: listener.listenerArn,
+      exportName: this.stackName + 'ProdTrafficListener',
+    });
+    new CfnOutput(this, 'TestTrafficListenerOutput', {
+      value: testListener.listenerArn,
+      exportName: this.stackName + 'TestTrafficListener',
+    });
+    new CfnOutput(this, 'BlueUnhealthyHostsAlarmOutput', {
+      value: tg1UnhealthyHosts.alarmArn,
+      exportName: this.stackName + 'BlueUnhealthyHostsAlarm',
+    });
+    new CfnOutput(this, 'BlueApiFailureAlarmOutput', {
+      value: tg1ApiFailure.alarmArn,
+      exportName: this.stackName + 'BlueApiFailureAlarm',
+    });
+    new CfnOutput(this, 'GreenUnhealthyHostsAlarmOutput', {
+      value: tg2UnhealthyHosts.alarmArn,
+      exportName: this.stackName + 'GreenUnhealthyHostsAlarm',
+    });
+    new CfnOutput(this, 'GreenApiFailureAlarmOutput', {
+      value: tg2ApiFailure.alarmArn,
+      exportName: this.stackName + 'GreenApiFailureAlarm',
+    });
+    new CfnOutput(this, 'CodeDeployApplicationOutput', {
+      value: ecsApp.applicationName,
+      exportName: this.stackName + 'CodeDeployApplication',
     });
 
-    new iam.Role(this, 'CodeDeployRole', {
-      assumedBy: new iam.ServicePrincipal('codedeploy.amazonaws.com'),
-      managedPolicies: [ iam.ManagedPolicy.fromAwsManagedPolicyName('AWSCodeDeployRoleForECS') ]
+    new ssm.StringParameter(this, 'VPCParam', {
+      parameterName: `/${this.stackName}/VPC`,
+      stringValue: vpc.vpcId,
+    });
+    new ssm.StringParameter(this, 'ServiceSecurityGroupParam', {
+      parameterName: `/${this.stackName}/ServiceSecurityGroup`,
+      stringValue: serviceSG.securityGroupId,
     });
   }
 }

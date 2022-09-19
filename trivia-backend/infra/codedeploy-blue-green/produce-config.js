@@ -4,72 +4,53 @@ const aws = require('aws-sdk');
 const fs = require('fs');
 
 const argv = require('yargs')
-    .usage('Create ECS/CodeDeploy config files with values from CloudFormation stack\nUsage: $0')
-    .demandOption(['s', 'g', 'h'])
-    .alias('s', 'stack-name')
+    .usage('Create ECS/CodeDeploy config files with values from CloudFormation stacks\nUsage: $0')
+    .demandOption(['s', 'd', 'g', 'h'])
+    .alias('s', 'infra-stack-name')
+    .alias('d', 'service-stack-name')
     .alias('g', 'stage-name')
     .alias('h', 'hook-stack-name')
     .argv;
 
-const deploymentGroupConfig = require('./deployment-group.json');
 const taskDefConfig = require('./task-definition.json');
-const serviceConfig = require('./service-definition.json');
 const appSpec = require('./appspec.json');
 
-const stack = argv.stackName;
 const stage = argv.stageName;
+const infraStack = argv.infraStackName;
+const serviceStack = argv.serviceStackName;
 const hookStack = argv.hookStackName;
 
 const cfn = new aws.CloudFormation();
-const sts = new aws.STS();
 
 async function produceConfigs() {
-    let data = await cfn.describeStackResources({ StackName: stack }).promise();
+    let infraData = await cfn.describeStackResources({ StackName: infraStack }).promise();
+    let serviceData = await cfn.describeStackResources({ StackName: serviceStack }).promise();
     let hookData = await cfn.describeStackResources({ StackName: hookStack }).promise();
-    let identity = await sts.getCallerIdentity().promise();
-    let accountId = identity.Account;
 
-    // Make a whole bunch of assumptions about the contents of the CFN stack
-    let targetGroupNames = [];
-    let targetGroupArns = [];
-    let mainTrafficListener;
-    let testTrafficListener;
+    // Make a whole bunch of assumptions about the contents of the CFN stacks
     let privateSubnets = [];
     let serviceSecurityGroups = [];
-    let alarms = [];
-    alarms.push({ name: 'Synthetics-Alarm-trivia-game-' + stage });
     let taskRole;
     let executionRole;
-    let codedeployRole;
     let preTrafficHook;
 
-    for (const resource of data.StackResources) {
-        if (resource.ResourceType == "AWS::CloudWatch::Alarm") {
-            alarms.push({ name: resource.PhysicalResourceId });
-        } else if (resource.ResourceType == "AWS::EC2::Subnet" &&
-                    resource.LogicalResourceId.startsWith("VPCPrivateSubnet")) {
+    for (const resource of infraData.StackResources) {
+        if (resource.ResourceType == 'AWS::EC2::Subnet' &&
+                    resource.LogicalResourceId.startsWith('VPCPrivateSubnet')) {
             privateSubnets.push(resource.PhysicalResourceId);
-        } else if (resource.ResourceType == "AWS::ElasticLoadBalancingV2::TargetGroup") {
-            targetGroupArns.push({ name: resource.PhysicalResourceId });
-            targetGroupNames.push({ name: resource.PhysicalResourceId.split('/')[1] });
-        } else if (resource.ResourceType == "AWS::ElasticLoadBalancingV2::Listener" &&
-                    resource.LogicalResourceId.startsWith("ServiceLBPublicListener")) {
-            mainTrafficListener = resource.PhysicalResourceId;
-        } else if (resource.ResourceType == "AWS::ElasticLoadBalancingV2::Listener" &&
-                    resource.LogicalResourceId.startsWith("ServiceLBTestListener")) {
-            testTrafficListener = resource.PhysicalResourceId;
-        } else if (resource.ResourceType == "AWS::EC2::SecurityGroup" &&
-                    resource.LogicalResourceId.startsWith("ServiceSecurityGroup")) {
+        } else if (resource.ResourceType == 'AWS::EC2::SecurityGroup' &&
+                    resource.LogicalResourceId.startsWith('ServiceSecurityGroup')) {
             serviceSecurityGroups.push(resource.PhysicalResourceId);
-        } else if (resource.ResourceType == "AWS::IAM::Role" &&
-                    resource.LogicalResourceId.startsWith("ServiceTaskDefExecutionRole")) {
+        }
+    }
+
+    for (const resource of serviceData.StackResources) {
+        if (resource.ResourceType == 'AWS::IAM::Role' &&
+                    resource.LogicalResourceId.startsWith('TaskDefExecutionRole')) {
             executionRole = resource.PhysicalResourceId;
-        } else if (resource.ResourceType == "AWS::IAM::Role" &&
-                    resource.LogicalResourceId.startsWith("ServiceTaskDefTaskRole")) {
+        } else if (resource.ResourceType == 'AWS::IAM::Role' &&
+                    resource.LogicalResourceId.startsWith('TaskDefTaskRole')) {
             taskRole = resource.PhysicalResourceId;
-        } else if (resource.ResourceType == "AWS::IAM::Role" &&
-                    resource.LogicalResourceId.startsWith("CodeDeployRole")) {
-            codedeployRole = resource.PhysicalResourceId;
         }
     }
 
@@ -79,26 +60,10 @@ async function produceConfigs() {
         }
     }
 
-    // Write out deployment config
-    deploymentGroupConfig.loadBalancerInfo.targetGroupPairInfoList[0].targetGroups = targetGroupNames;
-    deploymentGroupConfig.loadBalancerInfo.targetGroupPairInfoList[0].prodTrafficRoute.listenerArns = [ mainTrafficListener ];
-    deploymentGroupConfig.loadBalancerInfo.targetGroupPairInfoList[0].testTrafficRoute.listenerArns = [ testTrafficListener ];
-    deploymentGroupConfig.alarmConfiguration.alarms = alarms;
-    deploymentGroupConfig.ecsServices[0].serviceName = "trivia-backend-" + stage;
-    deploymentGroupConfig.serviceRoleArn = `arn:aws:iam::${accountId}:role/${codedeployRole}`;
-    deploymentGroupConfig.applicationName = "AppECS-default-trivia-backend-" + stage;
-    fs.writeFileSync(`./build/deployment-group-${stage}.json`, JSON.stringify(deploymentGroupConfig, null, 2) , 'utf-8');
-
     // Write out task def config
     taskDefConfig.taskRoleArn = taskRole;
     taskDefConfig.executionRoleArn = executionRole;
     fs.writeFileSync(`./build/task-definition-${stage}.json`, JSON.stringify(taskDefConfig, null, 2) , 'utf-8');
-
-    // Write out service config
-    serviceConfig.loadBalancers[0].targetGroupArn = targetGroupArns[0].name;
-    serviceConfig.networkConfiguration.awsvpcConfiguration.subnets = privateSubnets;
-    serviceConfig.networkConfiguration.awsvpcConfiguration.securityGroups = serviceSecurityGroups;
-    fs.writeFileSync(`./build/service-definition-${stage}.json`, JSON.stringify(serviceConfig, null, 2) , 'utf-8');
 
     // Write out appspec
     appSpec.Resources[0].TargetService.Properties.NetworkConfiguration.awsvpcConfiguration.subnets = privateSubnets;
