@@ -179,7 +179,8 @@ aws cloudformation update-stack \
 
 The [codedeploy-blue-green](infra/codedeploy-blue-green/) folder contains an example of the configuration needed to setup and execute a [blue-green deployment with CodeDeploy](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-bluegreen.html) directly: CodeDeploy appspec file, ECS task definition file, ECS service, CodeDeploy application definition, and CodeDeploy deployment group.
 
-In this example, the infrastructure resources (load balancer, security groups, roles, etc) are modeled and provisioned with the [AWS CDK](https://github.com/awslabs/aws-cdk) and CloudFormation.  The ECS service and CodeDeploy resources are created outside of CloudFormation using a script, and all future deployments to the ECS service are done directly with CodeDeploy outside of CloudFormation.  Note that the setup of resources for this example cannot currently be done entirely with CloudFormation, unless custom CFN resources are used (see [this issue for details](https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/483)).
+In this example, all the resources (ECS service, CodeDeploy deployment group, load balancer, security groups, roles, etc) are modeled and provisioned with the [AWS CDK](https://github.com/awslabs/aws-cdk) and CloudFormation.
+All future deployments to the ECS service are done directly with CodeDeploy, outside of CloudFormation.
 
 The [codedeploy-lifecycle-event-hooks](infra/codedeploy-lifecycle-event-hooks) folder contains an example of a pre-traffic CodeDeploy lifecycle event hook that is modeled and provisioned with CloudFormation and the [AWS Serverless Application Model](https://aws.amazon.com/serverless/sam/).
 
