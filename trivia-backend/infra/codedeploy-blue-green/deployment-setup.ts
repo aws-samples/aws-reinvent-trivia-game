@@ -124,7 +124,7 @@ class TriviaDeploymentResourcesStack extends Stack {
       managedPolicies: [ iam.ManagedPolicy.fromAwsManagedPolicyName('AWSCodeDeployRoleForECS') ]
     });
 
-    const deploymentConfig = codedeploy.EcsDeploymentConfig.fromEcsDeploymentConfigName(this, 'DC', 'CodeDeployDefault.ECSCanary10Percent15Minutes');
+    const deploymentConfig = codedeploy.EcsDeploymentConfig.fromEcsDeploymentConfigName(this, 'DC', 'CodeDeployDefault.ECSCanary10Percent5Minutes');
 
     new codedeploy.CfnDeploymentGroup(this, 'DeploymentGroup', {
       applicationName: ecsApplication.applicationName,
@@ -148,7 +148,7 @@ class TriviaDeploymentResourcesStack extends Stack {
         },
         terminateBlueInstancesOnDeploymentSuccess: {
           action: 'TERMINATE',
-          terminationWaitTimeInMinutes: 30,
+          terminationWaitTimeInMinutes: 10,
         }
       },
       loadBalancerInfo: {
