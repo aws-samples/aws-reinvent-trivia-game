@@ -1,11 +1,10 @@
-import { App, Fn, Stack, StackProps } from 'aws-cdk-lib';
+import { App, Duration, Fn, Stack, StackProps } from 'aws-cdk-lib';
 import {
   aws_cloudwatch as cloudwatch,
   aws_codedeploy as codedeploy,
   aws_ec2 as ec2,
   aws_ecr as ecr,
   aws_ecs as ecs,
-  aws_iam as iam,
   aws_elasticloadbalancingv2 as elbv2,
   aws_ssm as ssm,
 } from 'aws-cdk-lib';
@@ -119,87 +118,28 @@ class TriviaDeploymentResourcesStack extends Stack {
     service.attachToApplicationTargetGroup(blueTG);
 
     // CodeDeploy resources
-    const codedeployRole = new iam.Role(this, 'CodeDeployRole', {
-      assumedBy: new iam.ServicePrincipal('codedeploy.amazonaws.com'),
-      managedPolicies: [ iam.ManagedPolicy.fromAwsManagedPolicyName('AWSCodeDeployRoleForECS') ]
-    });
-
     const deploymentConfig = codedeploy.EcsDeploymentConfig.fromEcsDeploymentConfigName(this, 'DC', 'CodeDeployDefault.ECSCanary10Percent5Minutes');
 
-    new codedeploy.CfnDeploymentGroup(this, 'DeploymentGroup', {
-      applicationName: ecsApplication.applicationName,
-      serviceRoleArn: codedeployRole.roleArn,
+    new codedeploy.EcsDeploymentGroup(this, 'DeploymentGroup', {
+      application: ecsApplication,
       deploymentGroupName: 'DgpECS-' + props.infrastructureStackName,
-      deploymentConfigName: deploymentConfig.deploymentConfigName,
-      deploymentStyle: {
-        deploymentType: 'BLUE_GREEN',
-        deploymentOption: 'WITH_TRAFFIC_CONTROL',
-      },
-      ecsServices: [
-        {
-          clusterName: cluster.clusterName,
-          serviceName: service.serviceName,
-        }
+      deploymentConfig,
+      alarms: [
+        blueUnhealthyHostsAlarm,
+        blueApiFailureAlarm,
+        greenUnhealthyHostsAlarm,
+        greenApiFailureAlarm,
       ],
-      blueGreenDeploymentConfiguration: {
-        deploymentReadyOption: {
-          actionOnTimeout: 'CONTINUE_DEPLOYMENT',
-          waitTimeInMinutes: 0,
-        },
-        terminateBlueInstancesOnDeploymentSuccess: {
-          action: 'TERMINATE',
-          terminationWaitTimeInMinutes: 10,
-        }
+      service,
+      blueGreenDeploymentConfig: {
+        blueTargetGroup: blueTG,
+        greenTargetGroup: greenTG,
+        listener: prodListener,
+        testListener,
+        terminationWaitTime: Duration.minutes(10),
       },
-      loadBalancerInfo: {
-        targetGroupPairInfoList: [
-          {
-            targetGroups: [
-              {
-                name: blueTG.targetGroupName,
-              },
-              {
-                name: greenTG.targetGroupName,
-              }
-            ],
-            prodTrafficRoute: {
-              listenerArns: [
-                prodListener.listenerArn,
-              ]
-            },
-            testTrafficRoute: {
-              listenerArns: [
-                testListener.listenerArn,
-              ]
-            }
-          }
-        ]
-      },
-      alarmConfiguration: {
-        enabled: true,
-        ignorePollAlarmFailure: false,
-        alarms: [
-          {
-            name: blueUnhealthyHostsAlarm.alarmName,
-          },
-          {
-            name: blueApiFailureAlarm.alarmName,
-          },
-          {
-            name: greenUnhealthyHostsAlarm.alarmName,
-          },
-          {
-            name: greenApiFailureAlarm.alarmName,
-          },
-        ],
-      },
-      autoRollbackConfiguration: {
-        enabled: true,
-        events: [
-          'DEPLOYMENT_FAILURE',
-          'DEPLOYMENT_STOP_ON_REQUEST',
-          'DEPLOYMENT_STOP_ON_ALARM',
-        ]
+      autoRollback: {
+        stoppedDeployment: true,
       },
     });
   }
