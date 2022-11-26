@@ -1,4 +1,4 @@
-import { App, Duration, Fn, Stack, StackProps } from 'aws-cdk-lib';
+import { App, Duration, Fn, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import {
   aws_cloudwatch as cloudwatch,
   aws_codedeploy as codedeploy,
@@ -104,6 +104,9 @@ class TriviaDeploymentResourcesStack extends Stack {
         hostPort: 80,
       }],
     });
+    const cfnTaskDef = taskDefinition.node.defaultChild as ecs.CfnTaskDefinition;
+    cfnTaskDef.applyRemovalPolicy(RemovalPolicy.RETAIN, { applyToUpdateReplacePolicy: true });
+
     const service = new ecs.FargateService(this, 'Service', {
       serviceName: props.infrastructureStackName,
       cluster,
