@@ -10,7 +10,7 @@
     "build:prod": "NODE_ENV=production npm run build"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.5",
+    "@babel/core": "^7.20.7",
     "@babel/preset-env": "^7.19.4",
     "@babel/preset-react": "^7.18.6",
     "babel-loader": "^9.1.0",
