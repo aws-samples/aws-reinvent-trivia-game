@@ -1,4 +1,4 @@
-FROM public.ecr.aws/bitnami/node:18
+FROM public.ecr.aws/docker/library/node:18
 
 RUN npm config set unsafe-perm true
 
