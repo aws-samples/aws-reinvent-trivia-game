@@ -18,8 +18,9 @@ class TriviaGameBackendCodeDeployPipelineStack extends Stack {
     constructor(parent: App, name: string, props?: StackProps) {
         super(parent, name, props);
 
-        const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
-            pipelineName: 'reinvent-trivia-game-trivia-backend-with-codedeploy',
+        const pipeline = new codepipeline.Pipeline(this, "Pipeline", {
+            pipelineName: "reinvent-trivia-game-trivia-backend-with-codedeploy",
+            restartExecutionOnUpdate: true,
         });
 
         new notifications.CfnNotificationRule(this, 'PipelineNotifications', {
@@ -61,6 +62,62 @@ class TriviaGameBackendCodeDeployPipelineStack extends Stack {
         pipeline.addStage({
             stageName: 'Source',
             actions: [sourceAction, dockerImageSourceAction],
+        });
+
+        // Update pipeline
+        // This pipeline stage uses CodeBuild to self-mutate the pipeline by re-deploying the pipeline's CDK code
+        // If the pipeline changes, it will automatically start again
+        const pipelineProject = new codebuild.PipelineProject(this, "UpdatePipeline", {
+            buildSpec: codebuild.BuildSpec.fromObjectToYaml({
+                version: '0.2',
+                phases: {
+                    install: {
+                        'runtime-versions': {
+                            nodejs: 'latest',
+                        },
+                        commands: [
+                            'npm install -g aws-cdk',
+                        ],
+                    },
+                    build: {
+                        commands: [
+                            'cd $CODEBUILD_SRC_DIR/pipelines',
+                            'npm ci',
+                            'npm run build',
+                            "cdk deploy --app 'node src/api-service-codedeploy-pipeline.js' --require-approval=never",
+                        ]
+                    },
+                },
+            }),
+            environment: {
+                buildImage: codebuild.LinuxBuildImage.fromCodeBuildImageId('aws/codebuild/amazonlinux2-x86_64-standard:4.0'),
+            },
+        });
+        pipelineProject.addToRolePolicy(
+          new iam.PolicyStatement({
+            actions: [
+              "cloudformation:*",
+              "codebuild:*",
+              "codepipeline:*",
+              "s3:*",
+              "kms:*",
+              "codestar-notifications:*",
+              "codestar-connections:*",
+              "iam:*",
+              "events:*",
+              "ssm:*",
+            ],
+            resources: ["*"],
+          })
+        );
+        const pipelineBuildAction = new actions.CodeBuildAction({
+            actionName: 'DeployPipeline',
+            project: pipelineProject,
+            input: sourceOutput,
+        });
+        pipeline.addStage({
+            stageName: 'SyncPipeline',
+            actions: [pipelineBuildAction],
         });
 
         // Build

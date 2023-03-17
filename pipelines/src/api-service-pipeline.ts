@@ -14,7 +14,8 @@ class TriviaGameBackendPipelineStack extends Stack {
             pipelineNameSuffix: 'trivia-backend-cfn-deploy',
             stackNamePrefix: 'TriviaBackend',
             templateNamePrefix: 'TriviaBackend',
-            buildspecLocation: 'trivia-backend/infra/cdk/buildspec.yml'
+            buildspecLocation: 'trivia-backend/infra/cdk/buildspec.yml',
+            pipelineCdkFileName: 'api-service-pipeline',
         });
     }
 }

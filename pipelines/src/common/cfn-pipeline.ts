@@ -6,6 +6,7 @@ import {
     aws_codepipeline as codepipeline,
     aws_codestarnotifications as notifications,
     aws_codepipeline_actions as actions,
+    aws_iam as iam,
 } from 'aws-cdk-lib';
 
 export interface TriviaGameCfnPipelineProps {
@@ -13,6 +14,7 @@ export interface TriviaGameCfnPipelineProps {
     stackName: string;
     templateName: string;
     pipelineName: string;
+    pipelineCdkFileName: string;
     directory: string;
 }
 
@@ -28,8 +30,9 @@ export class TriviaGameCfnPipeline extends Construct {
     constructor(parent: Construct, name: string, props: TriviaGameCfnPipelineProps) {
         super(parent, name);
 
-        const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
-            pipelineName: 'reinvent-trivia-game-' + props.pipelineName,
+        const pipeline = new codepipeline.Pipeline(this, "Pipeline", {
+            pipelineName: "reinvent-trivia-game-" + props.pipelineName,
+            restartExecutionOnUpdate: true,
         });
         this.pipeline = pipeline;
 
@@ -64,6 +67,62 @@ export class TriviaGameCfnPipeline extends Construct {
             actions: [sourceAction],
         });
         this.sourceOutput = sourceOutput;
+
+        // Update pipeline
+        // This pipeline stage uses CodeBuild to self-mutate the pipeline by re-deploying the pipeline's CDK code
+        // If the pipeline changes, it will automatically start again
+        const pipelineProject = new codebuild.PipelineProject(this, "UpdatePipeline", {
+            buildSpec: codebuild.BuildSpec.fromObjectToYaml({
+                version: '0.2',
+                phases: {
+                    install: {
+                        'runtime-versions': {
+                            nodejs: 'latest',
+                        },
+                        commands: [
+                            'npm install -g aws-cdk',
+                        ],
+                    },
+                    build: {
+                        commands: [
+                            'cd $CODEBUILD_SRC_DIR/pipelines',
+                            'npm ci',
+                            'npm run build',
+                            `cdk deploy --app 'node src/${props.pipelineCdkFileName}.js' --require-approval=never`,
+                        ]
+                    },
+                },
+            }),
+            environment: {
+                buildImage: codebuild.LinuxBuildImage.fromCodeBuildImageId('aws/codebuild/amazonlinux2-x86_64-standard:4.0'),
+            },
+        });
+        pipelineProject.addToRolePolicy(
+          new iam.PolicyStatement({
+            actions: [
+              "cloudformation:*",
+              "codebuild:*",
+              "codepipeline:*",
+              "s3:*",
+              "kms:*",
+              "codestar-notifications:*",
+              "codestar-connections:*",
+              "iam:*",
+              "events:*",
+              "ssm:*",
+            ],
+            resources: ["*"],
+          })
+        );
+        const pipelineBuildAction = new actions.CodeBuildAction({
+            actionName: 'DeployPipeline',
+            project: pipelineProject,
+            input: sourceOutput,
+        });
+        pipeline.addStage({
+            stageName: 'SyncPipeline',
+            actions: [pipelineBuildAction],
+        });
 
         // Build
         const buildProject = new codebuild.PipelineProject(this, 'BuildProject', {

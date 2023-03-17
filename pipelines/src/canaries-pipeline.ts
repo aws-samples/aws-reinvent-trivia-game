@@ -10,7 +10,8 @@ class TriviaGameCanariesPipelineStack extends Stack {
             pipelineName: 'canaries',
             stackName: 'Canaries',
             templateName: 'Canaries',
-            directory: 'canaries'
+            directory: 'canaries',
+            pipelineCdkFileName: 'canaries-pipeline',
         });
     }
 }

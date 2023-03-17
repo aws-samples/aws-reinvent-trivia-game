@@ -11,7 +11,8 @@ class TriviaGameLifecycleHooksPipelineStack extends Stack {
             stackName: 'Hooks',
             stackNamePrefix: 'TriviaBackend',
             templateName: 'Hooks',
-            directory: 'trivia-backend/infra/codedeploy-lifecycle-event-hooks'
+            directory: 'trivia-backend/infra/codedeploy-lifecycle-event-hooks',
+            pipelineCdkFileName: 'api-service-codedeploy-lifecycle-event-hooks-pipeline',
         });
     }
 }

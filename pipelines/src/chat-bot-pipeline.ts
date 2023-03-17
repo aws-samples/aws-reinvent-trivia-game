@@ -16,7 +16,8 @@ class TriviaGameChatBotPipelineStack extends Stack {
             pipelineName: 'chat-bot',
             stackName: 'ChatBot',
             templateName: 'ChatBot',
-            directory: 'chat-bot'
+            directory: 'chat-bot',
+            pipelineCdkFileName: 'chat-bot-pipeline',
         });
         const pipeline = pipelineConstruct.pipeline;
 
