@@ -13,12 +13,12 @@
     "deploy-infra-root-domain": "cdk deploy --app 'node infrastructure.js' --require-approval never TriviaGameRootDomainRedirectProd"
   },
   "devDependencies": {
-    "@types/node": "^18.15.0",
+    "@types/node": "^18.15.11",
     "aws-cdk": "^2.68.0",
     "typescript": "^5.0.3"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.68.0",
+    "aws-cdk-lib": "^2.72.1",
     "constructs": "^10.1.275"
   }
 }
