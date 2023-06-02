@@ -36,7 +36,7 @@ checksum=$(aws lex-models get-bot --name TriviaGame --version-or-alias "\$LATEST
 
 aws lex-models put-bot --name TriviaGame --cli-input-json file://trivia-game-bot.json --checksum $checksum
 
-while state=$(aws lex-models get-bot --name TriviaGame --version-or-alias "\$LATEST" --output text --query 'status'); test "$state" = "BUILDING"; do
+while state=$(aws lex-models get-bot --name TriviaGame --version-or-alias "\$LATEST" --output text --query 'status'); test "$state" = "BUILDING" || test "$state" = "READY_BASIC_TESTING"; do
   sleep 1; echo -n '.'
 done;
 
