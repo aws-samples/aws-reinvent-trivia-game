@@ -11,12 +11,12 @@
     "deploy-prod-deployment-resources": "tsc && cdk deploy --app 'node deployment-setup.js' --require-approval never TriviaDeploymentResourcesProd"
   },
   "devDependencies": {
-    "@types/node": "^20.3.3",
+    "@types/node": "^20.5.7",
     "typescript": "^5.2.2",
     "aws-cdk": "^2.81.0"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.86.0",
+    "aws-cdk-lib": "^2.93.0",
     "aws-sdk": "^2.1409.0",
     "constructs": "^10.2.70",
     "yargs": "^17.7.2"
