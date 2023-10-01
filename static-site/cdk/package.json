@@ -14,11 +14,11 @@
   },
   "devDependencies": {
     "@types/node": "^20.5.7",
-    "aws-cdk": "^2.94.0",
+    "aws-cdk": "^2.99.1",
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.93.0",
+    "aws-cdk-lib": "^2.99.1",
     "constructs": "^10.2.70"
   }
 }
