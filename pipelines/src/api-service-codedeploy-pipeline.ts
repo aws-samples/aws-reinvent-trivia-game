@@ -90,7 +90,7 @@ class TriviaGameBackendCodeDeployPipelineStack extends Stack {
                 },
             }),
             environment: {
-                buildImage: codebuild.LinuxBuildImage.fromCodeBuildImageId('aws/codebuild/amazonlinux2-x86_64-standard:4.0'),
+                buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
             },
         });
         pipelineProject.addToRolePolicy(
@@ -124,7 +124,7 @@ class TriviaGameBackendCodeDeployPipelineStack extends Stack {
         const buildProject = new codebuild.PipelineProject(this, 'BuildProject', {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('trivia-backend/infra/codedeploy-blue-green/buildspec.yml'),
             environment: {
-              buildImage: codebuild.LinuxBuildImage.fromCodeBuildImageId('aws/codebuild/amazonlinux2-x86_64-standard:4.0'),
+              buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
               privileged: true
             }
         });

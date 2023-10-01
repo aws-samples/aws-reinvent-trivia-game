@@ -74,7 +74,7 @@ class TriviaGameStaticSitePipeline extends Stack {
                 },
             }),
             environment: {
-                buildImage: codebuild.LinuxBuildImage.fromCodeBuildImageId('aws/codebuild/amazonlinux2-x86_64-standard:4.0'),
+                buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
             },
         });
         pipelineProject.addToRolePolicy(
@@ -121,7 +121,7 @@ class TriviaGameStaticSitePipeline extends Stack {
         const project = new codebuild.PipelineProject(this, stageName + 'Project', {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('static-site/buildspec.yml'),
             environment: {
-                buildImage: codebuild.LinuxBuildImage.fromCodeBuildImageId('aws/codebuild/amazonlinux2-x86_64-standard:4.0'),
+                buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_5,
                 environmentVariables: {
                     'STAGE': {
                         value: stageName.toLowerCase()
