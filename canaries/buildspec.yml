@@ -6,7 +6,6 @@ phases:
       nodejs: latest
     commands:
       - cd canaries
-      - npm install -g npm@latest
       - npm ci
       - export CANARY_CODE_FILENAME=trivia-game-canary-code-`echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}'`.zip
   build:

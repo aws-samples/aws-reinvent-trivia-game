@@ -8,7 +8,6 @@ phases:
       - export AWS_ACCOUNT_ID=`echo $CODEBUILD_BUILD_ARN | awk -F":" '{print $5}'`
       - cd chat-bot/lex-model
       - chmod +x gen-lex-model.sh
-      - npm install -g npm@latest
       - npm ci
   build:
     commands:

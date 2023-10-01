@@ -6,7 +6,6 @@ phases:
       nodejs: latest
     commands:
       - cd trivia-backend/infra/codedeploy-lifecycle-event-hooks
-      - npm install -g npm@latest
       - npm ci
   build:
     commands:

@@ -10,7 +10,6 @@ phases:
       nodejs: latest
     commands:
       - yum install -y jq
-      - npm install -g npm@latest
 
   pre_build:
     commands:

@@ -11,7 +11,6 @@ phases:
     commands:
       # Install CDK & jq, upgrade npm
       - yum install -y jq
-      - npm install -g npm@latest
       - npm install -g aws-cdk
 
   pre_build:
