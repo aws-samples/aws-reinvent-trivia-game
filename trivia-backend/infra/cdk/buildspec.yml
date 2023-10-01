@@ -7,7 +7,7 @@ env:
 phases:
   install:
     runtime-versions:
-      nodejs: latest
+      nodejs: 18
     commands:
       # Install CDK & jq, upgrade npm
       - yum install -y jq
