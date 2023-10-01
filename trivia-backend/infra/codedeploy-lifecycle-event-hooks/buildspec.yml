@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 18
+      nodejs: latest
     commands:
       - cd trivia-backend/infra/codedeploy-lifecycle-event-hooks
       - npm install -g npm@latest

@@ -7,7 +7,7 @@ env:
 phases:
   install:
     runtime-versions:
-      nodejs: 18
+      nodejs: latest
     commands:
       - yum install -y jq
       - npm install -g npm@latest
