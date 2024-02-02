@@ -8,7 +8,10 @@ const API_ENDPOINT = process.env['API_ENDPOINT'];
 const loadPage = async function () {
     let page = await synthetics.getPage();
     const response = await page.goto(PAGE_URL, {waitUntil: 'domcontentloaded', timeout: 10000});
-    await page.waitFor(5000);
+    if (!response) {
+        throw "Failed to load page!";
+    }
+    await page.waitForTimeout(5000);
     await synthetics.takeScreenshot('loaded', 'loaded');
     let pageTitle = await page.title();
     log.info('Page title: ' + pageTitle);
