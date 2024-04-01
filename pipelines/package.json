@@ -24,7 +24,7 @@
     "deploy-pipelines-bootstrap": "cdk deploy --app 'node src/pipelines-bootstrap.js'"
   },
   "devDependencies": {
-    "@types/node": "^20.11.24",
+    "@types/node": "^20.12.2",
     "typescript": "^5.3.3",
     "aws-cdk": "^2.134.0"
   },
