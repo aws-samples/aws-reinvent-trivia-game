@@ -12,12 +12,12 @@
   },
   "devDependencies": {
     "@types/node": "^20.13.0",
-    "typescript": "^5.4.5",
+    "typescript": "^5.5.2",
     "aws-cdk": "^2.147.2"
   },
   "dependencies": {
     "aws-cdk-lib": "^2.147.2",
-    "aws-sdk": "^2.1632.0",
+    "aws-sdk": "^2.1651.0",
     "constructs": "^10.3.0",
     "yargs": "^17.7.2"
   }
