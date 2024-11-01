@@ -1,3 +1,3 @@
-FROM public.ecr.aws/docker/library/node:22
+FROM public.ecr.aws/docker/library/node:23
 
 RUN npm install -g apidoc
