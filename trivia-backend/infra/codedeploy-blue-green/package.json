@@ -16,9 +16,9 @@
     "aws-cdk": "^2.160.0"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.160.0",
+    "aws-cdk-lib": "^2.165.0",
     "aws-sdk": "^2.1691.0",
-    "constructs": "^10.3.0",
+    "constructs": "^10.4.2",
     "yargs": "^17.7.2"
   }
 }
