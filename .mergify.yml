@@ -1,10 +1,19 @@
 queue_rules:
   - name: default
-    conditions:
+    queue_conditions:
+      - base=master
+      - author=dependabot[bot]
+      - label=dependencies
+      - -title~=(WIP|wip)
+      - -label~=(blocked|do-not-merge)
+      - -merged
+      - -closed
+    merge_conditions:
       - status-success=Game App
       - status-success=Game Infra
       - status-success=Pipelines
       - status-success=Static Site
+    merge_method: squash
 
 pull_request_rules:
   - name: Automatically merge Dependabot PRs
@@ -20,5 +29,3 @@ pull_request_rules:
       review:
         type: APPROVE
       queue:
-        name: default
-        method: squash
