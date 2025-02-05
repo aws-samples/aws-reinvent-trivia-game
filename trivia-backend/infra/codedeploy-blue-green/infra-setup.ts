@@ -24,12 +24,14 @@ class TriviaBackendStack extends Stack {
 
     // Network infrastructure
     const vpc = new ec2.Vpc(this, 'VPC', { maxAzs: 2 });
-    const serviceSG = new ec2.SecurityGroup(this, 'ServiceSecurityGroup', { vpc });
+    const serviceSG = new ec2.SecurityGroup(this, 'ServiceSecurityGroup', {
+      vpc,
+    });
 
     // Load balancer
     const loadBalancer = new elb.ApplicationLoadBalancer(this, 'ServiceLB', {
       vpc,
-      internetFacing: true
+      internetFacing: true,
     });
     serviceSG.connections.allowFrom(loadBalancer, ec2.Port.tcp(80));
 
@@ -67,18 +69,30 @@ class TriviaBackendStack extends Stack {
 
     let listener, testListener: elb.ApplicationListener;
     if (props.domainName && props.domainZone) {
-      const domainZone = route53.HostedZone.fromLookup(this, 'Zone', { domainName: props.domainZone });
-      new route53.ARecord(this, "DNS", {
+      const domainZone = route53.HostedZone.fromLookup(this, 'Zone', {
+        domainName: props.domainZone,
+      });
+      new route53.ARecord(this, 'DNS', {
         zone: domainZone,
         recordName: props.domainName,
-        target: route53.RecordTarget.fromAlias(new targets.LoadBalancerTarget(loadBalancer)),
+        target: route53.RecordTarget.fromAlias(
+          new targets.LoadBalancerTarget(loadBalancer)
+        ),
       });
 
       // Lookup pre-existing TLS certificate
-      const certificateArn = ssm.StringParameter.fromStringParameterAttributes(this, 'CertArnParameter', {
-        parameterName: 'CertificateArn-' + props.domainName
-      }).stringValue;
-      const certificate = acm.Certificate.fromCertificateArn(this, 'Certificate', certificateArn);
+      const certificateArn = ssm.StringParameter.fromStringParameterAttributes(
+        this,
+        'CertArnParameter',
+        {
+          parameterName: 'CertificateArn-' + props.domainName,
+        }
+      ).stringValue;
+      const certificate = acm.Certificate.fromCertificateArn(
+        this,
+        'Certificate',
+        certificateArn
+      );
 
       // Primary traffic listener
       listener = loadBalancer.addListener('PublicListener', {
@@ -86,6 +100,7 @@ class TriviaBackendStack extends Stack {
         protocol: elb.ApplicationProtocol.HTTPS,
         open: true,
         certificates: [certificate],
+        sslPolicy: elb.SslPolicy.RECOMMENDED_TLS,
         defaultTargetGroups: [tg1],
       });
 
@@ -95,6 +110,7 @@ class TriviaBackendStack extends Stack {
         protocol: elb.ApplicationProtocol.HTTPS,
         open: true,
         certificates: [certificate],
+        sslPolicy: elb.SslPolicy.RECOMMENDED_TLS,
         defaultTargetGroups: [tg2],
       });
     } else {
@@ -119,36 +135,42 @@ class TriviaBackendStack extends Stack {
     testListener.node.addDependency(tg1);
 
     // Alarms: monitor 500s and unhealthy hosts on target groups
-    const tg1UnhealthyHosts = new cloudwatch.Alarm(this, 'TargetGroupUnhealthyHosts', {
-      alarmName: this.stackName + '-Unhealthy-Hosts-Blue',
-      metric: tg1.metricUnhealthyHostCount(),
-      threshold: 1,
-      evaluationPeriods: 2,
-    });
+    const tg1UnhealthyHosts = new cloudwatch.Alarm(
+      this,
+      'TargetGroupUnhealthyHosts',
+      {
+        alarmName: this.stackName + '-Unhealthy-Hosts-Blue',
+        metric: tg1.metricUnhealthyHostCount(),
+        threshold: 1,
+        evaluationPeriods: 2,
+      }
+    );
 
     const tg1ApiFailure = new cloudwatch.Alarm(this, 'TargetGroup5xx', {
       alarmName: this.stackName + '-Http-500-Blue',
-      metric: tg1.metricHttpCodeTarget(
-        elb.HttpCodeTarget.TARGET_5XX_COUNT,
-        { period: Duration.minutes(1) },
-      ),
+      metric: tg1.metricHttpCodeTarget(elb.HttpCodeTarget.TARGET_5XX_COUNT, {
+        period: Duration.minutes(1),
+      }),
       threshold: 1,
       evaluationPeriods: 1,
     });
 
-    const tg2UnhealthyHosts = new cloudwatch.Alarm(this, 'TargetGroup2UnhealthyHosts', {
-      alarmName: this.stackName + '-Unhealthy-Hosts-Green',
-      metric: tg2.metricUnhealthyHostCount(),
-      threshold: 1,
-      evaluationPeriods: 2,
-    });
+    const tg2UnhealthyHosts = new cloudwatch.Alarm(
+      this,
+      'TargetGroup2UnhealthyHosts',
+      {
+        alarmName: this.stackName + '-Unhealthy-Hosts-Green',
+        metric: tg2.metricUnhealthyHostCount(),
+        threshold: 1,
+        evaluationPeriods: 2,
+      }
+    );
 
     const tg2ApiFailure = new cloudwatch.Alarm(this, 'TargetGroup25xx', {
       alarmName: this.stackName + '-Http-500-Green',
-      metric: tg1.metricHttpCodeTarget(
-        elb.HttpCodeTarget.TARGET_5XX_COUNT,
-        { period: Duration.minutes(1) },
-      ),
+      metric: tg1.metricHttpCodeTarget(elb.HttpCodeTarget.TARGET_5XX_COUNT, {
+        period: Duration.minutes(1),
+      }),
       threshold: 1,
       evaluationPeriods: 1,
     });
@@ -156,21 +178,39 @@ class TriviaBackendStack extends Stack {
     new cloudwatch.CompositeAlarm(this, 'CompositeUnhealthyHosts', {
       compositeAlarmName: this.stackName + '-Unhealthy-Hosts',
       alarmRule: cloudwatch.AlarmRule.anyOf(
-        cloudwatch.AlarmRule.fromAlarm(tg1UnhealthyHosts, cloudwatch.AlarmState.ALARM),
-        cloudwatch.AlarmRule.fromAlarm(tg2UnhealthyHosts, cloudwatch.AlarmState.ALARM))
+        cloudwatch.AlarmRule.fromAlarm(
+          tg1UnhealthyHosts,
+          cloudwatch.AlarmState.ALARM
+        ),
+        cloudwatch.AlarmRule.fromAlarm(
+          tg2UnhealthyHosts,
+          cloudwatch.AlarmState.ALARM
+        )
+      ),
     });
 
     new cloudwatch.CompositeAlarm(this, 'Composite5xx', {
       compositeAlarmName: this.stackName + '-Http-500',
       alarmRule: cloudwatch.AlarmRule.anyOf(
-        cloudwatch.AlarmRule.fromAlarm(tg1ApiFailure, cloudwatch.AlarmState.ALARM),
-        cloudwatch.AlarmRule.fromAlarm(tg2ApiFailure, cloudwatch.AlarmState.ALARM))
+        cloudwatch.AlarmRule.fromAlarm(
+          tg1ApiFailure,
+          cloudwatch.AlarmState.ALARM
+        ),
+        cloudwatch.AlarmRule.fromAlarm(
+          tg2ApiFailure,
+          cloudwatch.AlarmState.ALARM
+        )
+      ),
     });
 
     // CodeDeploy Resources
-    const ecsApp = new codedeploy.EcsApplication(this, 'CodeDeployApplication', {
-      applicationName: 'AppECS-' + this.stackName
-    });
+    const ecsApp = new codedeploy.EcsApplication(
+      this,
+      'CodeDeployApplication',
+      {
+        applicationName: 'AppECS-' + this.stackName,
+      }
+    );
 
     // Export values to use in other stacks
     new CfnOutput(this, 'VPCOutput', {
@@ -179,7 +219,7 @@ class TriviaBackendStack extends Stack {
     });
     new CfnOutput(this, 'LoadBalancerEndpoint', {
       value: loadBalancer.loadBalancerDnsName,
-    })
+    });
     new CfnOutput(this, 'ServiceSecurityGroupOutput', {
       value: serviceSG.securityGroupId,
       exportName: this.stackName + 'ServiceSecurityGroup',
@@ -242,15 +282,15 @@ new TriviaBackendStack(app, 'TriviaBackendTest', {
   domainZone: 'reinvent-trivia.com',
   env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
   tags: {
-      project: "reinvent-trivia"
-  }
+    project: 'reinvent-trivia',
+  },
 });
 new TriviaBackendStack(app, 'TriviaBackendProd', {
   domainName: 'api.reinvent-trivia.com',
   domainZone: 'reinvent-trivia.com',
   env: { account: process.env['CDK_DEFAULT_ACCOUNT'], region: 'us-east-1' },
   tags: {
-      project: "reinvent-trivia"
-  }
+    project: 'reinvent-trivia',
+  },
 });
 app.synth();
