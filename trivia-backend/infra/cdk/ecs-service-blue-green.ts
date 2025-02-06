@@ -1,5 +1,13 @@
 #!/usr/bin/env node
-import { App, CfnOutput, Duration, Stack, StackProps } from 'aws-cdk-lib';
+import {
+  App,
+  CfnCodeDeployBlueGreenHook,
+  CfnOutput,
+  CfnTrafficRoutingType,
+  Duration,
+  Stack,
+  StackProps,
+} from 'aws-cdk-lib';
 import {
   aws_certificatemanager as acm,
   aws_cloudwatch as cloudwatch,
@@ -249,7 +257,6 @@ class TriviaBackendStack extends Stack {
     //    code below.  The next stack update will *not* deploy the ECS service changes in a blue-green fashion.
     //    Once the stack update is completed, uncomment the CodeDeploy transform and hook code to re-enable
     //    blue-green deployments.
-    /*
     this.addTransform('AWS::CodeDeployBlueGreen');
     const taskDefLogicalId = this.getLogicalId(
       taskDefinition.node.defaultChild as ecs.CfnTaskDefinition
@@ -305,7 +312,6 @@ class TriviaBackendStack extends Stack {
         },
       ],
     });
-    */
 
     // Alarms:
     // These resources alarm on unhealthy hosts and HTTP 500s at the target group level.
