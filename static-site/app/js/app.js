@@ -3,7 +3,7 @@
 * Published under MIT license
 */
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from "react-dom/client";
 import Card from './Card';
 import Headers from './Headers';
 import Footer from './Footer';
@@ -82,4 +82,5 @@ class App extends React.Component {
 
 };
 
-ReactDOM.render(<App/>, document.getElementById('app'));
+const root = createRoot(document.getElementById('app'));
+root.render(<App/>);

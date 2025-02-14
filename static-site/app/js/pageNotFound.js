@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from "react-dom/client";
 import Footer from './Footer';
 
 class PageNotFound extends React.Component {
@@ -49,4 +49,5 @@ class PageNotFound extends React.Component {
 
 };
 
-ReactDOM.render(<PageNotFound/>, document.getElementById('pageNotFound'));
+const root = createRoot(document.getElementById('pageNotFound'));
+root.render(<PageNotFound/>);
