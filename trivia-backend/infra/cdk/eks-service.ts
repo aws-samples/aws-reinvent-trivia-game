@@ -11,6 +11,7 @@ import {
   aws_route53 as route53,
   aws_ssm as ssm,
 } from 'aws-cdk-lib';
+import { KubectlV32Layer } from '@aws-cdk/lambda-layer-kubectl-v32';
 import {ReinventTriviaResource} from './eks/kubernetes-resources/reinvent-trivia';
 import {AlbIngressControllerPolicy} from './eks/alb-ingress-controller-policy';
 
@@ -46,7 +47,8 @@ class TriviaBackendStack extends Stack {
       outputConfigCommand: true,
       outputMastersRoleArn: true,
       vpc,
-      version: eks.KubernetesVersion.V1_17,
+      version: eks.KubernetesVersion.V1_32,
+      kubectlLayer: new KubectlV32Layer(this, 'kubectl'),
     });
     const fargateProfile = cluster.node.findChild('fargate-profile-reinvent-trivia');
 
@@ -70,8 +72,8 @@ class TriviaBackendStack extends Stack {
     const metricsServerChart = cluster.addHelmChart('MetricsServer', {
       chart: 'metrics-server',
       release: 'metrics-server-rt',
-      repository: 'https://kubernetes-charts.storage.googleapis.com',
-      version: '2.9.0',
+      repository: 'https://kubernetes-sigs.github.io/metrics-server/',
+      version: '3.12.2',
       namespace: 'kube-system'
     });
     metricsServerChart.node.addDependency(fargateProfile);
@@ -109,7 +111,7 @@ class TriviaBackendStack extends Stack {
             chart: 'aws-alb-ingress-controller',
             release: 'alb-ingress-controller-rt',
             repository: 'https://kubernetes-charts-incubator.storage.googleapis.com',
-            version: '0.1.13',
+            version: '2.11.0',
             namespace: 'kube-system',
             values: {
               awsRegion: Stack.of(cluster).region,
@@ -190,8 +192,8 @@ class TriviaBackendStack extends Stack {
             const externalDnsChart = cluster.addHelmChart('ExternalDns', {
               chart: 'external-dns',
               release: 'external-dns-rt',
-              repository: 'https://kubernetes-charts.storage.googleapis.com',
-              version: '2.16.2',
+              repository: 'https://kubernetes-sigs.github.io/external-dns/',
+              version: '1.15.2',
               namespace: 'kube-system',
               values: {
                 domainFilters: [props.domainZone],
