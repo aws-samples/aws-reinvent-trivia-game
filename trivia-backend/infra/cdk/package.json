@@ -13,7 +13,7 @@
     "devDependencies": {
         "@types/node": "^22.13.17",
         "aws-cdk": "^2.1013.0",
-        "typescript": "^5.8.2"
+        "typescript": "^5.8.3"
     },
     "dependencies": {
         "@aws-cdk/lambda-layer-kubectl-v32": "^2.1.0",
