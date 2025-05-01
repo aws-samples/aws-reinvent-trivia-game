@@ -12,12 +12,12 @@
     },
     "devDependencies": {
         "@types/node": "^22.13.17",
-        "aws-cdk": "^2.1006.0",
+        "aws-cdk": "^2.1013.0",
         "typescript": "^5.8.2"
     },
     "dependencies": {
         "@aws-cdk/lambda-layer-kubectl-v32": "^2.1.0",
-        "aws-cdk-lib": "^2.189.1",
+        "aws-cdk-lib": "^2.193.0",
         "constructs": "^10.4.2"
     }
 }
