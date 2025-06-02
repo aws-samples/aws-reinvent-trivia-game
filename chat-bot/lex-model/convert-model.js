@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
-const argv = require('yargs')
+const yargs = require('yargs');
+
+const argv = yargs()
     .usage('Convert trivia API file to Amazon Lex model\nUsage: $0')
     .demandOption(['m', 'f'])
     .alias('m', 'api-model')
