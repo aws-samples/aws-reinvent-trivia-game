@@ -2,14 +2,14 @@
 
 const yargs = require('yargs');
 
-const argv = yargs()
+const argv = yargs(process.argv.slice(2))
     .usage('Convert trivia API file to Amazon Lex model\nUsage: $0')
     .demandOption(['m', 'f'])
     .alias('m', 'api-model')
     .alias('f', 'hook-function')
     .describe('m', 'trivia API file')
     .describe('f', 'Lambda function ARN for fulfillment activity')
-    .argv;
+    .parse();
 
 const converter = require('number-to-words');
 const fs = require('fs');
