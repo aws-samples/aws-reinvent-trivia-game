@@ -9,11 +9,11 @@
   "dependencies": {
     "@godaddy/terminus": "^4.12.1",
     "body-parser": "^2.2.0",
-    "compression": "^1.8.0",
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.1"
   },
   "devDependencies": {
     "mocha": "^11.7.1",
