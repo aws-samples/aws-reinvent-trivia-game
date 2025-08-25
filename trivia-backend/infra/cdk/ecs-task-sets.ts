@@ -75,6 +75,7 @@ class TriviaBackendStack extends Stack {
       cluster: cluster.clusterName,
       desiredCount: 2,
       deploymentController: { type: ecs.DeploymentControllerType.EXTERNAL },
+      availabilityZoneRebalancing: 'ENABLED',
     });
     service.node.addDependency(targetGroup);
     service.node.addDependency(listener);

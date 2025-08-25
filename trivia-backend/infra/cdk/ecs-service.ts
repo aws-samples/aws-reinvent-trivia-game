@@ -52,6 +52,10 @@ class TriviaBackendStack extends Stack {
       propagateTags: ecs.PropagatedTagSource.SERVICE,
     });
 
+    // Enable AZ rebalancing
+    const cfnService = service.service.node.defaultChild as ecs.CfnService;
+    cfnService.availabilityZoneRebalancing = 'ENABLED';
+
     // Alarms: monitor 500s and unhealthy hosts on target groups
     new cloudwatch.Alarm(this, 'TargetGroupUnhealthyHosts', {
       alarmName: this.stackName + '-Unhealthy-Hosts',

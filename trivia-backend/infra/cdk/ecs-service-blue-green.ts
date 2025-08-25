@@ -206,6 +206,7 @@ class TriviaBackendStack extends Stack {
       desiredCount: 3,
       deploymentController: { type: ecs.DeploymentControllerType.EXTERNAL },
       propagateTags: ecs.PropagatedTagSource.SERVICE,
+      availabilityZoneRebalancing: 'ENABLED',
     });
     service.node.addDependency(tg1);
     service.node.addDependency(tg2);
