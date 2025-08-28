@@ -180,6 +180,11 @@ export class TriviaGameContainersCfnPipeline extends Construct {
             resources: ["*"]
         }));
 
+        buildProject.addToRolePolicy(new iam.PolicyStatement({
+            actions: ["sts:AssumeRole"],
+            resources: [`arn:${Stack.of(this).partition}:iam::${Stack.of(this).account}:role/cdk-*-file-publishing-role-${Stack.of(this).account}-${Stack.of(this).region}`]
+        }));
+
         const buildArtifact = new codepipeline.Artifact('BuildArtifact');
         const buildAction = new actions.CodeBuildAction({
             actionName: 'CodeBuild',
