@@ -212,7 +212,7 @@ class TriviaBackendStack extends Stack {
       desiredCount: 3,
       securityGroups: [serviceSG],
       vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
+        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
       },
       deploymentStrategy: ecs.DeploymentStrategy.BLUE_GREEN,
       bakeTime: Duration.minutes(30),
