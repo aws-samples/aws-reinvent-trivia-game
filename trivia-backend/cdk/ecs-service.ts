@@ -26,7 +26,7 @@ class TriviaBackendStack extends Stack {
     const cluster = new ecs.Cluster(this, 'Cluster', {
       clusterName: props.domainName.replace(/\./g, '-'),
       vpc,
-      containerInsights: true
+      containerInsightsV2: ecs.ContainerInsights.ENABLED,
     });
 
     // Configuration parameters

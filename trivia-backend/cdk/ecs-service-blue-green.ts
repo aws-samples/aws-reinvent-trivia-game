@@ -43,7 +43,7 @@ class TriviaBackendStack extends Stack {
     const cluster = new ecs.Cluster(this, 'Cluster', {
       clusterName: props.domainName.replace(/\./g, '-'),
       vpc,
-      containerInsights: true,
+      containerInsightsV2: ecs.ContainerInsights.ENABLED,
     });
     const serviceSG = new ec2.SecurityGroup(this, 'ServiceSecurityGroup', {
       vpc,
