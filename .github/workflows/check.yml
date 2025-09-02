@@ -23,7 +23,6 @@ jobs:
         npm run synth-static-site-pipeline
         npm run synth-backend-pipeline
         npm run synth-backend-blue-green-pipeline
-        npm run synth-backend-codedeploy-pipeline
         npm run synth-backend-base-image-pipeline
         npm run synth-chat-bot-pipeline
         npm run synth-canaries-pipeline
@@ -54,7 +53,7 @@ jobs:
         npm run build:prod
 
   game-infra:
-    name: Game Infra
+    name: Game Backend
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -65,16 +64,9 @@ jobs:
       run: |
         npm install -g aws-cdk
 
-        cd trivia-backend/infra/cdk
+        cd trivia-backend/cdk
         npm ci
         npm run build
-
-        cd ../codedeploy-blue-green
-        npm ci
-        npm run build
-
-        cd ../codedeploy-lifecycle-event-hooks
-        npm ci
 
   game-app:
     name: Game App

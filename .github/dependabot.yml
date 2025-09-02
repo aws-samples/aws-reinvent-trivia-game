@@ -1,12 +1,6 @@
 version: 2
 updates:
 - package-ecosystem: npm
-  directory: "/trivia-backend/infra/codedeploy-blue-green/hooks"
-  schedule:
-    interval: monthly
-  open-pull-requests-limit: 10
-  versioning-strategy: increase
-- package-ecosystem: npm
   directory: "/canaries"
   schedule:
     interval: monthly
@@ -25,7 +19,7 @@ updates:
   open-pull-requests-limit: 10
   versioning-strategy: increase
 - package-ecosystem: npm
-  directory: "/trivia-backend/infra/cdk"
+  directory: "/trivia-backend/cdk"
   schedule:
     interval: monthly
   open-pull-requests-limit: 10
@@ -55,12 +49,6 @@ updates:
   versioning-strategy: increase
 - package-ecosystem: npm
   directory: "/static-site/cdk"
-  schedule:
-    interval: monthly
-  open-pull-requests-limit: 10
-  versioning-strategy: increase
-- package-ecosystem: npm
-  directory: "/trivia-backend/infra/codedeploy-blue-green"
   schedule:
     interval: monthly
   open-pull-requests-limit: 10
