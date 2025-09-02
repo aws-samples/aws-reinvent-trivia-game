@@ -160,39 +160,6 @@ class TriviaBackendStack extends Stack {
       runtime: lambda.Runtime.NODEJS_22_X,
     });
 
-    // Alarms for deployment rollback
-    const blueApiFailure = new cloudwatch.Alarm(this, 'TargetGroupBlue5xx', {
-      alarmName: this.stackName + '-Http-500-Blue',
-      metric: new cloudwatch.Metric({
-        namespace: 'AWS/ApplicationELB',
-        metricName: elb.HttpCodeTarget.TARGET_5XX_COUNT,
-        statistic: 'Sum',
-        dimensionsMap: {
-          TargetGroup: blueTargetGroup.targetGroupFullName,
-          LoadBalancer: loadBalancer.loadBalancerFullName,
-        },
-        period: Duration.minutes(1),
-      }),
-      threshold: 1,
-      evaluationPeriods: 1,
-    });
-
-    const greenApiFailure = new cloudwatch.Alarm(this, 'TargetGroupGreen5xx', {
-      alarmName: this.stackName + '-Http-500-Green',
-      metric: new cloudwatch.Metric({
-        namespace: 'AWS/ApplicationELB',
-        metricName: elb.HttpCodeTarget.TARGET_5XX_COUNT,
-        statistic: 'Sum',
-        dimensionsMap: {
-          TargetGroup: greenTargetGroup.targetGroupFullName,
-          LoadBalancer: loadBalancer.loadBalancerFullName,
-        },
-        period: Duration.minutes(1),
-      }),
-      threshold: 1,
-      evaluationPeriods: 1,
-    });
-
     // Task definition
     const taskDefinition = new ecs.FargateTaskDefinition(
       this,
@@ -218,7 +185,7 @@ class TriviaBackendStack extends Stack {
       bakeTime: Duration.minutes(30),
       propagateTags: ecs.PropagatedTagSource.SERVICE,
       deploymentAlarms: {
-        alarmNames: [blueApiFailure.alarmName, greenApiFailure.alarmName],
+        alarmNames: [this.stackName + '-Http-500-Blue', this.stackName + '-Http-500-Green'],
         behavior: ecs.AlarmBehavior.ROLLBACK_ON_ALARM,
       },
       lifecycleHooks: [new ecs.DeploymentLifecycleLambdaTarget(preTrafficHook, 'PreTrafficHook', {
@@ -277,20 +244,32 @@ class TriviaBackendStack extends Stack {
     target.attachToApplicationTargetGroup(blueTargetGroup);
 
     // Alarms for monitoring
+    const blueApiFailure = new cloudwatch.Alarm(this, 'TargetGroupBlue5xx', {
+      alarmName: this.stackName + '-Http-500-Blue',
+      metric: blueTargetGroup.metrics.httpCodeTarget(
+        elb.HttpCodeTarget.TARGET_5XX_COUNT,
+        { period: Duration.minutes(1) }
+      ),
+      threshold: 1,
+      evaluationPeriods: 1,
+    });
+
+    const greenApiFailure = new cloudwatch.Alarm(this, 'TargetGroupGreen5xx', {
+      alarmName: this.stackName + '-Http-500-Green',
+      metric: greenTargetGroup.metrics.httpCodeTarget(
+        elb.HttpCodeTarget.TARGET_5XX_COUNT,
+        { period: Duration.minutes(1) }
+      ),
+      threshold: 1,
+      evaluationPeriods: 1,
+    });
+
     const blueUnhealthyHosts = new cloudwatch.Alarm(
       this,
       'TargetGroupBlueUnhealthyHosts',
       {
         alarmName: this.stackName + '-Unhealthy-Hosts-Blue',
-        metric: new cloudwatch.Metric({
-          namespace: 'AWS/ApplicationELB',
-          metricName: 'UnHealthyHostCount',
-          statistic: 'Average',
-          dimensionsMap: {
-            TargetGroup: blueTargetGroup.targetGroupFullName,
-            LoadBalancer: loadBalancer.loadBalancerFullName,
-          },
-        }),
+        metric: blueTargetGroup.metrics.unhealthyHostCount(),
         threshold: 1,
         evaluationPeriods: 2,
       }
@@ -301,15 +280,7 @@ class TriviaBackendStack extends Stack {
       'TargetGroupGreenUnhealthyHosts',
       {
         alarmName: this.stackName + '-Unhealthy-Hosts-Green',
-        metric: new cloudwatch.Metric({
-          namespace: 'AWS/ApplicationELB',
-          metricName: 'UnHealthyHostCount',
-          statistic: 'Average',
-          dimensionsMap: {
-            TargetGroup: greenTargetGroup.targetGroupFullName,
-            LoadBalancer: loadBalancer.loadBalancerFullName,
-          },
-        }),
+        metric: greenTargetGroup.metrics.unhealthyHostCount(),
         threshold: 1,
         evaluationPeriods: 2,
       }

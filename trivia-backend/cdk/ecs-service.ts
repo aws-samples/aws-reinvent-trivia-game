@@ -50,6 +50,8 @@ class TriviaBackendStack extends Stack {
       domainZone,
       certificate,
       propagateTags: ecs.PropagatedTagSource.SERVICE,
+      minHealthyPercent: 100,
+      maxHealthyPercent: 200,
     });
 
     // Enable AZ rebalancing
@@ -59,14 +61,14 @@ class TriviaBackendStack extends Stack {
     // Alarms: monitor 500s and unhealthy hosts on target groups
     new cloudwatch.Alarm(this, 'TargetGroupUnhealthyHosts', {
       alarmName: this.stackName + '-Unhealthy-Hosts',
-      metric: service.targetGroup.metricUnhealthyHostCount(),
+      metric: service.targetGroup.metrics.unhealthyHostCount(),
       threshold: 1,
       evaluationPeriods: 2,
     });
 
     new cloudwatch.Alarm(this, 'TargetGroup5xx', {
       alarmName: this.stackName + '-Http-500',
-      metric: service.targetGroup.metricHttpCodeTarget(
+      metric: service.targetGroup.metrics.httpCodeTarget(
         elb.HttpCodeTarget.TARGET_5XX_COUNT,
         { period: Duration.minutes(1) }
       ),
