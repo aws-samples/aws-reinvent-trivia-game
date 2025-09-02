@@ -12,6 +12,7 @@ phases:
       # Install CDK & jq, upgrade npm
       - yum install -y jq
       - npm install -g aws-cdk
+      - npm install -g cdk-assets
 
   pre_build:
     commands:
@@ -34,13 +35,15 @@ phases:
       - docker push $ECR_REPO:$IMAGE_TAG
 
       # Synthesize CloudFormation templates
-      - cd $CODEBUILD_SRC_DIR/trivia-backend/infra
+      - cd $CODEBUILD_SRC_DIR/trivia-backend/cdk
       - npm ci
       - npm run build
-      - cdk synth -o build --app 'node ecs-service.js'
+      - cdk synth -o build --app 'node ecs-service-blue-green.js'
+      - cdk-assets publish -p build/TriviaBackendTest.assets.json
+      - cdk-assets publish -p build/TriviaBackendProd.assets.json
       - cp StackConfig.json build/
 
 artifacts:
   files:
-    - trivia-backend/infra/build/*
+    - trivia-backend/cdk/build/*
   discard-paths: yes

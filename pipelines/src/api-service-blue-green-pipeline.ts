@@ -14,7 +14,7 @@ class TriviaGameBackendBlueGreenPipelineStack extends Stack {
             pipelineNameSuffix: 'trivia-backend-cfn-blue-green-deploy',
             stackNamePrefix: 'TriviaBackend',
             templateNamePrefix: 'TriviaBackend',
-            buildspecLocation: 'trivia-backend/infra/buildspec-blue-green.yml',
+            buildspecLocation: 'trivia-backend/cdk/buildspec-blue-green.yml',
             pipelineCdkFileName: 'api-service-blue-green-pipeline',
         });
     }
