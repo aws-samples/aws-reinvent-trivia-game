@@ -1,5 +1,4 @@
-on:
-  [pull_request, push]
+on: [pull_request, push]
 
 name: Check
 
@@ -8,78 +7,77 @@ jobs:
     name: Pipelines
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 20
-    - name: Test
-      run: |
-        cd pipelines
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Test
+        run: |
+          cd pipelines
 
-        npm install -g aws-cdk
-        npm ci
+          npm install -g aws-cdk
+          npm ci
 
-        npm run build
-        npm run synth-static-site-pipeline
-        npm run synth-backend-pipeline
-        npm run synth-backend-blue-green-pipeline
-        npm run synth-backend-base-image-pipeline
-        npm run synth-chat-bot-pipeline
-        npm run synth-canaries-pipeline
-        npm run synth-lifecycle-hooks-pipeline
-        npm run synth-pipelines-bootstrap
+          npm run build
+          npm run synth-static-site-pipeline
+          npm run synth-backend-pipeline
+          npm run synth-backend-blue-green-pipeline
+          npm run synth-backend-base-image-pipeline
+          npm run synth-chat-bot-pipeline
+          npm run synth-canaries-pipeline
+          npm run synth-pipelines-bootstrap
 
   static-site:
     name: Static Site
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 20
-    - name: Test
-      run: |
-        npm install -g aws-cdk
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Test
+        run: |
+          npm install -g aws-cdk
 
-        cd static-site/cdk
-        npm ci
-        npm run build
+          cd static-site/cdk
+          npm ci
+          npm run build
 
-        cd ../app
-        npm ci
-        npm run build
-        npm run build:dev
-        npm run build:test
-        npm run build:prod
+          cd ../app
+          npm ci
+          npm run build
+          npm run build:dev
+          npm run build:test
+          npm run build:prod
 
   game-infra:
     name: Game Backend
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 20
-    - name: Test
-      run: |
-        npm install -g aws-cdk
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Test
+        run: |
+          npm install -g aws-cdk
 
-        cd trivia-backend/cdk
-        npm ci
-        npm run build
+          cd trivia-backend/cdk
+          npm ci
+          npm run build
 
   game-app:
     name: Game App
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 20
-    - name: Test
-      run: |
-        cd trivia-backend/base
-        docker build -t reinvent-trivia-backend-base:release .
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Test
+        run: |
+          cd trivia-backend/base
+          docker build -t reinvent-trivia-backend-base:release .
 
-        cd ..
-        docker build -t reinvent-trivia-backend:release .
+          cd ..
+          docker build -t reinvent-trivia-backend:release .
