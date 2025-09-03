@@ -51,7 +51,7 @@ jobs:
           npm run build:prod
 
   game-infra:
-    name: Game Backend
+    name: Game Infra
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
