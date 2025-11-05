@@ -1,35 +1,42 @@
 {
-  "sessionAttributes": {
-    "started": true,
-    "currentQuestion": 1,
-    "currentSlot": "one",
-    "currentScore": 0
-  },
-  "dialogAction": {
-    "type": "ElicitSlot",
-    "intentName": "LetsPlay",
-    "slots": {
-      "fifteen": null,
-      "nine": null,
-      "six": null,
-      "one": null,
-      "seven": null,
-      "three": null,
-      "two": null,
-      "thirteen": null,
-      "eight": null,
-      "fourteen": null,
-      "four": null,
-      "sixteen": null,
-      "twelve": null,
-      "eleven": null,
-      "ten": null,
-      "five": null
+  "sessionState": {
+    "sessionAttributes": {
+      "started": "true",
+      "currentQuestion": "1",
+      "currentSlot": "one",
+      "currentScore": "0"
     },
-    "slotToElicit": "one",
-    "message": {
+    "dialogAction": {
+      "type": "ElicitSlot",
+      "slotToElicit": "one"
+    },
+    "intent": {
+      "name": "LetsPlay",
+      "slots": {
+        "one": null,
+        "two": null,
+        "three": null,
+        "four": null,
+        "five": null,
+        "six": null,
+        "seven": null,
+        "eight": null,
+        "nine": null,
+        "ten": null,
+        "eleven": null,
+        "twelve": null,
+        "thirteen": null,
+        "fourteen": null,
+        "fifteen": null,
+        "sixteen": null
+      },
+      "state": "InProgress"
+    }
+  },
+  "messages": [
+    {
       "contentType": "PlainText",
       "content": "Let's play re:Invent Trivia! The game covers four categories with four questions each. Starting with the \"Know Your History\" category, for 100 points: What year was the first AWS re:Invent held?"
     }
-  }
+  ]
 }

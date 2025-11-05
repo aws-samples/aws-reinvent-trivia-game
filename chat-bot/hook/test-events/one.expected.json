@@ -1,35 +1,48 @@
 {
-  "sessionAttributes": {
-    "started": "true",
-    "currentQuestion": 2,
-    "currentScore": 100,
-    "currentSlot": "two"
-  },
-  "dialogAction": {
-    "type": "ElicitSlot",
-    "intentName": "LetsPlay",
-    "slots": {
-      "fifteen": null,
-      "nine": null,
-      "six": null,
-      "one": 2012,
-      "seven": null,
-      "three": null,
-      "two": null,
-      "thirteen": null,
-      "eight": null,
-      "fourteen": null,
-      "four": null,
-      "sixteen": null,
-      "twelve": null,
-      "eleven": null,
-      "ten": null,
-      "five": null
+  "sessionState": {
+    "sessionAttributes": {
+      "started": "true",
+      "currentQuestion": "2",
+      "currentScore": "100",
+      "currentSlot": "two"
     },
-    "slotToElicit": "two",
-    "message": {
+    "dialogAction": {
+      "type": "ElicitSlot",
+      "slotToElicit": "two"
+    },
+    "intent": {
+      "name": "LetsPlay",
+      "slots": {
+        "one": {
+          "value": {
+            "originalValue": "2012",
+            "interpretedValue": "2012",
+            "resolvedValues": ["2012"]
+          }
+        },
+        "two": null,
+        "three": null,
+        "four": null,
+        "five": null,
+        "six": null,
+        "seven": null,
+        "eight": null,
+        "nine": null,
+        "ten": null,
+        "eleven": null,
+        "twelve": null,
+        "thirteen": null,
+        "fourteen": null,
+        "fifteen": null,
+        "sixteen": null
+      },
+      "state": "InProgress"
+    }
+  },
+  "messages": [
+    {
       "contentType": "PlainText",
       "content": "That is correct! The answer is \"2012\". New score is 100 points! For 200 points: What Amazon-favorite sport was introduced to re:Invent attendees in 2016?"
     }
-  }
+  ]
 }

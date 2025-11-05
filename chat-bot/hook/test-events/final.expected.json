@@ -1,16 +1,23 @@
 {
-  "sessionAttributes": {
-    "started": "true",
-    "currentQuestion": "16",
-    "currentScore": "0",
-    "currentSlot": "sixteen"
+  "sessionState": {
+    "sessionAttributes": {
+      "started": "true",
+      "currentQuestion": "16",
+      "currentScore": "0",
+      "currentSlot": "sixteen"
+    },
+    "dialogAction": {
+      "type": "Close"
+    },
+    "intent": {
+      "name": "LetsPlay",
+      "state": "Fulfilled"
+    }
   },
-  "dialogAction": {
-    "type": "Close",
-    "fulfillmentState": "Fulfilled",
-    "message": {
+  "messages": [
+    {
       "contentType": "PlainText",
       "content": "That is correct! Thanks for playing! Your final score is 400 points"
     }
-  }
+  ]
 }

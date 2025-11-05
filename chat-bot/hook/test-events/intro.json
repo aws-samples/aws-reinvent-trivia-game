@@ -1,38 +1,37 @@
 {
-  "messageVersion": "1.0",
-  "invocationSource": "DialogCodeHook",
-  "userId": "ozw40htm8dvj0n1lk9ugt6gja961h4dl",
-  "sessionAttributes": {
-
+  "sessionId": "test-session-intro",
+  "inputMode": "Text",
+  "sessionState": {
+    "sessionAttributes": {},
+    "intent": {
+      "name": "LetsPlay",
+      "slots": {
+        "one": null,
+        "two": null,
+        "three": null,
+        "four": null,
+        "five": null,
+        "six": null,
+        "seven": null,
+        "eight": null,
+        "nine": null,
+        "ten": null,
+        "eleven": null,
+        "twelve": null,
+        "thirteen": null,
+        "fourteen": null,
+        "fifteen": null,
+        "sixteen": null
+      },
+      "state": "InProgress",
+      "confirmationState": "None"
+    }
   },
-  "requestAttributes": null,
   "bot": {
+    "id": "TEST_BOT_ID",
+    "aliasId": "TEST_ALIAS_ID",
     "name": "TriviaGame",
-    "alias": "$LATEST",
-    "version": "$LATEST"
-  },
-  "outputDialogMode": "Text",
-  "currentIntent": {
-    "name": "LetsPlay",
-    "slots": {
-      "fifteen": null,
-      "nine": null,
-      "six": null,
-      "one": null,
-      "seven": null,
-      "three": null,
-      "two": null,
-      "thirteen": null,
-      "eight": null,
-      "fourteen": null,
-      "four": null,
-      "sixteen": null,
-      "twelve": null,
-      "eleven": null,
-      "ten": null,
-      "five": null
-    },
-    "confirmationStatus": "None"
+    "localeId": "en_US"
   },
   "inputTranscript": "Let's play"
 }

@@ -1,9 +1,11 @@
 'use strict';
 
 const assert = require('assert');
-const aws = require('aws-sdk');
-const codedeploy = new aws.CodeDeploy();
-const lambda = new aws.Lambda();
+const { CodeDeployClient, PutLifecycleEventHookExecutionStatusCommand } = require('@aws-sdk/client-codedeploy');
+const { LambdaClient, InvokeCommand } = require('@aws-sdk/client-lambda');
+
+const codedeploy = new CodeDeployClient();
+const lambda = new LambdaClient();
 
 const TARGET_FUNCTION = process.env.CurrentVersion;
 
@@ -39,11 +41,12 @@ exports.handler = async function (event, context, callback) {
         console.log(`Testing ${test} against ${TARGET_FUNCTION}`);
 
         try {
-            let data = await lambda.invoke({
+            const command = new InvokeCommand({
                 FunctionName: TARGET_FUNCTION,
                 Payload: JSON.stringify(testInput)
-            }).promise();
-            let testOutput = JSON.parse(data.Payload);
+            });
+            let data = await lambda.send(command);
+            let testOutput = JSON.parse(Buffer.from(data.Payload).toString());
             assert.deepEqual(testOutput, testExpectedOutput, `Unexpected results for ${test}`);
         } catch (err) {
             console.log(err);
@@ -54,7 +57,8 @@ exports.handler = async function (event, context, callback) {
     // Pass AWS CodeDeploy the prepared validation test results.
     try {
         console.log(params);
-        await codedeploy.putLifecycleEventHookExecutionStatus(params).promise();
+        const command = new PutLifecycleEventHookExecutionStatusCommand(params);
+        await codedeploy.send(command);
         console.log('Successfully reported hook results');
         callback(null, 'Successfully reported hook results');
     } catch (err) {

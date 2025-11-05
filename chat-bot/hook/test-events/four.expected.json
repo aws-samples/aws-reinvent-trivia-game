@@ -1,35 +1,66 @@
 {
-  "sessionAttributes": {
-    "started": "true",
-    "currentQuestion": 5,
-    "currentScore": 100,
-    "currentSlot": "five"
-  },
-  "dialogAction": {
-    "type": "ElicitSlot",
-    "intentName": "LetsPlay",
-    "slots": {
-      "fifteen": null,
-      "nine": null,
-      "six": null,
-      "one": 2012,
-      "seven": null,
-      "three": "blah",
-      "two": "blah",
-      "thirteen": null,
-      "eight": null,
-      "fourteen": null,
-      "four": "blah",
-      "sixteen": null,
-      "twelve": null,
-      "eleven": null,
-      "ten": null,
-      "five": null
+  "sessionState": {
+    "sessionAttributes": {
+      "started": "true",
+      "currentQuestion": "5",
+      "currentScore": "100",
+      "currentSlot": "five"
     },
-    "slotToElicit": "five",
-    "message": {
+    "dialogAction": {
+      "type": "ElicitSlot",
+      "slotToElicit": "five"
+    },
+    "intent": {
+      "name": "LetsPlay",
+      "slots": {
+        "one": {
+          "value": {
+            "originalValue": "2012",
+            "interpretedValue": "2012",
+            "resolvedValues": ["2012"]
+          }
+        },
+        "two": {
+          "value": {
+            "originalValue": "blah",
+            "interpretedValue": "blah",
+            "resolvedValues": ["blah"]
+          }
+        },
+        "three": {
+          "value": {
+            "originalValue": "blah",
+            "interpretedValue": "blah",
+            "resolvedValues": ["blah"]
+          }
+        },
+        "four": {
+          "value": {
+            "originalValue": "blah",
+            "interpretedValue": "blah",
+            "resolvedValues": ["blah"]
+          }
+        },
+        "five": null,
+        "six": null,
+        "seven": null,
+        "eight": null,
+        "nine": null,
+        "ten": null,
+        "eleven": null,
+        "twelve": null,
+        "thirteen": null,
+        "fourteen": null,
+        "fifteen": null,
+        "sixteen": null
+      },
+      "state": "InProgress"
+    }
+  },
+  "messages": [
+    {
       "contentType": "PlainText",
       "content": "Incorrect! The correct answer is \"2014\". Moving on the \"The Main Event\" category. For 100 points: What webinar helps people learn about re:Invent leading up to the big event?"
     }
-  }
+  ]
 }

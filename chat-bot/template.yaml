@@ -8,12 +8,178 @@ Parameters:
     Default: 'https://api.reinvent-trivia.com'
 
 Resources:
+  BotRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lexv2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonLexRunBotsOnly
+
+  TriviaBot:
+    Type: AWS::Lex::Bot
+    Properties:
+      Name: !Sub ${AWS::StackName}-TriviaGame
+      Description: AWS re:Invent trivia game bot
+      RoleArn: !GetAtt BotRole.Arn
+      DataPrivacy:
+        ChildDirected: false
+      IdleSessionTTLInSeconds: 300
+      BotLocales:
+        - LocaleId: en_US
+          Description: English US locale for trivia game
+          NluConfidenceThreshold: 0.4
+          VoiceSettings:
+            VoiceId: Joanna
+          Intents:
+            - Name: FallbackIntent
+              Description: Default intent when no other intent matches
+              ParentIntentSignature: AMAZON.FallbackIntent
+            - Name: LetsPlay
+              Description: Main intent for playing the trivia game
+              SampleUtterances:
+                - Utterance: "Let's play"
+                - Utterance: "Start the game"
+                - Utterance: "Ask me another question"
+                - Utterance: "I want to play the trivia game"
+                - Utterance: "Play trivia"
+                - Utterance: "Start"
+              FulfillmentCodeHook:
+                Enabled: true
+              SlotPriorities:
+                - Priority: 1
+                  SlotName: one
+                - Priority: 2
+                  SlotName: two
+                - Priority: 3
+                  SlotName: three
+                - Priority: 4
+                  SlotName: four
+                - Priority: 5
+                  SlotName: five
+                - Priority: 6
+                  SlotName: six
+                - Priority: 7
+                  SlotName: seven
+                - Priority: 8
+                  SlotName: eight
+                - Priority: 9
+                  SlotName: nine
+                - Priority: 10
+                  SlotName: ten
+                - Priority: 11
+                  SlotName: eleven
+                - Priority: 12
+                  SlotName: twelve
+                - Priority: 13
+                  SlotName: thirteen
+                - Priority: 14
+                  SlotName: fourteen
+                - Priority: 15
+                  SlotName: fifteen
+                - Priority: 16
+                  SlotName: sixteen
+              Slots:
+                - Name: one
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: two
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: three
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: four
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: five
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: six
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: seven
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: eight
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: nine
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: ten
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: eleven
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: twelve
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: thirteen
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: fourteen
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: fifteen
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+                - Name: sixteen
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Optional
+
+  BotVersion:
+    Type: AWS::Lex::BotVersion
+    Properties:
+      BotId: !Ref TriviaBot
+      BotVersionLocaleSpecification:
+        - LocaleId: en_US
+          BotVersionLocaleDetails:
+            SourceBotVersion: DRAFT
+
+  BotAlias:
+    Type: AWS::Lex::BotAlias
+    Properties:
+      BotId: !Ref TriviaBot
+      BotAliasName: prod
+      BotVersion: !GetAtt BotVersion.BotVersion
+      BotAliasLocaleSettings:
+        - LocaleId: en_US
+          BotAliasLocaleSetting:
+            Enabled: true
+            CodeHookSpecification:
+              LambdaCodeHook:
+                LambdaArn: !Ref BotFunction.Alias
+                CodeHookInterfaceVersion: "1.0"
+
   BotFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./bot
       Handler: bot.handler
-      Runtime: nodejs14.x
+      Runtime: nodejs20.x
       Timeout: 60
       Environment:
         Variables:
@@ -23,17 +189,20 @@ Resources:
           Type: Schedule
           Properties:
             Schedule: rate(1 minute)
-            Input: >-
+            Input: !Sub |
               {
-                "bot": {
-                  "name": "TriviaGame",
-                  "alias": "$LATEST",
-                  "version": "$LATEST"
-                },
-                "currentIntent": {
-                  "name": "LetsPlay",
-                  "slots": {
+                "sessionId": "canary-session",
+                "sessionState": {
+                  "sessionAttributes": {},
+                  "intent": {
+                    "name": "LetsPlay",
+                    "slots": {},
+                    "state": "InProgress"
                   }
+                },
+                "bot": {
+                  "id": "${TriviaBot}",
+                  "aliasId": "${BotAlias.BotAliasId}"
                 }
               }
       AutoPublishAlias: live
@@ -109,7 +278,7 @@ Resources:
             Action:
               - "lambda:InvokeFunction"
             Resource: !Sub "${BotFunction.Arn}:*"
-      Runtime: nodejs14.x
+      Runtime: nodejs20.x
       DeploymentPreference:
         Enabled: false
         Role: ""
@@ -122,12 +291,5 @@ Resources:
     Properties:
       FunctionName: !Ref BotFunction.Alias
       Action: "lambda:invokeFunction"
-      Principal: lex.amazonaws.com
-      SourceArn: !Join
-        - ':'
-        - - 'arn'
-          - !Ref "AWS::Partition"
-          - 'lex'
-          - !Ref "AWS::Region"
-          - !Ref "AWS::AccountId"
-          - 'intent:LetsPlay:*'
+      Principal: lexv2.amazonaws.com
+      SourceArn: !Sub 'arn:${AWS::Partition}:lex:${AWS::Region}:${AWS::AccountId}:bot-alias/${TriviaBot}/${BotAlias.BotAliasId}'

@@ -6,34 +6,44 @@ const API_ENDPOINT = process.env.API_ENDPOINT;
 const MAX_QUESTIONS = 16;
 
 /**
- * This function is used as a fulfillment hook for an Amazon Lex bot.
+ * This function is used as a fulfillment hook for an Amazon Lex V2 bot.
  * It is responsible for driving the conversation including which
  * questions to ask, validating the user's answers, and keeping track
  * of the user's score.  All state is tracked in the session attributes.
  */
 
-// Helper functions for returning results back to Lex
-function elicitSlot(sessionAttributes, intentName, slots, slotToElicit, message) {
+// Helper functions for returning results back to Lex V2
+function elicitSlot(sessionAttributes, sessionId, intentName, slots, slotToElicit, message) {
     return {
-        sessionAttributes,
-        dialogAction: {
-            type: 'ElicitSlot',
-            intentName,
-            slots,
-            slotToElicit,
-            message,
+        sessionState: {
+            sessionAttributes,
+            dialogAction: {
+                type: 'ElicitSlot',
+                slotToElicit,
+            },
+            intent: {
+                name: intentName,
+                slots,
+                state: 'InProgress'
+            }
         },
+        messages: [message]
     };
 }
 
-function close(sessionAttributes, fulfillmentState, message) {
+function close(sessionAttributes, sessionId, intentName, fulfillmentState, message) {
     return {
-        sessionAttributes,
-        dialogAction: {
-            type: 'Close',
-            fulfillmentState,
-            message,
+        sessionState: {
+            sessionAttributes,
+            dialogAction: {
+                type: 'Close',
+            },
+            intent: {
+                name: intentName,
+                state: fulfillmentState
+            }
         },
+        messages: [message]
     };
 }
 
@@ -55,10 +65,10 @@ async function answerQuestion(id, answer) {
 async function startGame(intentRequest) {
     // Start of the game
     const sessionAttributes = {
-        started: true,
-        currentQuestion: 1,
-        currentSlot: "one",
-        currentScore: 0,
+        started: 'true',
+        currentQuestion: '1',
+        currentSlot: 'one',
+        currentScore: '0',
     };
 
     const firstQuestion = await getQuestion(1);
@@ -71,13 +81,14 @@ async function startGame(intentRequest) {
             `for ${firstQuestion.data.points} points: ${firstQuestion.data.question}`
     };
 
-    return elicitSlot(sessionAttributes, intentRequest.currentIntent.name,
-        intentRequest.currentIntent.slots, "one", message);
+    return elicitSlot(sessionAttributes, intentRequest.sessionId,
+        intentRequest.sessionState.intent.name,
+        intentRequest.sessionState.intent.slots, 'one', message);
 }
 
 // Check the answer to the previous question and ask the next question
 async function nextQuestion(intentRequest) {
-    var sessionAttributes = intentRequest.sessionAttributes;
+    var sessionAttributes = intentRequest.sessionState.sessionAttributes;
     var score = parseInt(sessionAttributes.currentScore, 10);
     var currentQuestionId = parseInt(sessionAttributes.currentQuestion, 10);
     var currentSlot = numToWords.toWords(currentQuestionId);
@@ -89,7 +100,7 @@ async function nextQuestion(intentRequest) {
 
     // Check the answer, add to score if correct
     var isCorrect = false;
-    var userAnswer = intentRequest.currentIntent.slots[currentSlot];
+    var userAnswer = intentRequest.sessionState.intent.slots[currentSlot]?.value?.interpretedValue;
     // null user answer means a string response did not match any of the sample utterances
     if (userAnswer) {
         const answerData = await answerQuestion(currentQuestionId, userAnswer);
@@ -117,17 +128,18 @@ async function nextQuestion(intentRequest) {
         content: messageContent
     };
 
-    sessionAttributes.currentQuestion = nextQuestionId;
+    sessionAttributes.currentQuestion = nextQuestionId.toString();
     sessionAttributes.currentSlot = nextSlot;
-    sessionAttributes.currentScore = score;
+    sessionAttributes.currentScore = score.toString();
 
-    return elicitSlot(sessionAttributes, intentRequest.currentIntent.name,
-        intentRequest.currentIntent.slots, nextSlot, message);
+    return elicitSlot(sessionAttributes, intentRequest.sessionId,
+        intentRequest.sessionState.intent.name,
+        intentRequest.sessionState.intent.slots, nextSlot, message);
 }
 
 // Check answer to final question and finish the game
 async function finishGame(intentRequest) {
-    var sessionAttributes = intentRequest.sessionAttributes;
+    var sessionAttributes = intentRequest.sessionState.sessionAttributes;
     var score = parseInt(sessionAttributes.currentScore, 10);
     var currentQuestionId = parseInt(sessionAttributes.currentQuestion, 10);
     var currentSlot = numToWords.toWords(currentQuestionId);
@@ -136,7 +148,7 @@ async function finishGame(intentRequest) {
 
     // Check the answer, add to score if correct
     var isCorrect = false;
-    var userAnswer = intentRequest.currentIntent.slots[currentSlot];
+    var userAnswer = intentRequest.sessionState.intent.slots[currentSlot]?.value?.interpretedValue;
     // null user answer means a string response did not match any of the sample utterances
     if (userAnswer) {
         const answerData = await answerQuestion(currentQuestionId, userAnswer);
@@ -159,13 +171,14 @@ async function finishGame(intentRequest) {
         content: messageContent
     };
 
-    return close(sessionAttributes, 'Fulfilled', message);
+    return close(sessionAttributes, intentRequest.sessionId,
+        intentRequest.sessionState.intent.name, 'Fulfilled', message);
 }
 
 // Move the game forward, based on state stored in the session attributes
 async function playGame(intentRequest) {
-    const sessionAttributes = intentRequest.sessionAttributes || {};
-    const slots = intentRequest.currentIntent.slots;
+    const sessionAttributes = intentRequest.sessionState.sessionAttributes || {};
+    const slots = intentRequest.sessionState.intent.slots;
 
     if (Object.keys(sessionAttributes).length == 0) {
         return await startGame(intentRequest);
@@ -181,7 +194,7 @@ async function playGame(intentRequest) {
 exports.handler = async function(event, context, callback) {
     try {
         console.log("Request: " + JSON.stringify(event));
-        const intentName = event.currentIntent.name;
+        const intentName = event.sessionState.intent.name;
 
         if (intentName === 'LetsPlay') {
             const response = await playGame(event);

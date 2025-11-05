@@ -1,0 +1,9 @@
+{
+  "name": "pre-traffic-hook",
+  "version": "1.0.0",
+  "description": "Pre-traffic hook for CodeDeploy",
+  "dependencies": {
+    "@aws-sdk/client-codedeploy": "^3.0.0",
+    "@aws-sdk/client-lambda": "^3.0.0"
+  }
+}

@@ -1,12 +1,16 @@
 {
-  "bot": {
-    "name": "TriviaGame",
-    "alias": "$LATEST",
-    "version": "$LATEST"
-  },
-  "currentIntent": {
-    "name": "LetsPlay",
-    "slots": {
+  "sessionId": "test-session-min",
+  "sessionState": {
+    "sessionAttributes": {},
+    "intent": {
+      "name": "LetsPlay",
+      "slots": {},
+      "state": "InProgress"
     }
+  },
+  "bot": {
+    "id": "TEST_BOT_ID",
+    "aliasId": "TEST_ALIAS_ID",
+    "name": "TriviaGame"
   }
 }
