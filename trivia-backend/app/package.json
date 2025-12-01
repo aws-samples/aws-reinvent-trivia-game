@@ -16,7 +16,7 @@
     "morgan": "^1.10.1"
   },
   "devDependencies": {
-    "mocha": "^11.7.4",
+    "mocha": "^11.7.5",
     "chai": "^6.2.1",
     "chai-http": "^5.1.2",
     "nyc": "^17.1.0"
