@@ -10,7 +10,7 @@
     "@godaddy/terminus": "^4.12.1",
     "body-parser": "^2.2.2",
     "compression": "^1.8.1",
-    "cors": "^2.8.5",
+    "cors": "^2.8.6",
     "express": "^5.2.1",
     "helmet": "^8.1.0",
     "morgan": "^1.10.1"
