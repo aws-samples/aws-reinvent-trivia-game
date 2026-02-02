@@ -1,5 +1,5 @@
-var synthetics = require('Synthetics');
-const log = require('SyntheticsLogger');
+var synthetics = require('@aws/synthetics-puppeteer');
+const log = require('@aws/synthetics-logger');
 const axios = require('axios');
 
 const PAGE_URL = process.env['WEBPAGE_URL'];
@@ -11,7 +11,7 @@ const loadPage = async function () {
     if (!response) {
         throw "Failed to load page!";
     }
-    await page.waitForTimeout(5000);
+    await page.waitForFunction(() => document.readyState === 'complete', {timeout: 5000});
     await synthetics.takeScreenshot('loaded', 'loaded');
     let pageTitle = await page.title();
     log.info('Page title: ' + pageTitle);

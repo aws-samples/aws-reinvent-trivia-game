@@ -39,7 +39,7 @@ Resources:
         S3Bucket: !Ref SourceBucket
         S3Key: !Ref SourceObjectKey
       ArtifactS3Location: !Sub "s3://${CanaryResultsBucket}"
-      RuntimeVersion: syn-nodejs-puppeteer-7.0
+      RuntimeVersion: syn-nodejs-puppeteer-13.1
       Schedule:
         Expression: 'rate(5 minutes)'
         DurationInSeconds: 0
