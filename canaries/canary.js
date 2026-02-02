@@ -30,8 +30,7 @@ const getAllQuestionsApi = async function () {
             'User-Agent': synthetics.getCanaryUserAgentString()
         }
     });
-    log.info("Response:");
-    log.info(response);
+    log.info(`Response: ${response.status} - ${JSON.stringify(response.data)}`);
     if (response.status != 200) {
         throw "Failed to load questions!";
     } else if (response.data.length != 4) {
@@ -49,8 +48,7 @@ const getQuestionApi = async function () {
             'User-Agent': synthetics.getCanaryUserAgentString()
         }
     });
-    log.info("Response:");
-    log.info(response);
+    log.info(`Response: ${response.status} - ${JSON.stringify(response.data)}`);
     if (response.status != 200 ||
         response.data.question != "What year was the first AWS re:Invent held?") {
         throw "Failed to load question!";
@@ -70,8 +68,7 @@ const answerQuestionApi = async function () {
             answer: '2012'
         }
     });
-    log.info("Response:");
-    log.info(response);
+    log.info(`Response: ${response.status} - ${JSON.stringify(response.data)}`);
     if (response.status != 200 ||
         !response.data.result) {
         throw "Failed to answer question!";
