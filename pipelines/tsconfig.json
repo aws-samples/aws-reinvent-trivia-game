@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "target":"ES2018",
+        "types": ["node"],
         "module": "commonjs",
         "lib": ["es2016", "es2017.object", "es2017.string"],
         "declaration": true,
