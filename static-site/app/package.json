@@ -14,7 +14,7 @@
     "@babel/preset-env": "^7.29.7",
     "@babel/preset-react": "^7.29.7",
     "babel-loader": "^10.1.1",
-    "react": "^19.2.4",
+    "react": "^19.2.7",
     "react-dom": "^19.2.5",
     "webpack": "^5.106.2",
     "webpack-cli": "^7.0.3"
