@@ -11,7 +11,7 @@
         "synth-blue-green-service": "cdk synth -o build --app 'node ecs-service-blue-green.js'"
     },
     "devDependencies": {
-        "@types/aws-lambda": "^8.10.161",
+        "@types/aws-lambda": "^8.10.162",
         "@types/node": "^25.9.1",
         "aws-cdk": "^2.1125.0",
         "typescript": "^6.0.3"
