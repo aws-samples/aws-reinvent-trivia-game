@@ -16,7 +16,7 @@
     "babel-loader": "^10.1.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "webpack": "^5.107.2",
+    "webpack": "^5.108.3",
     "webpack-cli": "^7.0.3"
   }
 }
