@@ -17,6 +17,6 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "webpack": "^5.108.3",
-    "webpack-cli": "^7.0.3"
+    "webpack-cli": "^7.1.0"
   }
 }
