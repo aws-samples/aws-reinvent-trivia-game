@@ -2,6 +2,10 @@ on: [pull_request, push]
 
 name: Check
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   pipelines:
     name: Pipelines
