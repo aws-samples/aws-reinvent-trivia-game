@@ -6,50 +6,86 @@ updates:
     interval: monthly
   open-pull-requests-limit: 10
   versioning-strategy: increase
+  groups:
+    npm-canaries:
+      patterns:
+        - "*"
 - package-ecosystem: npm
   directory: "/trivia-backend/app"
   schedule:
     interval: monthly
   open-pull-requests-limit: 10
   versioning-strategy: increase
+  groups:
+    npm-trivia-backend-app:
+      patterns:
+        - "*"
 - package-ecosystem: npm
   directory: "/chat-bot/bot"
   schedule:
     interval: monthly
   open-pull-requests-limit: 10
   versioning-strategy: increase
+  groups:
+    npm-chat-bot-bot:
+      patterns:
+        - "*"
 - package-ecosystem: npm
   directory: "/trivia-backend/cdk"
   schedule:
     interval: monthly
   open-pull-requests-limit: 10
   versioning-strategy: increase
+  groups:
+    npm-trivia-backend-cdk:
+      patterns:
+        - "*"
 - package-ecosystem: docker
   directory: "/trivia-backend/base"
   schedule:
     interval: monthly
   open-pull-requests-limit: 10
+  groups:
+    docker-trivia-backend-base:
+      patterns:
+        - "*"
 - package-ecosystem: npm
   directory: "/chat-bot/lex-model"
   schedule:
     interval: monthly
   open-pull-requests-limit: 10
   versioning-strategy: increase
+  groups:
+    npm-chat-bot-lex-model:
+      patterns:
+        - "*"
 - package-ecosystem: npm
   directory: "/pipelines"
   schedule:
     interval: monthly
   open-pull-requests-limit: 10
   versioning-strategy: increase
+  groups:
+    npm-pipelines:
+      patterns:
+        - "*"
 - package-ecosystem: npm
   directory: "/static-site/app"
   schedule:
     interval: monthly
   open-pull-requests-limit: 10
   versioning-strategy: increase
+  groups:
+    npm-static-site-app:
+      patterns:
+        - "*"
 - package-ecosystem: npm
   directory: "/static-site/cdk"
   schedule:
     interval: monthly
   open-pull-requests-limit: 10
   versioning-strategy: increase
+  groups:
+    npm-static-site-cdk:
+      patterns:
+        - "*"
