@@ -78,6 +78,19 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20
+      - name: Pull base images
+        # public.ecr.aws rate-limits anonymous pulls from shared runner IPs
+        # (429 toomanyrequests), so retry pulling the FROM images before building.
+        # docker build then uses the local copies instead of pulling again.
+        run: |
+          for image in $(awk 'toupper($1) == "FROM" {print $2}' trivia-backend/base/Dockerfile | sort -u); do
+            for attempt in 1 2 3 4 5; do
+              docker pull "$image" && continue 2
+              echo "Pull of $image failed (attempt $attempt of 5)"
+              [ "$attempt" -lt 5 ] && sleep $((attempt * 15))
+            done
+            exit 1
+          done
       - name: Test
         run: |
           cd trivia-backend/base
