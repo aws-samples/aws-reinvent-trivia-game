@@ -50,13 +50,13 @@ updates:
       patterns:
         - "*"
 - package-ecosystem: npm
-  directory: "/chat-bot/lex-model"
+  directory: "/chat-bot/hook"
   schedule:
     interval: monthly
   open-pull-requests-limit: 10
   versioning-strategy: increase
   groups:
-    npm-chat-bot-lex-model:
+    npm-chat-bot-hook:
       patterns:
         - "*"
 - package-ecosystem: npm
