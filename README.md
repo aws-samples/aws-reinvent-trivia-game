@@ -20,3 +20,31 @@ This sample code is made available under the MIT license. See the LICENSE file.
 ## Credits
 
 Static site based on [React Trivia](https://github.com/ccoenraets/react-trivia)
+
+## GitHub Actions setup
+
+The "Game App" CI job pulls base images from Amazon ECR Public.
+Anonymous pulls from GitHub-hosted runners are often rate-limited, so the job logs in to ECR Public
+when the `ECR_PUBLIC_ROLE_ARN` secret is set. To set it up:
+
+1. Deploy a least-privilege IAM role that GitHub Actions can assume with OIDC.
+   If the AWS account already has a GitHub OIDC provider, also pass `OIDCProviderArn=<provider ARN>`.
+
+```bash
+aws cloudformation deploy \
+    --template-file .github/github-actions-authentication.yaml \
+    --stack-name github-reinvent-trivia-ci-identity-provider \
+    --parameter-overrides GitHubOrg=aws-samples RepositoryName=aws-reinvent-trivia-game \
+    --capabilities CAPABILITY_IAM \
+    --region us-east-1
+
+aws cloudformation describe-stacks \
+    --stack-name github-reinvent-trivia-ci-identity-provider \
+    --query "Stacks[0].Outputs[?OutputKey=='Role'].OutputValue" \
+    --output text \
+    --region us-east-1
+```
+
+2. Store the role ARN as a repository secret named `ECR_PUBLIC_ROLE_ARN`, both as an Actions secret
+   and as a Dependabot secret, so that Dependabot pull requests can log in too.
+   Pull requests from forks don't get secrets, so they keep pulling anonymously.

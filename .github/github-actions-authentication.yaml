@@ -1,0 +1,74 @@
+# This CloudFormation template configures an IAM identity provider that uses GitHub's OIDC,
+# enabling GitHub Actions to log in to Amazon ECR Public when pulling base images.
+# Authenticated pulls get a higher ECR Public quota than anonymous pulls from shared runner IPs.
+
+Parameters:
+  GitHubOrg:
+    Description: Name of GitHub organization/user (case sensitive)
+    Type: String
+  RepositoryName:
+    Description: Name of GitHub repository (case sensitive)
+    Type: String
+  OIDCProviderArn:
+    Description: Arn for the GitHub OIDC Provider. Leave empty to create one.
+    Default: ""
+    Type: String
+  OIDCAudience:
+    Description: Audience supplied to configure-aws-credentials.
+    Default: "sts.amazonaws.com"
+    Type: String
+
+Conditions:
+  CreateOIDCProvider: !Equals
+    - !Ref OIDCProviderArn
+    - ""
+
+Resources:
+  GithubOidc:
+    Type: AWS::IAM::OIDCProvider
+    Condition: CreateOIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+
+  EcrPublicPullRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRoleWithWebIdentity
+            Principal:
+              Federated: !If
+                - CreateOIDCProvider
+                - !Ref GithubOidc
+                - !Ref OIDCProviderArn
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: !Ref OIDCAudience
+              StringLike:
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubOrg}/${RepositoryName}:*
+
+  EcrPublicPullPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: trivia-game-ci-ecr-public-pull
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          # Allow docker login to public.ecr.aws. Neither action supports resource-level permissions.
+          # This matches the login permissions in the AmazonElasticContainerRegistryPublicReadOnly managed policy.
+          - Effect: Allow
+            Action:
+              - "ecr-public:GetAuthorizationToken"
+              - "sts:GetServiceBearerToken"
+            Resource: "*"
+      Roles:
+        - !Ref EcrPublicPullRole
+
+Outputs:
+  Role:
+    Value: !GetAtt EcrPublicPullRole.Arn

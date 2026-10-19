@@ -73,11 +73,30 @@ jobs:
   game-app:
     name: Game App
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      # Set up with .github/github-actions-authentication.yaml. The secret is not
+      # available to pull requests from forks, so those fall back to anonymous pulls.
+      ECR_PUBLIC_ROLE_ARN: ${{ secrets.ECR_PUBLIC_ROLE_ARN }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: 20
+      - name: Configure AWS credentials
+        if: env.ECR_PUBLIC_ROLE_ARN != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ECR_PUBLIC_ROLE_ARN }}
+          aws-region: us-east-1
+      - name: Log in to Amazon ECR Public
+        # Authenticated pulls get a higher quota than anonymous pulls
+        if: env.ECR_PUBLIC_ROLE_ARN != ''
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
       - name: Pull base images
         # public.ecr.aws rate-limits anonymous pulls from shared runner IPs
         # (429 toomanyrequests), so retry pulling the FROM images before building.
